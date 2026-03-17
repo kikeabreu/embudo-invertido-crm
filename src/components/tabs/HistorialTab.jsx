@@ -5,11 +5,15 @@ import { G, css, USERS, fmtDate } from "@/lib/constants";
 import { GText } from "@/components/ui/UIUtils";
 
 export default function HistorialTab({ logs }) {
-    const [fu, setFu] = useState("Todos");
     const [ft, setFt] = useState("Todos");
 
-    const types = [...new Set(logs.map(l => l.type))];
-    const filtered = logs.filter(l => (fu === "Todos" || l.user === fu) && (ft === "Todos" || l.type === ft)).sort((a, b) => b.ts.localeCompare(a.ts));
+    // Extraemos los tipos únicos que hay en los logs actuales
+    const types = [...new Set(logs.map(l => l.tipo).filter(Boolean))];
+
+    // Filtramos y ordenamos por created_at (asegurando que exista)
+    const filtered = logs
+        .filter(l => ft === "Todos" || l.tipo === ft)
+        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
     const Sel = ({ val, set, opts }) => (
         <select value={val} onChange={e => set(e.target.value)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${G.border}`, borderRadius: 8, color: G.purpleHi, fontSize: 11, padding: "6px 12px", fontFamily: "sans-serif" }}>
@@ -27,28 +31,9 @@ export default function HistorialTab({ logs }) {
                     <div style={{ fontSize: 20, color: G.white, fontFamily: "Georgia,serif" }}>Historial de cambios</div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                    <Sel val={fu} set={setFu} opts={["Todos", ...USERS.map(u => u.name)]} />
                     <Sel val={ft} set={setFt} opts={["Todos", ...types]} />
                     <span style={{ fontSize: 10, color: G.dimmed, fontFamily: "sans-serif", alignSelf: "center" }}>{filtered.length} registros</span>
                 </div>
-            </div>
-
-            <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
-                {USERS.map(u => {
-                    const ul = logs.filter(l => l.user === u.name);
-                    return (
-                        <div key={u.id} style={{ ...css.card, padding: "14px 18px", minWidth: 130 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                                <div style={{ width: 28, height: 28, borderRadius: 20, background: G.gPurple, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                    <span style={{ fontSize: 11, color: G.white, fontWeight: 700 }}>{u.name[0]}</span>
-                                </div>
-                                <span style={{ fontSize: 12, color: G.white, fontFamily: "sans-serif", fontWeight: 600 }}>{u.name}</span>
-                            </div>
-                            <GText g={G.gViolet} size={20} weight={800}>{ul.length}</GText>
-                            <div style={{ fontSize: 9, color: G.dimmed, fontFamily: "sans-serif", textTransform: "uppercase", letterSpacing: 1 }}>cambios</div>
-                        </div>
-                    );
-                })}
             </div>
 
             {filtered.length === 0
@@ -57,18 +42,15 @@ export default function HistorialTab({ logs }) {
                     {filtered.map(l => (
                         <div key={l.id} style={{ ...css.card, padding: "14px 18px", display: "flex", gap: 12 }}>
                             <div style={{ width: 34, height: 34, borderRadius: 20, background: G.gPurple, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                <span style={{ fontSize: 12, color: G.white, fontWeight: 700 }}>{l.user[0]}</span>
+                                <span style={{ fontSize: 12, color: G.white, fontWeight: 700 }}>{l.tipo ? l.tipo[0].toUpperCase() : '*'}</span>
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 4 }}>
-                                    <span style={{ fontSize: 12, color: G.white, fontFamily: "sans-serif", fontWeight: 700 }}>{l.user}</span>
-                                    <span style={{ fontSize: 8, color: G.dimmed, fontFamily: "sans-serif", border: `1px solid ${G.border}`, borderRadius: 3, padding: "1px 6px" }}>{l.role}</span>
-                                    <GText g={typeG(l.type)} size={8} style={{ border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase", letterSpacing: 1 }}>{l.type}</GText>
-                                    {l.mes && <span style={{ fontSize: 9, color: G.purple, fontFamily: "sans-serif" }}>· {l.mes}</span>}
-                                    <span style={{ fontSize: 9, color: G.muted, fontFamily: "monospace", marginLeft: "auto" }}>{fmtDate(l.ts)}</span>
+                                    <span style={{ fontSize: 12, color: G.white, fontFamily: "sans-serif", fontWeight: 700 }}>Sistema</span>
+                                    <GText g={typeG(l.tipo)} size={8} style={{ border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase", letterSpacing: 1 }}>{l.tipo}</GText>
+                                    <span style={{ fontSize: 9, color: G.muted, fontFamily: "monospace", marginLeft: "auto" }}>{l.created_at ? fmtDate(l.created_at) : 'Sin fecha'}</span>
                                 </div>
-                                <div style={{ fontSize: 12, color: G.muted, fontFamily: "sans-serif", lineHeight: 1.5 }}>{l.desc}</div>
-                                {l.pieceTitulo && <div style={{ fontSize: 10, color: G.dimmed, fontFamily: "sans-serif", marginTop: 3 }}>📄 {l.pieceTitulo}</div>}
+                                <div style={{ fontSize: 12, color: G.muted, fontFamily: "sans-serif", lineHeight: 1.5 }}>{l.descripcion}</div>
                             </div>
                         </div>
                     ))}
