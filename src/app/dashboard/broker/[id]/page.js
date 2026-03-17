@@ -78,7 +78,9 @@ export default function BrokerDashboard({ params }) {
                 ...p,
                 copy: p.cuerpo || "",
                 linkRecursos: p.recursos_url || "",
+                linkFinal: p.link_final || "",
                 ctaDm: p.cta_dm || "",
+                fechaProg: p.fecha_prog || "",
                 anotaciones: parsedAnotaciones
             };
         });
@@ -139,7 +141,9 @@ export default function BrokerDashboard({ params }) {
         const { data, error } = await supabase.from('piezas_banco').update({
             titulo: pieza.titulo, hook: pieza.hook, fase: pieza.fase, formato: pieza.formato,
             avatar: pieza.avatar, dolor: pieza.dolor, cta_dm: pieza.ctaDm, estado: pieza.estado,
-            cuerpo: pieza.copy, recursos_url: pieza.linkRecursos, anotaciones: JSON.stringify(pieza.anotaciones || [])
+            cuerpo: pieza.copy, recursos_url: pieza.linkRecursos, link_final: pieza.linkFinal,
+            anotaciones: JSON.stringify(pieza.anotaciones || []),
+            fecha_prog: pieza.fechaProg || null
         }).eq('id', pieza.id).select().single();
 
         if (error) { toast("Error al guardar pieza", "error"); return; }
@@ -155,12 +159,13 @@ export default function BrokerDashboard({ params }) {
             broker_id: brokerId,
             titulo: pieza.titulo, hook: pieza.hook, fase: pieza.fase, formato: pieza.formato,
             avatar: pieza.avatar, dolor: pieza.dolor, cta_dm: pieza.ctaDm, estado: pieza.estado || 'En cola',
-            cuerpo: pieza.copy || "", recursos_url: pieza.linkRecursos || "", anotaciones: "[]"
+            cuerpo: pieza.copy || "", recursos_url: pieza.linkRecursos || "", link_final: pieza.linkFinal || "",
+            fecha_prog: pieza.fechaProg || null, anotaciones: "[]"
         };
         const { data, error } = await supabase.from('piezas_banco').insert(insertData).select().single();
         if (error) { toast("Error al agregar pieza", "error"); return; }
 
-        setPiezas(ps => [...ps, { ...pieza, id: data.id, anotaciones: [], copy: pieza.copy || "", linkRecursos: pieza.linkRecursos || "" }]);
+        setPiezas(ps => [...ps, { ...pieza, id: data.id, anotaciones: [], copy: pieza.copy || "", linkRecursos: pieza.linkRecursos || "", linkFinal: pieza.linkFinal || "" }]);
         toast(`Pieza "${pieza.titulo}" agregada al Banco`);
         addLog("banco", `Agregó pieza: "${pieza.titulo}"`, data.id);
     };
@@ -222,12 +227,13 @@ export default function BrokerDashboard({ params }) {
             formato: piezaData.formato,
             estado: 'En cola',
             cuerpo: piezaData.copy || "",
+            fecha_prog: piezaData.fechaProg || null,
             anotaciones: "[]"
         };
         const { data, error } = await supabase.from('piezas_banco').insert(insertData).select().single();
         if (error) { toast("Error al crear borrador", "error"); return; }
 
-        const nuevaPieza = { ...piezaData, id: data.id, origen: 'secuencia', anotaciones: [], copy: piezaData.copy || "", linkRecursos: "" };
+        const nuevaPieza = { ...piezaData, id: data.id, origen: 'secuencia', anotaciones: [], copy: piezaData.copy || "", linkRecursos: "", linkFinal: "", fechaProg: piezaData.fechaProg || "" };
         setPiezas(ps => [...ps, nuevaPieza]);
 
         // Update secuencias state with bancoPiezaId
