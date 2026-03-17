@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { G, css, ESTADOS_PIEZA, estadoColor, faseColor, FORMATOS, FORMATO_ICON, fmtDate, uid } from "@/lib/constants";
+import { G, css, ESTADOS_PIEZA, estadoColor, FASES, faseColor, FORMATOS, FORMATO_ICON, fmtDate, uid } from "@/lib/constants";
 
 function AnotacionInput({ onAdd }) {
     const [texto, setTexto] = useState("");
@@ -46,8 +46,11 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
             <div style={{ background: "#0E0E24", border: `1px solid ${G.borderHi}`, borderRadius: 20, width: 600, maxWidth: "100%", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 0 60px rgba(124,58,237,0.2)" }}>
                 <div style={{ padding: "20px 24px", borderBottom: `1px solid ${G.border}`, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div>
-                        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                            <span style={css.tag(faseColor(piece.fase))}>{piece.fase}</span>
+                        <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
+                            <select value={form.fase || ""} onChange={e => f("fase", e.target.value)} disabled={isViewer}
+                                style={{ ...css.input, padding: "2px 8px", fontSize: 10, height: 22, borderRadius: 6, fontWeight: 700, color: G.white, width: "auto" }}>
+                                {FASES.map(f => <option key={f} value={f}>{f}</option>)}
+                            </select>
                             <span style={{ fontSize: 9, color: G.muted, fontFamily: "sans-serif", alignSelf: "center" }}>#{piece.num}</span>
                         </div>
                         <div style={{ fontSize: 16, color: G.white, fontFamily: "Georgia,serif", lineHeight: 1.3 }}>{piece.titulo}</div>
