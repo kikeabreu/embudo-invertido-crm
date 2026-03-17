@@ -42,11 +42,11 @@ export default function HistorialTab({ logs }) {
                     {filtered.map(l => (
                         <div key={l.id} style={{ ...css.card, padding: "14px 18px", display: "flex", gap: 12 }}>
                             <div style={{ width: 34, height: 34, borderRadius: 20, background: G.gPurple, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                <span style={{ fontSize: 12, color: G.white, fontWeight: 700 }}>{l.tipo ? l.tipo[0].toUpperCase() : '*'}</span>
+                                <span style={{ fontSize: 12, color: G.white, fontWeight: 700 }}>{l.actor_nombre ? l.actor_nombre[0].toUpperCase() : (l.tipo ? l.tipo[0].toUpperCase() : '*')}</span>
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 4 }}>
-                                    <span style={{ fontSize: 12, color: G.white, fontFamily: "sans-serif", fontWeight: 700 }}>Sistema</span>
+                                    <span style={{ fontSize: 12, color: G.white, fontFamily: "sans-serif", fontWeight: 700 }}>{l.actor_nombre || 'Sistema'}</span>
                                     <GText g={typeG(l.tipo)} size={8} style={{ border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 3, padding: "1px 6px", textTransform: "uppercase", letterSpacing: 1 }}>{l.tipo}</GText>
                                     <span style={{ fontSize: 9, color: G.muted, fontFamily: "monospace", marginLeft: "auto" }}>{l.created_at ? fmtDate(l.created_at) : 'Sin fecha'}</span>
                                 </div>

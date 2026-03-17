@@ -107,7 +107,14 @@ export default function BrokerDashboard({ params }) {
 
     // Helpers para actualizar Supabase
     const addLog = async (tipo, descripcion, pieza_id = null) => {
-        const { data, error } = await supabase.from('logs').insert({ broker_id: brokerId, tipo, descripcion, pieza_id }).select('*').single();
+        const actor = currentUser?.nombre || currentUser?.email || 'Sistema';
+        const { data, error } = await supabase.from('logs').insert({
+            broker_id: brokerId,
+            tipo,
+            descripcion,
+            pieza_id,
+            actor_nombre: actor
+        }).select('*').single();
         if (data) setLogs(prev => [data, ...prev].slice(0, 200));
     };
 
