@@ -99,10 +99,11 @@ export default function BrokerDashboard({ params }) {
         TABS.push({ k: "admin", l: "⚙️ Admin" });
     }
 
-    const isViewer = currentUser?.rol === 'Broker' && currentUser.id !== brokerId; // Simplify role logic later or adhere to db schema
+    const isViewer = currentUser?.rol === 'Broker' && currentUser.id !== brokerId;
     const isAdmin = currentUser?.rol === 'Admin';
-    const canEdit = isAdmin || currentUser?.id === brokerId;
-    const canDelete = isAdmin;
+    const isEquipo = currentUser?.rol === 'Equipo';
+    const canEdit = isAdmin || isEquipo || currentUser?.id === brokerId;
+    const canDelete = isAdmin || isEquipo;
 
     // Helpers para actualizar Supabase
     const addLog = async (tipo, descripcion, pieza_id = null) => {

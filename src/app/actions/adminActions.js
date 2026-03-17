@@ -9,6 +9,7 @@ export async function createBrokerAction(formData) {
     const password = formData.get('password');
     const precio = formData.get('precio_pactado');
     const corte = formData.get('fecha_corte');
+    const rol = formData.get('rol') || 'Broker';
 
     if (!email || !password || !nombre) {
         return { error: 'Faltan campos obligatorios' };
@@ -37,7 +38,7 @@ export async function createBrokerAction(formData) {
             id: newUserId,
             nombre,
             email,
-            rol: 'Broker',
+            rol: rol,
             precio_pactado: parseFloat(precio) || 0.00,
             fecha_corte: corte || null,
             estado_pago: 'Pendiente'

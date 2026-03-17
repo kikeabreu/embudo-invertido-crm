@@ -18,7 +18,8 @@ function AdminCreateModal({ onClose, onSuccess }) {
         email: "",
         password: "",
         precio_pactado: "",
-        fecha_corte: ""
+        fecha_corte: "",
+        rol: "Broker"
     });
 
     const handleSubmit = async (e) => {
@@ -57,16 +58,25 @@ function AdminCreateModal({ onClose, onSuccess }) {
                         <label style={css.label}>Contraseña Temporal</label>
                         <input required type="text" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} style={css.input} placeholder="Minimo 6 caracteres" />
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                        <div>
-                            <label style={css.label}>Precio Pactado ($)</label>
-                            <input type="number" step="0.01" value={form.precio_pactado} onChange={e => setForm({ ...form, precio_pactado: e.target.value })} style={css.input} placeholder="500.00" />
-                        </div>
-                        <div>
-                            <label style={css.label}>Fecha de Corte</label>
-                            <input type="date" value={form.fecha_corte} onChange={e => setForm({ ...form, fecha_corte: e.target.value })} style={{ ...css.input, colorScheme: "dark" }} />
-                        </div>
+                    <div>
+                        <label style={css.label}>Tipo de Cuenta</label>
+                        <select value={form.rol} onChange={e => setForm({ ...form, rol: e.target.value })} style={css.input}>
+                            <option value="Broker">Cliente (Broker)</option>
+                            <option value="Equipo">Miembro del Equipo (Top Seller)</option>
+                        </select>
                     </div>
+                    {form.rol === 'Broker' && (
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                            <div>
+                                <label style={css.label}>Precio Pactado ($)</label>
+                                <input type="number" step="0.01" value={form.precio_pactado} onChange={e => setForm({ ...form, precio_pactado: e.target.value })} style={css.input} placeholder="500.00" />
+                            </div>
+                            <div>
+                                <label style={css.label}>Fecha de Corte</label>
+                                <input type="date" value={form.fecha_corte} onChange={e => setForm({ ...form, fecha_corte: e.target.value })} style={{ ...css.input, colorScheme: "dark" }} />
+                            </div>
+                        </div>
+                    )}
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
                         <button type="button" onClick={onClose} disabled={loading} style={{ background: "transparent", color: G.muted, border: "none", cursor: "pointer", fontSize: 13 }}>Cancelar</button>
                         <button type="submit" disabled={loading} style={css.btn(G.gPurple)}>{loading ? "Creando..." : "Crear Cuenta"}</button>
@@ -141,8 +151,12 @@ export default function DashboardHome() {
         setUser({ ...session.user, ...profile });
 
         let query = supabase.from('usuarios').select('*').order('created_at', { ascending: false });
-        if (profile?.rol !== 'Admin') {
+        if (profile?.rol !== 'Admin' && profile?.rol !== 'Equipo') {
+            // Un Broker estándar solo se ve a sí mismo
             query = query.eq('id', session.user.id);
+        } else if (profile?.rol === 'Equipo') {
+            // El Equipo ve todos, podemos filtrar opcionalmente solo brokers o a todos.
+            // Por ahora, mostrará todos a los que tenga permiso de lectura (RLS nos asiste).
         }
 
         const { data: brokerList } = await query;
