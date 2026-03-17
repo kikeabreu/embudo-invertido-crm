@@ -41,7 +41,11 @@ const uploadToDrive = async (file, onProgress) => {
         body: JSON.stringify(metadata)
     });
 
-    if (!initRes.ok) throw new Error("Error iniciando subida");
+    if (!initRes.ok) {
+        const errorText = await initRes.text();
+        console.error("Error from Drive INIT:", errorText);
+        throw new Error("Error iniciando subida: " + errorText);
+    }
     const location = initRes.headers.get('Location');
 
     // 3. Subir archivo usando XMLHttpRequest para medir progreso
