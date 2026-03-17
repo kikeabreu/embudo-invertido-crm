@@ -71,8 +71,18 @@ export default function BrokerDashboard({ params }) {
 
         // 3. Cargar Piezas
         const { data: pz } = await supabase.from('piezas_banco').select('*').eq('broker_id', brokerId);
-        // Usamos datos extra en un JSON o los mapeamos si son idénticos
-        setPiezas(pz || []);
+        const mappedPiezas = (pz || []).map(p => {
+            let parsedAnotaciones = [];
+            try { parsedAnotaciones = JSON.parse(p.anotaciones || '[]'); } catch (e) { }
+            return {
+                ...p,
+                copy: p.cuerpo || "",
+                linkRecursos: p.recursos_url || "",
+                ctaDm: p.cta_dm || "",
+                anotaciones: parsedAnotaciones
+            };
+        });
+        setPiezas(mappedPiezas);
 
         // 4. Cargar Logs
         const { data: lgs } = await supabase.from('logs').select('*').eq('broker_id', brokerId).order('created_at', { ascending: false }).limit(200);
@@ -150,7 +160,7 @@ export default function BrokerDashboard({ params }) {
         const { data, error } = await supabase.from('piezas_banco').insert(insertData).select().single();
         if (error) { toast("Error al agregar pieza", "error"); return; }
 
-        setPiezas(ps => [...ps, { ...pieza, id: data.id }]);
+        setPiezas(ps => [...ps, { ...pieza, id: data.id, anotaciones: [], copy: pieza.copy || "", linkRecursos: pieza.linkRecursos || "" }]);
         toast(`Pieza "${pieza.titulo}" agregada al Banco`);
         addLog("banco", `Agregó pieza: "${pieza.titulo}"`, data.id);
     };
@@ -217,7 +227,7 @@ export default function BrokerDashboard({ params }) {
         const { data, error } = await supabase.from('piezas_banco').insert(insertData).select().single();
         if (error) { toast("Error al crear borrador", "error"); return; }
 
-        const nuevaPieza = { ...piezaData, id: data.id, origen: 'secuencia' };
+        const nuevaPieza = { ...piezaData, id: data.id, origen: 'secuencia', anotaciones: [], copy: piezaData.copy || "", linkRecursos: "" };
         setPiezas(ps => [...ps, nuevaPieza]);
 
         // Update secuencias state with bancoPiezaId
@@ -248,7 +258,7 @@ export default function BrokerDashboard({ params }) {
         const { data, error } = await supabase.from('piezas_banco').insert(insertData).select().single();
         if (error) { toast("Error al enviar historia", "error"); return; }
 
-        const nuevaPieza = { id: data.id, titulo: insertData.titulo, fase: insertData.fase, estado: insertData.estado };
+        const nuevaPieza = { id: data.id, titulo: insertData.titulo, fase: insertData.fase, estado: insertData.estado, origen: 'secuencia', anotaciones: [], copy: historia.copy || "", linkRecursos: historia.linkEvidencia || "", hook: insertData.hook, formato: insertData.formato };
         setPiezas(ps => [...ps, nuevaPieza]);
 
         // Update secuencias state
