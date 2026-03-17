@@ -21,6 +21,112 @@ function AnotacionInput({ onAdd }) {
     );
 }
 
+const uploadToDrive = async (file, onProgress) => {
+    // 1. Obtener token del backend
+    const res = await fetch('/api/drive-token');
+    if (!res.ok) throw new Error("Error obteniendo token");
+    const { token, folderId } = await res.json();
+
+    const metadata = { name: file.name, parents: [folderId] };
+
+    // 2. Iniciar sesión Resumable
+    const initRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-Upload-Content-Type': file.type || 'application/octet-stream',
+            'X-Upload-Content-Length': file.size.toString()
+        },
+        body: JSON.stringify(metadata)
+    });
+
+    if (!initRes.ok) throw new Error("Error iniciando subida");
+    const location = initRes.headers.get('Location');
+
+    // 3. Subir archivo usando XMLHttpRequest para medir progreso
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', location, true);
+        xhr.upload.onprogress = e => {
+            if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
+        };
+        xhr.onload = async () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                const data = JSON.parse(xhr.responseText);
+                try {
+                    // Hacer público el archivo
+                    await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role: 'reader', type: 'anyone' })
+                    });
+                    // Obtener link
+                    const urlRes = await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}?fields=webViewLink`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const urlData = await urlRes.json();
+                    resolve(urlData.webViewLink);
+                } catch (err) {
+                    console.error("Error asignando permisos públicos:", err);
+                    resolve(`https://drive.google.com/file/d/${data.id}/view`);
+                }
+            } else {
+                reject(new Error("Error subiendo el archivo"));
+            }
+        };
+        xhr.onerror = () => reject(new Error("Error de red"));
+        xhr.send(file);
+    });
+};
+
+function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast }) {
+    const [uploading, setUploading] = useState(false);
+    const [progress, setProgress] = useState(0);
+
+    const handleFile = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploading(true);
+        setProgress(0);
+        try {
+            const url = await uploadToDrive(file, setProgress);
+            onChange(url);
+            if (toast) toast("Archivo subido correctamente", "success");
+        } catch (err) {
+            console.error(err);
+            if (toast) toast("Error: No se pudo subir el archivo", "error");
+        } finally {
+            setUploading(false);
+            e.target.value = null; // reset input
+        }
+    };
+
+    return (
+        <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label style={css.label}>{label}</label>
+                {!readOnly && (
+                    <label style={{ cursor: "pointer", fontSize: 10, color: G.cyan, border: `1px solid ${G.cyan}44`, borderRadius: 4, padding: "2px 6px", background: G.cyan + "11", transition: "all 0.15s" }}>
+                        Subir archivo 📎
+                        <input type="file" style={{ display: "none" }} onChange={handleFile} disabled={uploading} />
+                    </label>
+                )}
+            </div>
+            {uploading ? (
+                <div style={{ marginTop: 6 }}>
+                    <div style={{ fontSize: 10, color: G.cyan, fontWeight: 600 }}>Subiendo... {progress}%</div>
+                    <div style={{ height: 4, background: G.border, borderRadius: 2, marginTop: 4, overflow: "hidden" }}>
+                        <div style={{ width: `${progress}%`, height: "100%", background: G.cyan, transition: "width 0.2s" }} />
+                    </div>
+                </div>
+            ) : (
+                <input value={value || ""} onChange={e => onChange(e.target.value)} readOnly={readOnly} placeholder={placeholder} style={{ ...css.input, opacity: readOnly ? 0.7 : 1, marginTop: 4 }} />
+            )}
+        </div>
+    );
+}
+
 function PieceTextArea({ value, onChange, label, rows = 3, placeholder = "", readOnly = false, locked = false }) {
     return (
         <div style={{ marginBottom: 14 }}>
@@ -107,11 +213,8 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
                     <PieceTextArea value={form.notasInternas} onChange={e => f("notasInternas", e.target.value)} label="Notas internas del equipo 🔒" rows={2} placeholder="Solo visible para Kike y Equipo..." readOnly={isViewer} locked={isViewer} />
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                        {[{ k: "linkRecursos", l: "Link de recursos" }, { k: "linkFinal", l: "Link diseño / video final" }].map(({ k, l }) => (
-                            <div key={k}>
-                                <label style={css.label}>{l}</label>
-                                <input value={form[k] || ""} onChange={e => f(k, e.target.value)} readOnly={isViewer} placeholder="https://..." style={{ ...css.input, opacity: isViewer ? 0.7 : 1 }} />
-                            </div>
+                        {[{ k: "linkRecursos", l: "Link de recursos (crudos)" }, { k: "linkFinal", l: "Link diseño / video final" }].map(({ k, l }) => (
+                            <FileUploadInput key={k} value={form[k]} onChange={v => f(k, v)} label={l} placeholder="URL o subir archivo..." readOnly={isViewer} toast={toast} />
                         ))}
                     </div>
 
