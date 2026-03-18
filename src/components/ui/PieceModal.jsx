@@ -89,17 +89,24 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
     const [progress, setProgress] = useState(0);
 
     const handleFile = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
         setUploading(true);
         setProgress(0);
         try {
-            const url = await uploadToDrive(file, setProgress);
-            onChange(url);
-            if (toast) toast("Archivo subido correctamente", "success");
+            let currentText = value ? value.trim() + "\n" : "";
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const url = await uploadToDrive(file, (p) => {
+                    setProgress(Math.round(((i * 100) + p) / files.length));
+                });
+                currentText += `📎 ${file.name}:\n${url}\n\n`;
+            }
+            onChange(currentText.trim());
+            if (toast) toast(files.length > 1 ? "Archivos subidos correctamente" : "Archivo subido correctamente", "success");
         } catch (err) {
             console.error(err);
-            if (toast) toast("Error: No se pudo subir el archivo", "error");
+            if (toast) toast("Error: No se pudieron subir los archivos", "error");
         } finally {
             setUploading(false);
             e.target.value = null; // reset input
@@ -112,8 +119,8 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
                 <label style={css.label}>{label}</label>
                 {!readOnly && (
                     <label style={{ cursor: "pointer", fontSize: 10, color: G.cyan, border: `1px solid ${G.cyan}44`, borderRadius: 4, padding: "2px 6px", background: G.cyan + "11", transition: "all 0.15s" }}>
-                        Subir archivo 📎
-                        <input type="file" style={{ display: "none" }} onChange={handleFile} disabled={uploading} />
+                        Subir archivos 📎
+                        <input type="file" multiple style={{ display: "none" }} onChange={handleFile} disabled={uploading} />
                     </label>
                 )}
             </div>
@@ -125,7 +132,8 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
                     </div>
                 </div>
             ) : (
-                <input value={value || ""} onChange={e => onChange(e.target.value)} readOnly={readOnly} placeholder={placeholder} style={{ ...css.input, opacity: readOnly ? 0.7 : 1, marginTop: 4 }} />
+                <textarea value={value || ""} onChange={e => onChange(e.target.value)} readOnly={readOnly} placeholder={placeholder}
+                    style={{ ...css.input, opacity: readOnly ? 0.7 : 1, marginTop: 4, minHeight: 60, resize: "vertical", fontSize: 11, fontFamily: "monospace", whiteSpace: "pre-wrap" }} />
             )}
         </div>
     );

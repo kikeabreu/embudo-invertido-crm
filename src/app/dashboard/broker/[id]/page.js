@@ -146,7 +146,11 @@ export default function BrokerDashboard({ params }) {
             fecha_prog: pieza.fechaProg || null
         }).eq('id', pieza.id).select().single();
 
-        if (error) { toast("Error al guardar pieza", "error"); return; }
+        if (error) {
+            console.error("Supabase error saving pieza:", error);
+            toast("Error al guardar pieza", "error");
+            return;
+        }
 
         setPiezas(ps => ps.map(p => p.id === pieza.id ? { ...p, ...pieza } : p));
         toast("Pieza guardada correctamente");
@@ -163,7 +167,11 @@ export default function BrokerDashboard({ params }) {
             fecha_prog: pieza.fechaProg || null, anotaciones: "[]"
         };
         const { data, error } = await supabase.from('piezas_banco').insert(insertData).select().single();
-        if (error) { toast("Error al agregar pieza", "error"); return; }
+        if (error) {
+            console.error("Supabase error adding pieza:", error);
+            toast("Error al agregar pieza", "error");
+            return;
+        }
 
         setPiezas(ps => [...ps, { ...pieza, id: data.id, anotaciones: [], copy: pieza.copy || "", linkRecursos: pieza.linkRecursos || "", linkFinal: pieza.linkFinal || "" }]);
         toast(`Pieza "${pieza.titulo}" agregada al Banco`);
@@ -231,7 +239,11 @@ export default function BrokerDashboard({ params }) {
             anotaciones: "[]"
         };
         const { data, error } = await supabase.from('piezas_banco').insert(insertData).select().single();
-        if (error) { toast("Error al crear borrador", "error"); return; }
+        if (error) {
+            console.error("Supabase error creating from secuencia:", error);
+            toast("Error al crear borrador", "error");
+            return;
+        }
 
         const nuevaPieza = { ...piezaData, id: data.id, origen: 'secuencia', anotaciones: [], copy: piezaData.copy || "", linkRecursos: "", linkFinal: "", fechaProg: piezaData.fechaProg || "" };
         setPiezas(ps => [...ps, nuevaPieza]);
