@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { G, css, uid, USERS, BANCO_TEMPLATE, mkLog } from "@/lib/constants";
 import { useToast, Toasts } from "@/components/ui/Toast";
-import { useConfirm } from "@/components/ui/Confirm";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import BrokerList from "@/components/BrokerList";
 import LoginScreen from "@/components/LoginScreen";
 import { GText, PBar } from "@/components/ui/UIUtils";

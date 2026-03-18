@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { G, css } from "@/lib/constants";
 

@@ -51,3 +51,14 @@ export const fmtDate = iso => { const d = new Date(iso); return `${d.toLocaleDat
 
 export const FORMATOS = ["Reel", "Carrusel", "Foto estática", "Historia", "Video largo (YouTube/IGTV)"];
 export const FORMATO_ICON = { "Reel": "🎬", "Carrusel": "🖼️", "Foto estática": "📷", "Historia": "⭕", "Video largo (YouTube/IGTV)": "▶️" };
+
+export const stor = async (op, key, val) => {
+    if (typeof window === "undefined") return null;
+    if (op === "get") {
+        const d = localStorage.getItem(key);
+        try { return d ? JSON.parse(d) : null; } catch (e) { return null; }
+    }
+    if (op === "set") localStorage.setItem(key, JSON.stringify(val));
+};
+
+export const mkLog = (u, b, m, t, d) => ({ id: uid(), ts: new Date().toISOString(), uName: u?.name || "Sistema", brokerName: b || "-", mesLabel: m || "-", tipo: t, desc: d });
