@@ -84,20 +84,62 @@ const uploadToDrive = async (file, onProgress) => {
     });
 };
 
-const renderTextWithLinks = (text) => {
+const renderPreviews = (text, onDelete) => {
     if (!text) return null;
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const parts = text.split(urlRegex);
+
+    const attachmentRegex = /📎 (.*?):\n(https?:\/\/[^\s]+)\n?/g;
+    const parts = [];
+    let lastIndex = 0;
+
+    let match;
+    while ((match = attachmentRegex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            parts.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+        }
+        parts.push({ type: 'attachment', filename: match[1], url: match[2], fullMatch: match[0] });
+        lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+        parts.push({ type: 'text', content: text.slice(lastIndex) });
+    }
+
     return parts.map((part, i) => {
-        if (part.match(urlRegex)) {
+        if (part.type === 'text') {
+            const trimmed = part.content.trim();
+            if (!trimmed) return null;
+            return <div key={i} style={{ whiteSpace: "pre-wrap", marginBottom: 12, color: G.dimmed }}>{trimmed}</div>;
+        } else {
+            const isDrive = part.url.includes('drive.google.com/file/d/');
+            let iframeUrl = null;
+            let fileId = null;
+            if (isDrive) {
+                const matchId = part.url.match(/\/file\/d\/([-_A-Za-z0-9]+)/);
+                if (matchId) {
+                    fileId = matchId[1];
+                    iframeUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                }
+            }
+
             return (
-                <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-                    style={{ color: G.cyan, textDecoration: "underline", wordBreak: "break-all" }}>
-                    {part}
-                </a>
+                <div key={i} style={{ marginBottom: 16, background: "rgba(255,255,255,0.02)", border: `1px solid ${G.border}`, borderRadius: 8, padding: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                        <a href={part.url} target="_blank" rel="noopener noreferrer" style={{ color: G.cyan, textDecoration: "none", fontSize: 11, fontWeight: 600, display: "flex", gap: 6, alignItems: "center" }}>
+                            📎 {part.filename}
+                        </a>
+                        {onDelete && (
+                            <button onClick={() => onDelete(part.fullMatch, fileId)} style={{ background: "rgba(239,68,68,0.1)", border: "none", color: G.red, fontSize: 10, padding: "4px 10px", borderRadius: 4, cursor: "pointer", fontWeight: "bold" }}>
+                                Borrar 🗑
+                            </button>
+                        )}
+                    </div>
+                    {iframeUrl ? (
+                        <iframe src={iframeUrl} width="100%" height="220" style={{ border: `1px solid ${G.borderHi}`, borderRadius: 6, background: "#000" }} allow="autoplay" allowFullScreen />
+                    ) : (
+                        <a href={part.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: G.muted, wordBreak: "break-all", background: "rgba(255,255,255,0.05)", padding: 8, borderRadius: 4, display: "block" }}>{part.url}</a>
+                    )}
+                </div>
             );
         }
-        return <span key={i}>{part}</span>;
     });
 };
 
@@ -112,7 +154,7 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
         setUploading(true);
         setProgress(0);
         try {
-            let currentText = value ? value.trim() + "\n" : "";
+            let currentText = value ? value.trim() + "\n\n" : "";
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const url = await uploadToDrive(file, (p) => {
@@ -131,6 +173,25 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
         }
     };
 
+    const handleDeleteLine = async (fullMatch, fileId) => {
+        if (!window.confirm("¿Seguro que deseas borrar este archivo? Se borrará también de Google Drive si es posible.")) return;
+        try {
+            if (fileId) {
+                setUploading(true);
+                setProgress(100);
+                await fetch('/api/drive-delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileId }) });
+                setUploading(false);
+            }
+            const newText = value.replace(fullMatch, "");
+            onChange(newText.trim());
+            if (toast) toast("Archivo borrado");
+        } catch (err) {
+            console.error(err);
+            if (toast) toast("Error al conectar con Drive", "error");
+            setUploading(false);
+        }
+    };
+
     return (
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -138,7 +199,7 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
                 <div style={{ display: "flex", gap: 6 }}>
                     {!readOnly && (
                         <button onClick={() => setIsEditing(!isEditing)} style={{ cursor: "pointer", fontSize: 10, color: isEditing ? G.white : G.muted, border: `1px solid ${isEditing ? G.borderHi : G.border}`, borderRadius: 4, padding: "2px 6px", background: isEditing ? "rgba(255,255,255,0.1)" : "transparent", transition: "all 0.15s" }}>
-                            {isEditing ? "Ver Links" : "Editar manual ✏️"}
+                            {isEditing ? "Ver Previews 👁" : "Editar manual ✏️"}
                         </button>
                     )}
                     {!readOnly && (
@@ -151,7 +212,7 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
             </div>
             {uploading ? (
                 <div style={{ marginTop: 6 }}>
-                    <div style={{ fontSize: 10, color: G.cyan, fontWeight: 600 }}>Subiendo... {progress}%</div>
+                    <div style={{ fontSize: 10, color: G.cyan, fontWeight: 600 }}>{progress < 100 ? `Subiendo... ${progress}%` : 'Procesando en Drive...'}</div>
                     <div style={{ height: 4, background: G.border, borderRadius: 2, marginTop: 4, overflow: "hidden" }}>
                         <div style={{ width: `${progress}%`, height: "100%", background: G.cyan, transition: "width 0.2s" }} />
                     </div>
@@ -161,8 +222,8 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
                     <textarea value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
                         style={{ ...css.input, marginTop: 4, minHeight: 60, resize: "vertical", fontSize: 11, fontFamily: "monospace", whiteSpace: "pre-wrap" }} />
                 ) : (
-                    <div style={{ ...css.input, marginTop: 4, minHeight: 60, fontSize: 11, fontFamily: "monospace", whiteSpace: "pre-wrap", overflowY: "auto", maxHeight: 150, background: "rgba(0,0,0,0.2)" }}>
-                        {value ? renderTextWithLinks(value) : <span style={{ color: G.dimmed, fontStyle: "italic" }}>{placeholder || "Vacío..."}</span>}
+                    <div style={{ ...css.input, marginTop: 4, minHeight: 60, fontSize: 11, fontFamily: "monospace", overflowY: "auto", maxHeight: 350, background: "rgba(0,0,0,0.2)", padding: value ? "12px 12px 0 12px" : 12 }}>
+                        {value ? renderPreviews(value, readOnly ? null : handleDeleteLine) : <span style={{ color: G.dimmed, fontStyle: "italic" }}>{placeholder || "Vacío..."}</span>}
                     </div>
                 )
             )}
