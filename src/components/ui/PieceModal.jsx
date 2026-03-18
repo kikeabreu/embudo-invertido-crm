@@ -84,9 +84,27 @@ const uploadToDrive = async (file, onProgress) => {
     });
 };
 
+const renderTextWithLinks = (text) => {
+    if (!text) return null;
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    return parts.map((part, i) => {
+        if (part.match(urlRegex)) {
+            return (
+                <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+                    style={{ color: G.cyan, textDecoration: "underline", wordBreak: "break-all" }}>
+                    {part}
+                </a>
+            );
+        }
+        return <span key={i}>{part}</span>;
+    });
+};
+
 function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast }) {
     const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [isEditing, setIsEditing] = useState(false);
 
     const handleFile = async (e) => {
         const files = Array.from(e.target.files);
@@ -117,12 +135,19 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <label style={css.label}>{label}</label>
-                {!readOnly && (
-                    <label style={{ cursor: "pointer", fontSize: 10, color: G.cyan, border: `1px solid ${G.cyan}44`, borderRadius: 4, padding: "2px 6px", background: G.cyan + "11", transition: "all 0.15s" }}>
-                        Subir archivos 📎
-                        <input type="file" multiple style={{ display: "none" }} onChange={handleFile} disabled={uploading} />
-                    </label>
-                )}
+                <div style={{ display: "flex", gap: 6 }}>
+                    {!readOnly && (
+                        <button onClick={() => setIsEditing(!isEditing)} style={{ cursor: "pointer", fontSize: 10, color: isEditing ? G.white : G.muted, border: `1px solid ${isEditing ? G.borderHi : G.border}`, borderRadius: 4, padding: "2px 6px", background: isEditing ? "rgba(255,255,255,0.1)" : "transparent", transition: "all 0.15s" }}>
+                            {isEditing ? "Ver Links" : "Editar manual ✏️"}
+                        </button>
+                    )}
+                    {!readOnly && (
+                        <label style={{ cursor: "pointer", fontSize: 10, color: G.cyan, border: `1px solid ${G.cyan}44`, borderRadius: 4, padding: "2px 6px", background: G.cyan + "11", transition: "all 0.15s" }}>
+                            Subir archivos 📎
+                            <input type="file" multiple style={{ display: "none" }} onChange={handleFile} disabled={uploading} />
+                        </label>
+                    )}
+                </div>
             </div>
             {uploading ? (
                 <div style={{ marginTop: 6 }}>
@@ -132,8 +157,14 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
                     </div>
                 </div>
             ) : (
-                <textarea value={value || ""} onChange={e => onChange(e.target.value)} readOnly={readOnly} placeholder={placeholder}
-                    style={{ ...css.input, opacity: readOnly ? 0.7 : 1, marginTop: 4, minHeight: 60, resize: "vertical", fontSize: 11, fontFamily: "monospace", whiteSpace: "pre-wrap" }} />
+                isEditing && !readOnly ? (
+                    <textarea value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+                        style={{ ...css.input, marginTop: 4, minHeight: 60, resize: "vertical", fontSize: 11, fontFamily: "monospace", whiteSpace: "pre-wrap" }} />
+                ) : (
+                    <div style={{ ...css.input, marginTop: 4, minHeight: 60, fontSize: 11, fontFamily: "monospace", whiteSpace: "pre-wrap", overflowY: "auto", maxHeight: 150, background: "rgba(0,0,0,0.2)" }}>
+                        {value ? renderTextWithLinks(value) : <span style={{ color: G.dimmed, fontStyle: "italic" }}>{placeholder || "Vacío..."}</span>}
+                    </div>
+                )
             )}
         </div>
     );
