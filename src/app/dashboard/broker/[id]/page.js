@@ -97,6 +97,13 @@ export default function BrokerDashboard({ params }) {
         return <div style={{ minHeight: "100vh", background: G.bg, display: "flex", alignItems: "center", justifyContent: "center", color: G.dimmed, fontFamily: "sans-serif", fontSize: 11, letterSpacing: 3 }}>CARGANDO...</div>;
     }
 
+    const isViewer = currentUser?.rol === 'Broker' && currentUser.id !== brokerId;
+    const isAdmin = currentUser?.rol === 'Admin';
+    const isEquipo = currentUser?.rol === 'Equipo';
+    const isBroker = currentUser?.rol === 'Broker';
+    const canEdit = isAdmin || isEquipo || currentUser?.id === brokerId;
+    const canDelete = isAdmin || isEquipo;
+
     const TABS = [
         { k: "banco", l: "📋 Banco" },
         { k: "secuencias", l: "📅 Secuencias" },
@@ -105,17 +112,22 @@ export default function BrokerDashboard({ params }) {
         { k: "oferta", l: "💎 Oferta" },
         { k: "analitica", l: "📊 Analítica" },
         { k: "historial", l: "🕐 Historial" },
-    ];
+    ].filter(t => {
+        if (t.k === "oferta" && isEquipo) return false;
+        if (t.k === "secuencias" && isBroker) return false;
+        return true;
+    });
 
-    if (currentUser?.rol === 'Admin') {
+    if (isAdmin) {
         TABS.push({ k: "admin", l: "⚙️ Admin" });
     }
 
-    const isViewer = currentUser?.rol === 'Broker' && currentUser.id !== brokerId;
-    const isAdmin = currentUser?.rol === 'Admin';
-    const isEquipo = currentUser?.rol === 'Equipo';
-    const canEdit = isAdmin || isEquipo || currentUser?.id === brokerId;
-    const canDelete = isAdmin || isEquipo;
+    // Asegurar que si el tab actual fue removido, regrese a banco
+    useEffect(() => {
+        if (!TABS.find(t => t.k === tab)) {
+            setTab("banco");
+        }
+    }, [currentUser, brokerId]);
 
     // Helpers para actualizar Supabase
     const addLog = async (tipo, descripcion, pieza_id = null) => {
