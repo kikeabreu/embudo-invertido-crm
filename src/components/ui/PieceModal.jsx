@@ -314,7 +314,7 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
 
                     <div style={{ fontSize: 8, letterSpacing: 3, color: G.dimmed, textTransform: "uppercase", fontFamily: "sans-serif", paddingBottom: 8, borderBottom: `1px solid ${G.border}`, marginBottom: 14 }}>Producción</div>
                     <PieceTextArea value={form.instrucciones} onChange={e => f("instrucciones", e.target.value)} label="Instrucciones de grabación / diseño" rows={3} placeholder="Ej: Grabar en locación, fondo neutro, ropa casual..." readOnly={isViewer} />
-                    <PieceTextArea value={form.notasInternas} onChange={e => f("notasInternas", e.target.value)} label="Notas internas del equipo 🔒" rows={2} placeholder="Solo visible para Kike y Equipo..." readOnly={isViewer} locked={isViewer} />
+                    <PieceTextArea value={form.notasInternas} onChange={e => f("notasInternas", e.target.value)} label="Notas internas del equipo 🔒" rows={2} placeholder="Solo visible para Kike y Equipo..." readOnly={isViewer} locked={userRole === 'Broker'} />
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                         {[{ k: "linkRecursos", l: "Link de recursos (crudos)" }, { k: "linkFinal", l: "Link diseño / video final" }].map(({ k, l }) => (

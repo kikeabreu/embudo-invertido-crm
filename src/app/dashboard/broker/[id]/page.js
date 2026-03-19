@@ -77,6 +77,9 @@ export default function BrokerDashboard() {
                 linkFinal: p.link_final || "",
                 ctaDm: p.cta_dm || "",
                 fechaProg: p.fecha_prog || "",
+                guion: p.guion || "",
+                instrucciones: p.instrucciones || "",
+                notasInternas: p.notas_internas || "",
                 anotaciones: parsedAnotaciones
             };
         });
@@ -143,6 +146,7 @@ export default function BrokerDashboard() {
             titulo: pieza.titulo, hook: pieza.hook, fase: pieza.fase, formato: pieza.formato,
             avatar: pieza.avatar, dolor: pieza.dolor, cta_dm: pieza.ctaDm, estado: pieza.estado,
             cuerpo: pieza.copy, recursos_url: pieza.linkRecursos, link_final: pieza.linkFinal,
+            guion: pieza.guion, instrucciones: pieza.instrucciones, notas_internas: pieza.notasInternas,
             anotaciones: JSON.stringify(pieza.anotaciones || []),
             fecha_prog: pieza.fechaProg || null
         }).eq('id', pieza.id);
@@ -157,7 +161,10 @@ export default function BrokerDashboard() {
         const insertData = {
             broker_id: brokerId,
             titulo: pieza.titulo, hook: pieza.hook, fase: pieza.fase, formato: pieza.formato,
+            avatar: pieza.avatar || "", dolor: pieza.dolor || "", cta_dm: pieza.ctaDm || "",
             estado: pieza.estado || 'En cola', cuerpo: pieza.copy || "", recursos_url: pieza.linkRecursos || "",
+            link_final: pieza.linkFinal || "", guion: pieza.guion || "", instrucciones: pieza.instrucciones || "",
+            notas_internas: pieza.notasInternas || "",
             fecha_prog: pieza.fechaProg || null, anotaciones: "[]"
         };
         const { data, error } = await supabase.from('piezas_banco').insert(insertData).select().single();
@@ -208,7 +215,8 @@ export default function BrokerDashboard() {
     const crearPiezaDesdeSecuencia = async (p, diaNum, cId) => {
         if (!canEdit) return;
         const { data, error } = await supabase.from('piezas_banco').insert({
-            broker_id: brokerId, titulo: p.titulo, hook: p.hook || p.titulo, fase: p.fase, formato: p.formato, estado: 'En cola', cuerpo: p.copy || ""
+            broker_id: brokerId, titulo: p.titulo, hook: p.hook || p.titulo, fase: p.fase, formato: p.formato, estado: 'En cola', cuerpo: p.copy || "",
+            guion: p.guion || "", instrucciones: p.instrucciones || "", notas_internas: p.notasInternas || ""
         }).select().single();
         if (error) return;
         setPiezas(ps => [...ps, { ...p, id: data.id, copy: p.copy || "" }]);
