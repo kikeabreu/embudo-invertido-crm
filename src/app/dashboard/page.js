@@ -9,7 +9,7 @@ import { GText } from "@/components/ui/UIUtils";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useToast, Toasts } from "@/components/ui/Toast";
 
-function AdminCreateModal({ onClose, onSuccess }) {
+function AdminCreateModal({ onClose, onSuccess, brokers }) {
     const [loading, setLoading] = useState(false);
     const { toasts, show: toast } = useToast();
 
@@ -19,7 +19,8 @@ function AdminCreateModal({ onClose, onSuccess }) {
         password: "",
         precio_pactado: "",
         fecha_corte: "",
-        rol: "Broker"
+        rol: "Broker",
+        parent_id: ""
     });
 
     const handleSubmit = async (e) => {
@@ -63,8 +64,20 @@ function AdminCreateModal({ onClose, onSuccess }) {
                         <select value={form.rol} onChange={e => setForm({ ...form, rol: e.target.value })} style={css.input}>
                             <option value="Broker">Cliente (Broker)</option>
                             <option value="Equipo">Miembro del Equipo (Top Seller)</option>
+                            <option value="Coordinador">Coordinador (Acceso a cliente)</option>
                         </select>
                     </div>
+                    {form.rol === 'Coordinador' && (
+                        <div>
+                            <label style={css.label}>Vincular a Cliente (Broker)</label>
+                            <select required value={form.parent_id} onChange={e => setForm({ ...form, parent_id: e.target.value })} style={css.input}>
+                                <option value="">Selecciona un cliente...</option>
+                                {brokers?.filter(b => b.rol === 'Broker').map(b => (
+                                    <option key={b.id} value={b.id}>{b.nombre || b.email}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                     {form.rol === 'Broker' && (
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                             <div>
@@ -160,7 +173,16 @@ export default function DashboardHome() {
         }
 
         const { data: brokerList } = await query;
-        setBrokers(brokerList || []);
+        const onlyBrokers = (brokerList || []).filter(b => b.rol === 'Broker');
+        setBrokers(onlyBrokers);
+
+        // Auto-redirección para roles que no deben ver la lista
+        if (profile?.rol === 'Broker') {
+            router.push(`/dashboard/broker/${profile.id}`);
+        } else if (profile?.rol === 'Coordinador' && profile.parent_id) {
+            router.push(`/dashboard/broker/${profile.parent_id}`);
+        }
+
         setLoading(false);
     };
 
@@ -196,6 +218,7 @@ export default function DashboardHome() {
                 <AdminCreateModal
                     onClose={() => setShowModal(false)}
                     onSuccess={() => { setShowModal(false); loadData(); }}
+                    brokers={brokers}
                 />
             )}
         </div>
