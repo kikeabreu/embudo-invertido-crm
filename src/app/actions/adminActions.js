@@ -68,11 +68,17 @@ export async function deleteBrokerAction(userId) {
             return { error: 'Falta la variable de entorno SUPABASE_SERVICE_ROLE_KEY' };
         }
 
-        // Al borrar el usuario de Auth, Supabase lo borra de `usuarios` por la relación de la llave foránea
-        const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+        // 1. Borrar de la tabla pública para limpiar dependencias y evitar errores de FK
+        const { error: dbError } = await supabaseAdmin.from('usuarios').delete().eq('id', userId);
+        if (dbError) {
+            return { error: 'Error al borrar perfil de base de datos: ' + dbError.message };
+        }
 
-        if (error) {
-            return { error: error.message };
+        // 2. Borrar de Auth (esto completa la eliminación total)
+        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+
+        if (authError) {
+            return { error: 'Error al borrar acceso de autenticación: ' + authError.message };
         }
 
         revalidatePath('/dashboard');
