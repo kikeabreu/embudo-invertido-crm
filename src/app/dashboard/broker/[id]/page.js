@@ -93,7 +93,8 @@ export default function BrokerDashboard() {
     const isAdmin = currentUser?.rol === 'Admin';
     const isEquipo = currentUser?.rol === 'Equipo';
     const isBroker = currentUser?.rol === 'Broker';
-    const canEdit = isAdmin || isEquipo || currentUser?.id === brokerId;
+    const isCoordinador = currentUser?.rol === 'Coordinador';
+    const canEdit = isAdmin || isEquipo || currentUser?.id === brokerId || (isCoordinador && currentUser?.parent_id === brokerId);
     const canDelete = isAdmin || isEquipo;
 
     const TABS = [
@@ -106,7 +107,7 @@ export default function BrokerDashboard() {
         { k: "historial", l: "🕐 Historial" },
     ].filter(t => {
         if (t.k === "oferta" && isEquipo) return false;
-        if (t.k === "secuencias" && (isBroker && currentUser?.id !== brokerId)) return false;
+        if (t.k === "secuencias" && (isBroker || isCoordinador)) return false;
         return true;
     });
     if (isAdmin) TABS.push({ k: "admin", l: "⚙️ Admin" });
