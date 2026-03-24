@@ -289,7 +289,63 @@ export default function BancoTab({ piezas = [], onSave, onAdd, onDelete, isViewe
                     ))}
                 </div>
                 <span style={{ fontSize: 10, color: G.dimmed, fontFamily: "sans-serif" }}>{filtered.length} piezas</span>
-                {!isViewer && <button onClick={() => setShowForm(v => !v)} style={{ ...css.btn(showForm ? undefined : G.gMagenta), fontSize: 11 }}>{showForm ? "Cancelar" : "+ Nueva pieza"}</button>}
+                {!isViewer && (
+                    <div style={{ display: "flex", gap: 6 }}>
+                        <button 
+                            onClick={() => {
+                                const template = `Genera un JSON con esta estructura (puedes hacer hasta 20 o 40 publicaciones):
+[
+  {
+    "titulo": "Título de la pieza",
+    "fase": "Atracción",
+    "formato": "Reel",
+    "fechaProg": "YYYY-MM-DD",
+    "hook": "El gancho...",
+    "copy": "El copy completo...",
+    "guion": "Estructura del vídeo...",
+    "instrucciones": "Notas de edición...",
+    "notasInternas": ""
+  }
+]`;
+                                navigator.clipboard.writeText(template);
+                                toast("Formato copiado. Pégalo en Claude.");
+                            }} 
+                            style={{ ...css.btn(), background: "rgba(255,255,255,0.05)", border: `1px solid ${G.border}`, fontSize: 11 }}
+                            title="Copiar formato para Claude"
+                        >
+                            📋 Formato
+                        </button>
+                        <button 
+                            onClick={() => document.getElementById('import-json').click()} 
+                            style={{ ...css.btn(), background: "rgba(255,255,255,0.05)", border: `1px solid ${G.border}`, fontSize: 11 }}
+                        >
+                            📥 Importar
+                        </button>
+                        <input 
+                            id="import-json" 
+                            type="file" 
+                            accept=".json" 
+                            style={{ display: "none" }} 
+                            onChange={e => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = (evt) => {
+                                    try {
+                                        const data = JSON.parse(evt.target.result);
+                                        if (!Array.isArray(data)) throw new Error("Debe ser un array de objetos");
+                                        onImport(data);
+                                        e.target.value = ""; // Reset
+                                    } catch (err) {
+                                        toast("Error al leer JSON: " + err.message, "error");
+                                    }
+                                };
+                                reader.readAsText(file);
+                            }}
+                        />
+                        <button onClick={() => setShowForm(v => !v)} style={{ ...css.btn(showForm ? undefined : G.gMagenta), fontSize: 11 }}>{showForm ? "Cancelar" : "+ Nueva pieza"}</button>
+                    </div>
+                )}
             </div>
 
             {showForm && (

@@ -180,10 +180,60 @@ export default function BrokerDashboard() {
         const ok = await confirm(`¿Eliminar esta pieza?`, `Acción irreversible.`, "Eliminar");
         if (!ok) return;
         const { error } = await supabase.from('piezas_banco').delete().eq('id', id);
-        if (error) { toast("Error al eliminar", "error"); return; }
-        setPiezas(ps => ps.filter(p => p.id !== id));
-        toast(`Pieza eliminada`, "warn");
-        addLog("eliminar", `Eliminó una pieza`);
+        if (!error) {
+            setPiezas(prev => prev.filter(p => p.id !== id));
+            addLog('Eliminación', `Se eliminó la pieza #${piezas.find(x => x.id === id)?.num}`);
+            toast("Pieza eliminada");
+        } else {
+            toast("Error al eliminar", "error");
+        }
+    };
+
+    const importPiezas = async (dataArray) => {
+        try {
+            const lastNum = piezas.length > 0 ? Math.max(...piezas.map(p => p.num || 0)) : 0;
+            const toInsert = dataArray.map((item, idx) => ({
+                broker_id: brokerId,
+                num: lastNum + idx + 1,
+                fase: item.fase || "Atracción",
+                estado: "En cola",
+                titulo: item.titulo || "Sin título",
+                hook: item.hook || "",
+                cuerpo: item.copy || "",
+                guion: item.guion || "",
+                instrucciones: item.instrucciones || "",
+                notas_internas: item.notasInternas || "",
+                fecha_prog: item.fechaProg || null,
+                formato: item.formato || "",
+                origen: "manual"
+            }));
+
+            const { data, error } = await supabase.from('piezas_banco').insert(toInsert).select('*');
+            if (error) throw error;
+
+            const mappedNew = (data || []).map(p => {
+                let parsedAnotaciones = [];
+                try { parsedAnotaciones = JSON.parse(p.anotaciones || '[]'); } catch (e) { }
+                return {
+                    ...p,
+                    copy: p.cuerpo || "",
+                    linkRecursos: p.recursos_url || "",
+                    linkFinal: p.link_final || "",
+                    ctaDm: p.cta_dm || "",
+                    fechaProg: p.fecha_prog || "",
+                    guion: p.guion || "",
+                    instrucciones: p.instrucciones || "",
+                    notasInternas: p.notasInternas || "",
+                    anotaciones: parsedAnotaciones
+                };
+            });
+
+            setPiezas(prev => [...prev, ...mappedNew]);
+            addLog('Importación', `Se importaron ${data.length} piezas masivamente`);
+            toast(`¡${data.length} piezas importadas con éxito!`);
+        } catch (err) {
+            toast("Error en importación: " + err.message, "error");
+        }
     };
 
     const toggleInstal = async (id) => {
@@ -249,7 +299,7 @@ export default function BrokerDashboard() {
 
     const renderTabContent = () => {
         switch (tab) {
-            case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onDelete={deletePieza} isViewer={isViewer} canEdit={canEdit} canDelete={canDelete} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} />;
+            case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onImport={importPiezas} onDelete={deletePieza} isViewer={isViewer} canEdit={canEdit} canDelete={canDelete} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} />;
             case "secuencias": return <SecuenciasTab data={secuencias} onSave={saveSecuencias} onCrearEnBanco={crearPiezaDesdeSecuencia} onEnviarHistoriaAlBanco={crearHistoriaEnBanco} isViewer={isViewer} toast={toast} />;
             case "instalacion": return <InstalacionTab data={{ vars, instalChecked }} vars={vars} onToggle={toggleInstal} onVarChange={updateVar} />;
             case "onboarding": return <OnboardingTab checked={onbChecked} onToggle={toggleOnb} mesLabel={"Mes Actual"} toast={toast} />;
