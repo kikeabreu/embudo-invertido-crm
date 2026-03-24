@@ -189,6 +189,30 @@ export default function BrokerDashboard() {
         }
     };
 
+    const bulkDeletePiezas = async (ids) => {
+        const ok = await confirm(`¿Eliminar ${ids.length} piezas?`, `Acción irreversible.`, "Eliminar Todas");
+        if (!ok) return;
+        const { error } = await supabase.from('piezas_banco').delete().in('id', ids);
+        if (!error) {
+            setPiezas(prev => prev.filter(p => !ids.includes(p.id)));
+            addLog('Eliminación Masiva', `Se eliminaron ${ids.length} piezas`);
+            toast(`${ids.length} piezas eliminadas`);
+        } else {
+            toast("Error al eliminar piezas", "error");
+        }
+    };
+
+    const bulkUpdatePiezas = async (ids, updates) => {
+        const { error } = await supabase.from('piezas_banco').update(updates).in('id', ids);
+        if (!error) {
+            setPiezas(prev => prev.map(p => ids.includes(p.id) ? { ...p, ...updates } : p));
+            addLog('Actualización Masiva', `Se actualizaron ${ids.length} piezas`);
+            toast(`${ids.length} piezas actualizadas`);
+        } else {
+            toast("Error al actualizar piezas", "error");
+        }
+    };
+
     const importPiezas = async (dataArray) => {
         try {
             const lastNum = piezas.length > 0 ? Math.max(...piezas.map(p => p.num || 0)) : 0;
@@ -312,7 +336,7 @@ export default function BrokerDashboard() {
 
     const renderTabContent = () => {
         switch (tab) {
-            case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onImport={importPiezas} onDelete={deletePieza} isViewer={isViewer} canEdit={canEdit} canDelete={canDelete} canImport={isAdmin || isEquipo} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} />;
+            case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onImport={importPiezas} onDelete={deletePieza} onBulkDelete={bulkDeletePiezas} onBulkUpdate={bulkUpdatePiezas} isViewer={isViewer} canEdit={canEdit} canDelete={canDelete} canImport={isAdmin || isEquipo} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} />;
             case "secuencias": return <SecuenciasTab data={secuencias} onSave={saveSecuencias} onCrearEnBanco={crearPiezaDesdeSecuencia} onEnviarHistoriaAlBanco={crearHistoriaEnBanco} isViewer={isViewer} toast={toast} />;
             case "instalacion": return <InstalacionTab data={{ vars, instalChecked }} vars={vars} onToggle={toggleInstal} onVarChange={updateVar} />;
             case "onboarding": return <OnboardingTab checked={onbChecked} onToggle={toggleOnb} mesLabel={"Mes Actual"} toast={toast} />;

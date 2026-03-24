@@ -13,7 +13,8 @@ function BancoSel({ val, set, opts }) {
     );
 }
 
-export default function BancoTab({ piezas = [], onSave, onAdd, onImport, onDelete, isViewer, canEdit, canDelete, canImport, logs = [], toast, userRole, brokerId }) {
+export default function BancoTab({ piezas = [], onSave, onAdd, onImport, onDelete, onBulkDelete, onBulkUpdate, isViewer, canEdit, canDelete, canImport, logs = [], toast, userRole, brokerId }) {
+    const [selectedIds, setSelectedIds] = useState([]);
     const [filterFase, setFilterFase] = useState("Todas");
     const [filterEst, setFilterEst] = useState("Todos");
     const [filterFormato, setFilterFormato] = useState("Todos");
@@ -27,13 +28,14 @@ export default function BancoTab({ piezas = [], onSave, onAdd, onImport, onDelet
     const [form, setForm] = useState({ fase: "Atracción", avatar: "", dolor: "", titulo: "", hook: "", ctaDm: "", formato: "", fechaProg: "" });
 
     const filtered = piezas
-        .filter(p =>
-            (filterFase === "Todas" || p.fase === filterFase) &&
-            (filterEst === "Todos" || p.estado === filterEst) &&
-            (filterFormato === "Todos" || p.formato === filterFormato) &&
-            (filterOrigen === "Todos" || p.origen === filterOrigen) &&
-            (!search || p.titulo?.toLowerCase().includes(search.toLowerCase()) || p.hook?.toLowerCase().includes(search.toLowerCase()) || p.copy?.toLowerCase().includes(search.toLowerCase()))
-        )
+        .filter(p => {
+            if (filterFase !== "Todas" && p.fase !== filterFase) return false;
+            if (filterEst !== "Todos" && p.estado !== filterEst) return false;
+            if (filterFormato !== "Todos" && p.formato !== filterFormato) return false;
+            if (filterOrigen !== "Todos" && p.origen !== filterOrigen) return false;
+            if (search && !(p.titulo?.toLowerCase().includes(search.toLowerCase()) || p.hook?.toLowerCase().includes(search.toLowerCase()) || p.copy?.toLowerCase().includes(search.toLowerCase()))) return false;
+            return true;
+        })
         .sort((a, b) => {
             if (sortBy === "fecha") {
                 if (!a.fechaProg && !b.fechaProg) return a.num - b.num;
@@ -42,6 +44,15 @@ export default function BancoTab({ piezas = [], onSave, onAdd, onImport, onDelet
             }
             return a.num - b.num;
         });
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === filtered.length) setSelectedIds([]);
+        else setSelectedIds(filtered.map(p => p.id));
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    };
 
     const byFase = FASES.map(f => ({ f, total: piezas.filter(p => p.fase === f).length, pub: piezas.filter(p => p.fase === f && p.estado === "Publicado").length }));
     const hoy = new Date();
@@ -52,20 +63,42 @@ export default function BancoTab({ piezas = [], onSave, onAdd, onImport, onDelet
     // ── Vista: LISTA ──────────────────────────────────────────────────────────
     const vistaListaJSX = (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", padding: "10px 16px", borderBottom: `1px solid ${G.border}`, background: G.bgCard, borderRadius: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+                    <input
+                        type="checkbox"
+                        checked={selectedIds.length > 0 && selectedIds.length === filtered.length}
+                        onChange={toggleSelectAll}
+                        style={{ width: 14, height: 14, cursor: "pointer" }}
+                    />
+                    <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase" }}>PIEZA</span>
+                </div>
+                <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 78, textAlign: "center" }}>FASE</span>
+                <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 92, textAlign: "center" }}>ESTADO</span>
+                <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 150, textAlign: "center" }}>FORMATO</span>
+                <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 76, textAlign: "center" }}>ACCIONES</span>
+            </div>
             {filtered.length === 0 && <div style={{ textAlign: "center", padding: 40, color: G.dimmed, fontFamily: "sans-serif", fontSize: 12 }}>Sin piezas que coincidan con los filtros.</div>}
             {filtered.map((p) => {
                 const pLogCount = logs.filter(l => l.pieceId === p.id).length;
                 const hasDetails = p.copy || p.guion || p.instrucciones;
                 const isFromSeq = p.origen === "secuencia";
                 const bc = isFromSeq ? G.cyan + "33" : G.border;
+                const isSel = selectedIds.includes(p.id);
                 return (
-                    <div key={p.id} style={{ ...css.card, padding: "12px 16px", display: "grid", gridTemplateColumns: "28px 78px 92px 1fr 150px 76px", gap: 10, alignItems: "center", cursor: "pointer", borderColor: bc, transition: "all 0.15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = G.borderHi; e.currentTarget.style.background = G.bgCardHover; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = bc; e.currentTarget.style.background = G.bgCard; }}>
+                    <div key={p.id} style={{ ...css.card, padding: "12px 16px", display: "grid", gridTemplateColumns: "30px 28px 78px 92px 1fr 140px 76px", gap: 10, alignItems: "center", cursor: "pointer", borderColor: isSel ? G.purple : bc, background: isSel ? "rgba(124,58,237,0.08)" : G.bgCard, transition: "0.2s" }}
+                        onClick={() => setEditPiece(p)}>
+                        <input 
+                            type="checkbox" 
+                            checked={isSel}
+                            onChange={(e) => { e.stopPropagation(); toggleSelect(p.id); }}
+                            onClick={e => e.stopPropagation()}
+                            style={{ width: 14, height: 14, cursor: "pointer" }}
+                        />
                         <span style={{ fontSize: 9, color: G.dimmed, fontFamily: "monospace" }}>#{p.num}</span>
                         <span style={css.tag(faseColor(p.fase))}>{p.fase}</span>
                         <span style={{ ...css.tag(estadoColor(p.estado)), borderRadius: 4 }}>{p.estado}</span>
-                        <div onClick={() => setEditPiece(p)}>
+                        <div>
                             <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 2 }}>
                                 <span style={{ fontSize: 12, color: G.white, fontFamily: "sans-serif", fontWeight: 600 }}>{p.titulo}</span>
                                 {isFromSeq && <span style={{ fontSize: 7, color: G.cyan, border: `1px solid ${G.cyan}33`, borderRadius: 3, padding: "1px 4px" }}>📅 Seq</span>}
@@ -84,8 +117,8 @@ export default function BancoTab({ piezas = [], onSave, onAdd, onImport, onDelet
                                 : <span style={{ ...css.tag(G.blue), fontSize: 7 }}>{p.avatar || "—"}</span>}
                         </div>
                         <div style={{ display: "flex", gap: 5, justifyContent: "flex-end" }}>
-                            <button onClick={() => setEditPiece(p)} style={{ background: "transparent", border: `1px solid ${G.border}`, borderRadius: 5, cursor: "pointer", color: G.purpleHi, fontSize: 10, padding: "3px 8px" }}>✎</button>
-                            {!isViewer && <button onClick={() => onDelete(p.id)} style={{ background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 5, cursor: "pointer", color: G.red, fontSize: 10, padding: "3px 8px", fontFamily: "sans-serif" }}>✕</button>}
+                            <button onClick={(e) => { e.stopPropagation(); setEditPiece(p); }} style={{ background: "transparent", border: `1px solid ${G.border}`, borderRadius: 5, cursor: "pointer", color: G.purpleHi, fontSize: 10, padding: "3px 8px" }}>✎</button>
+                            {!isViewer && <button onClick={(e) => { e.stopPropagation(); onDelete(p.id); }} style={{ background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 5, cursor: "pointer", color: G.red, fontSize: 10, padding: "3px 8px", fontFamily: "sans-serif" }}>✕</button>}
                         </div>
                     </div>
                 );
@@ -383,6 +416,68 @@ export default function BancoTab({ piezas = [], onSave, onAdd, onImport, onDelet
             {vista === "cards" && vistaCardsJSX}
             {vista === "kanban" && vistaKanbanJSX}
             {vista === "calendario" && vistaCalendarioJSX}
+            {selectedIds.length > 0 && (
+                <div style={{ 
+                    position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", 
+                    background: "#121232", border: `1px solid ${G.purple}`, borderRadius: 12, 
+                    padding: "12px 20px", display: "flex", alignItems: "center", gap: 16, 
+                    boxShadow: "0 10px 40px rgba(0,0,0,0.5)", zIndex: 1000,
+                    animation: "slideUp 0.3s ease-out"
+                }}>
+                    <style>{`
+                        @keyframes slideUp { from { transform: translate(-50%, 40px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+                    `}</style>
+                    <span style={{ fontSize: 12, color: G.white, fontWeight: 600 }}>{selectedIds.length} seleccionados</span>
+                    <div style={{ width: 1, height: 24, background: G.border }}></div>
+                    
+                    <div style={{ display: "flex", gap: 8 }}>
+                        <select 
+                            onChange={(e) => {
+                                if (!e.target.value) return;
+                                onBulkUpdate(selectedIds, { estado: e.target.value });
+                                setSelectedIds([]);
+                                e.target.value = "";
+                            }}
+                            style={{ ...css.input, width: "auto", fontSize: 11, padding: "5px 10px" }}
+                        >
+                            <option value="">Cambiar Estado...</option>
+                            {ESTADOS_PIEZA.map(e => <option key={e} value={e}>{e}</option>)}
+                        </select>
+
+                        <select 
+                            onChange={(e) => {
+                                if (!e.target.value) return;
+                                onBulkUpdate(selectedIds, { fase: e.target.value });
+                                setSelectedIds([]);
+                                e.target.value = "";
+                            }}
+                            style={{ ...css.input, width: "auto", fontSize: 11, padding: "5px 10px" }}
+                        >
+                            <option value="">Cambiar Fase...</option>
+                            {FASES.map(f => <option key={f} value={f}>{f}</option>)}
+                        </select>
+
+                        {canDelete && (
+                            <button 
+                                onClick={() => {
+                                    onBulkDelete(selectedIds);
+                                    setSelectedIds([]);
+                                }}
+                                style={{ ...css.btn(G.red), padding: "6px 14px", fontSize: 11 }}
+                            >
+                                🗑️ Eliminar
+                            </button>
+                        )}
+                        
+                        <button 
+                            onClick={() => setSelectedIds([])}
+                            style={{ ...css.btn("rgba(255,255,255,0.1)"), padding: "6px 14px", fontSize: 11 }}
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
