@@ -4,7 +4,7 @@ import { useState } from "react";
 import { G, css, USERS, fmtDate } from "@/lib/constants";
 import { GText } from "@/components/ui/UIUtils";
 
-export default function HistorialTab({ logs }) {
+export default function HistorialTab({ logs, onUndo, isViewer }) {
     const [ft, setFt] = useState("Todos");
 
     // Extraemos los tipos únicos que hay en los logs actuales
@@ -52,6 +52,24 @@ export default function HistorialTab({ logs }) {
                                 </div>
                                 <div style={{ fontSize: 12, color: G.muted, fontFamily: "sans-serif", lineHeight: 1.5 }}>{l.descripcion}</div>
                             </div>
+                            {onUndo && !isViewer && l.payload && Object.keys(l.payload).length > 0 && !l.tipo.startsWith('Undo:') && (
+                                <button 
+                                    onClick={() => onUndo(l)}
+                                    style={{ 
+                                        alignSelf: "center", background: "rgba(124,58,237,0.1)", 
+                                        border: `1px solid ${G.purple}33`, borderRadius: 6, 
+                                        color: G.purpleHi, fontSize: 10, padding: "6px 12px", 
+                                        cursor: "pointer", fontWeight: 600, transition: "0.2s" 
+                                    }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(124,58,237,0.2)"; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(124,58,237,0.1)"; }}
+                                >
+                                    ↩ Deshacer
+                                </button>
+                            )}
+                            {l.tipo.startsWith('Undo:') && (
+                                <span style={{ alignSelf: "center", fontSize: 10, color: G.dimmed, fontStyle: "italic" }}>Deshecho ✓</span>
+                            )}
                         </div>
                     ))}
                 </div>}

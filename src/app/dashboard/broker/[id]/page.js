@@ -128,12 +128,66 @@ export default function BrokerDashboard() {
 
     const isViewer = currentUser?.rol === 'Broker' && currentUser.id !== brokerId;
 
-    const addLog = async (tipo, descripcion, pieza_id = null) => {
+    const addLog = async (tipo, descripcion, pieza_id = null, payload = {}) => {
         const actor = currentUser?.nombre || currentUser?.email || 'Sistema';
         const { data, error } = await supabase.from('logs').insert({
-            broker_id: brokerId, tipo, descripcion, pieza_id, actor_nombre: actor
+            broker_id: brokerId, tipo, descripcion, pieza_id, actor_nombre: actor, payload
         }).select('*').single();
         if (data) setLogs(prev => [data, ...prev].slice(0, 200));
+    };
+
+    const undoAction = async (log) => {
+        if (!log.payload || Object.keys(log.payload).length === 0) {
+            toast("No hay datos para deshacer esta acción", "error");
+            return;
+        }
+
+        const { tipo, payload } = log;
+        try {
+            if (tipo === 'Eliminación') {
+                // Re-insertar pieza eliminada
+                const { data, error } = await supabase.from('piezas_banco').insert(payload).select().single();
+                if (error) throw error;
+                setPiezas(prev => [...prev, { ...data, anotaciones: JSON.parse(data.anotaciones || '[]') }]);
+                toast("Acción deshecha: Pieza restaurada");
+            } else if (tipo === 'Actualización') {
+                // Revertir a valores anteriores
+                const { error } = await supabase.from('piezas_banco').update(payload.prev).eq('id', payload.id);
+                if (error) throw error;
+                setPiezas(prev => prev.map(p => p.id === payload.id ? { ...p, ...payload.prev } : p));
+                toast("Acción deshecha: Valores restaurados");
+            } else if (tipo === 'Importación' || tipo === 'Importación Masiva') {
+                // Eliminar piezas importadas
+                const ids = payload.ids;
+                const { error } = await supabase.from('piezas_banco').delete().in('id', ids);
+                if (error) throw error;
+                setPiezas(prev => prev.filter(p => !ids.includes(p.id)));
+                toast(`Acción deshecha: ${ids.length} piezas eliminadas`);
+            } else if (tipo === 'Eliminación Masiva') {
+                // Re-insertar múltiples piezas
+                const { data, error } = await supabase.from('piezas_banco').insert(payload.items).select();
+                if (error) throw error;
+                setPiezas(prev => [...prev, ...data.map(d => ({ ...d, anotaciones: JSON.parse(d.anotaciones || '[]') }))]);
+                toast(`Acción deshecha: ${data.length} piezas restauradas`);
+            } else if (tipo === 'Actualización Masiva') {
+                // Revertir múltiples piezas
+                for (const item of payload.prevItems) {
+                    await supabase.from('piezas_banco').update(item).eq('id', item.id);
+                }
+                setPiezas(prev => prev.map(p => {
+                    const old = payload.prevItems.find(x => x.id === p.id);
+                    return old ? { ...p, ...old } : p;
+                }));
+                toast("Acción masiva deshecha");
+            }
+
+            // Eliminar el log de deshacer para evitar bucles (opcional, pero mejor marcarlo como 'Deshecho')
+            await supabase.from('logs').update({ tipo: 'Undo: ' + tipo, descripcion: 'DESHECHO: ' + log.descripcion }).eq('id', log.id);
+            setLogs(prev => prev.map(l => l.id === log.id ? { ...l, tipo: 'Undo: ' + tipo, decoded: true } : l));
+
+        } catch (err) {
+            toast("Error al deshacer: " + err.message, "error");
+        }
     };
 
     const updateBrokerConfig = async (column, value) => {
@@ -143,6 +197,7 @@ export default function BrokerDashboard() {
 
     const savePieza = async (pieza) => {
         if (!canEdit) return;
+        const old = piezas.find(p => p.id === pieza.id);
         const { error } = await supabase.from('piezas_banco').update({
             titulo: pieza.titulo, hook: pieza.hook, fase: pieza.fase, formato: pieza.formato,
             avatar: pieza.avatar, dolor: pieza.dolor, cta_dm: pieza.ctaDm, estado: pieza.estado,
@@ -154,7 +209,7 @@ export default function BrokerDashboard() {
         if (error) { toast("Error al guardar", "error"); return; }
         setPiezas(ps => ps.map(p => p.id === pieza.id ? { ...p, ...pieza } : p));
         toast("Pieza guardada");
-        addLog("banco", `Actualizó pieza: "${pieza.titulo}"`, pieza.id);
+        addLog("Actualización", `Actualizó pieza: "${pieza.titulo}"`, pieza.id, { id: pieza.id, prev: old });
     };
 
     const addPieza = async (pieza) => {
@@ -177,12 +232,13 @@ export default function BrokerDashboard() {
 
     const deletePieza = async (id) => {
         if (!canDelete) return;
+        const pieza = piezas.find(x => x.id === id);
         const ok = await confirm(`¿Eliminar esta pieza?`, `Acción irreversible.`, "Eliminar");
         if (!ok) return;
         const { error } = await supabase.from('piezas_banco').delete().eq('id', id);
         if (!error) {
             setPiezas(prev => prev.filter(p => p.id !== id));
-            addLog('Eliminación', `Se eliminó la pieza #${piezas.find(x => x.id === id)?.num}`);
+            addLog('Eliminación', `Se eliminó la pieza #${pieza?.num}`, null, pieza);
             toast("Pieza eliminada");
         } else {
             toast("Error al eliminar", "error");
@@ -190,12 +246,13 @@ export default function BrokerDashboard() {
     };
 
     const bulkDeletePiezas = async (ids) => {
+        const items = piezas.filter(p => ids.includes(p.id));
         const ok = await confirm(`¿Eliminar ${ids.length} piezas?`, `Acción irreversible.`, "Eliminar Todas");
         if (!ok) return;
         const { error } = await supabase.from('piezas_banco').delete().in('id', ids);
         if (!error) {
             setPiezas(prev => prev.filter(p => !ids.includes(p.id)));
-            addLog('Eliminación Masiva', `Se eliminaron ${ids.length} piezas`);
+            addLog('Eliminación Masiva', `Se eliminaron ${ids.length} piezas`, null, { items });
             toast(`${ids.length} piezas eliminadas`);
         } else {
             toast("Error al eliminar piezas", "error");
@@ -203,10 +260,11 @@ export default function BrokerDashboard() {
     };
 
     const bulkUpdatePiezas = async (ids, updates) => {
+        const prevItems = piezas.filter(p => ids.includes(p.id)).map(p => ({ ...p }));
         const { error } = await supabase.from('piezas_banco').update(updates).in('id', ids);
         if (!error) {
             setPiezas(prev => prev.map(p => ids.includes(p.id) ? { ...p, ...updates } : p));
-            addLog('Actualización Masiva', `Se actualizaron ${ids.length} piezas`);
+            addLog('Actualización Masiva', `Se actualizaron ${ids.length} piezas`, null, { ids, prevItems, updates });
             toast(`${ids.length} piezas actualizadas`);
         } else {
             toast("Error al actualizar piezas", "error");
@@ -266,7 +324,7 @@ export default function BrokerDashboard() {
             });
 
             setPiezas(prev => [...prev, ...mappedNew]);
-            addLog('Importación', `Se importaron ${data.length} piezas masivamente`);
+            addLog('Importación Masiva', `Se importaron ${data.length} piezas masivamente`, null, { ids: data.map(d => d.id) });
             toast(`¡${data.length} piezas importadas con éxito!`);
         } catch (err) {
             toast("Error en importación: " + err.message, "error");
@@ -342,7 +400,7 @@ export default function BrokerDashboard() {
             case "onboarding": return <OnboardingTab checked={onbChecked} onToggle={toggleOnb} mesLabel={"Mes Actual"} toast={toast} />;
             case "oferta": return <OfertaTab brokerId={brokerId} isViewer={isViewer} toast={toast} />;
             case "analitica": return <AnalyticsTab piezas={piezas} instalChecked={instalChecked} onbChecked={onbChecked} broker={broker} seqData={secuencias} />;
-            case "historial": return <HistorialTab logs={logs} />;
+            case "historial": return <HistorialTab logs={logs} onUndo={undoAction} isViewer={isViewer} />;
             case "admin": return isAdmin ? <AdminTab brokerId={brokerId} toast={toast} /> : null;
             default: return null;
         }
