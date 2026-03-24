@@ -23,14 +23,14 @@ ALTER TABLE public.piezas_banco ADD COLUMN IF NOT EXISTS instrucciones TEXT;
 ALTER TABLE public.piezas_banco ADD COLUMN IF NOT EXISTS notas_internas TEXT;
 ALTER TABLE public.piezas_banco ADD COLUMN IF NOT EXISTS anotaciones JSONB DEFAULT '[]';
 
--- 2. Actualizar Restricciones (Check Constraints) para que acepten los nombres actuales
+-- 2. Actualizar Restricciones (Check Constraints) para que acepten los nombres actuales y variantes comunes
 ALTER TABLE public.piezas_banco DROP CONSTRAINT IF EXISTS piezas_banco_fase_check;
 ALTER TABLE public.piezas_banco ADD CONSTRAINT piezas_banco_fase_check 
-CHECK (fase IN ('Atracción', 'Valor', 'Conversión', 'Adoctrinamiento', 'Venta'));
+CHECK (fase IN ('Atracción', 'Valor', 'Conversión', 'Adoctrinamiento', 'Venta', 'Atraer', 'Retener', 'Convertir'));
 
 ALTER TABLE public.piezas_banco DROP CONSTRAINT IF EXISTS piezas_banco_estado_check;
 ALTER TABLE public.piezas_banco ADD CONSTRAINT piezas_banco_estado_check 
-CHECK (estado IN ('En cola', 'Producción', 'Aprobado', 'Programado', 'Publicado', 'Revisar'));
+CHECK (estado IN ('En cola', 'Producción', 'Aprobado', 'Programado', 'Publicado', 'Revisar', 'Borrador'));
 
 -- 3. Limpiar nulos en columnas con default (opcional)
 UPDATE public.piezas_banco SET fase = 'Atracción' WHERE fase IS NULL;

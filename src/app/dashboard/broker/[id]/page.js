@@ -192,21 +192,34 @@ export default function BrokerDashboard() {
     const importPiezas = async (dataArray) => {
         try {
             const lastNum = piezas.length > 0 ? Math.max(...piezas.map(p => p.num || 0)) : 0;
-            const toInsert = dataArray.map((item, idx) => ({
-                broker_id: brokerId,
-                num: lastNum + idx + 1,
-                fase: item.fase || "Atracción",
-                estado: "En cola",
-                titulo: item.titulo || "Sin título",
-                hook: item.hook || "",
-                cuerpo: item.copy || "",
-                guion: item.guion || "",
-                instrucciones: item.instrucciones || "",
-                notas_internas: item.notasInternas || "",
-                fecha_prog: item.fechaProg || null,
-                formato: item.formato || "",
-                origen: "manual"
-            }));
+            const toInsert = dataArray.map((item, idx) => {
+                // Normalización de fase
+                let f = item.fase || "Atracción";
+                if (f === "Atraer") f = "Atracción";
+                if (f === "Retener") f = "Valor";
+                if (f === "Convertir") f = "Conversión";
+                
+                // Normalización de formato (Upper to Capitalized)
+                let fmt = item.formato || "Reel";
+                if (fmt.toUpperCase() === "REEL") fmt = "Reel";
+                if (fmt.toUpperCase() === "CARRUSEL" || fmt.includes("CARRUSEL")) fmt = "Carrusel";
+
+                return {
+                    broker_id: brokerId,
+                    num: lastNum + idx + 1,
+                    fase: f,
+                    estado: "En cola",
+                    titulo: item.titulo || "Sin título",
+                    hook: item.hook || "",
+                    cuerpo: item.copy || "",
+                    guion: item.guion || "",
+                    instrucciones: item.instrucciones || "",
+                    notas_internas: item.notasInternas || "",
+                    fecha_prog: item.fechaProg || null,
+                    formato: fmt,
+                    origen: "manual"
+                };
+            });
 
             const { data, error } = await supabase.from('piezas_banco').insert(toInsert).select('*');
             if (error) throw error;
