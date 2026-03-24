@@ -275,16 +275,24 @@ export default function BrokerDashboard() {
         try {
             const lastNum = piezas.length > 0 ? Math.max(...piezas.map(p => p.num || 0)) : 0;
             const toInsert = dataArray.map((item, idx) => {
-                // Normalización de fase
-                let f = item.fase || "Atracción";
-                if (f === "Atraer") f = "Atracción";
-                if (f === "Retener") f = "Valor";
-                if (f === "Convertir") f = "Conversión";
+                // Normalización robusta de fase
+                const rawFase = (item.fase || "").trim().toLowerCase();
+                let f = "Atracción"; // Default seguro
                 
-                // Normalización de formato (Upper to Capitalized)
-                let fmt = item.formato || "Reel";
-                if (fmt.toUpperCase() === "REEL") fmt = "Reel";
-                if (fmt.toUpperCase() === "CARRUSEL" || fmt.includes("CARRUSEL")) fmt = "Carrusel";
+                if (rawFase.includes("atra")) f = "Atracción";
+                else if (rawFase.includes("val") || rawFase.includes("rete") || rawFase.includes("nutri")) f = "Valor";
+                else if (rawFase.includes("conv") || rawFase.includes("vent") || rawFase.includes("cierr")) f = "Conversión";
+                else if (rawFase.includes("adoc")) f = "Adoctrinamiento";
+                else if (rawFase.includes("vent") || rawFase.includes("prom")) f = "Venta";
+
+                // Normalización de formato
+                const rawFmt = (item.formato || "").trim().toLowerCase();
+                let fmt = "Reel";
+                if (rawFmt.includes("reel")) fmt = "Reel";
+                else if (rawFmt.includes("carru")) fmt = "Carrusel";
+                else if (rawFmt.includes("hist") || rawFmt.includes("story")) fmt = "Historia";
+                else if (rawFmt.includes("foto") || rawFmt.includes("estat")) fmt = "Foto estática";
+                else if (rawFmt.includes("vid") || rawFmt.includes("long")) fmt = "Video largo (YouTube/IGTV)";
 
                 return {
                     broker_id: brokerId,

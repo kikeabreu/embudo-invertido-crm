@@ -38,7 +38,7 @@ export const USERS = [
     { id: "u2", name: "Equipo", role: "Editor", password: "equipo123" },
     { id: "u3", name: "Cliente", role: "Viewer", password: "cliente123" },
 ];
-export const FASES = ["Atracción", "Valor", "Conversión"];
+export const FASES = ["Atracción", "Valor", "Conversión", "Adoctrinamiento", "Venta"];
 export const ESTADOS_PIEZA = ["En cola", "Producción", "Aprobado", "Programado", "Publicado"];
 
 export const estadoColor = e => ({ "En cola": G.muted, "Producción": G.orange, "Aprobado": G.blue, "Programado": G.cyan, "Publicado": G.green }[e] || G.muted);
