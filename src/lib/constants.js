@@ -38,12 +38,12 @@ export const USERS = [
     { id: "u2", name: "Equipo", role: "Editor", password: "equipo123" },
     { id: "u3", name: "Cliente", role: "Viewer", password: "cliente123" },
 ];
-export const FASES = ["Atracción", "Valor", "Conversión", "Adoctrinamiento", "Venta"];
+export const FASES = ["Atraer", "Retener", "Convertir"];
 export const ESTADOS_PIEZA = ["En cola", "Producción", "Aprobado", "Programado", "Publicado"];
 
 export const estadoColor = e => ({ "En cola": G.muted, "Producción": G.orange, "Aprobado": G.blue, "Programado": G.cyan, "Publicado": G.green }[e] || G.muted);
-export const faseColor = f => ({ Atracción: G.magenta, Valor: G.purple, Conversión: G.green }[f] || G.muted);
-export const faseGrad = f => ({ Atracción: G.gMagenta, Valor: G.gViolet, Conversión: G.gGreen }[f] || G.gPurple);
+export const faseColor = f => ({ "Atraer": G.magenta, "Retener": G.purple, "Convertir": G.green, "Atracción": G.magenta, "Valor": G.purple, "Conversión": G.green }[f] || G.muted);
+export const faseGrad = f => ({ "Atraer": G.gMagenta, "Retener": G.gViolet, "Convertir": G.gGreen, "Atracción": G.gMagenta, "Valor": G.gViolet, "Conversión": G.gGreen }[f] || G.gPurple);
 
 export const uid = () => Math.random().toString(36).slice(2, 9);
 export const pct = (d, t) => t ? Math.round(d / t * 100) : 0;

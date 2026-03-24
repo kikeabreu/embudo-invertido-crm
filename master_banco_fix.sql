@@ -26,14 +26,16 @@ ALTER TABLE public.piezas_banco ADD COLUMN IF NOT EXISTS anotaciones JSONB DEFAU
 -- 2. Actualizar Restricciones (Check Constraints) para que acepten los nombres actuales y variantes comunes
 ALTER TABLE public.piezas_banco DROP CONSTRAINT IF EXISTS piezas_banco_fase_check;
 ALTER TABLE public.piezas_banco ADD CONSTRAINT piezas_banco_fase_check 
-CHECK (fase IN ('Atracción', 'Valor', 'Conversión', 'Adoctrinamiento', 'Venta', 'Atraer', 'Retener', 'Convertir'));
+CHECK (fase IN ('Atraer', 'Retener', 'Convertir', 'Atracción', 'Valor', 'Conversión', 'Adoctrinamiento', 'Venta'));
 
 ALTER TABLE public.piezas_banco DROP CONSTRAINT IF EXISTS piezas_banco_estado_check;
 ALTER TABLE public.piezas_banco ADD CONSTRAINT piezas_banco_estado_check 
 CHECK (estado IN ('En cola', 'Producción', 'Aprobado', 'Programado', 'Publicado', 'Revisar', 'Borrador'));
 
 -- 3. Limpiar nulos en columnas con default (opcional)
-UPDATE public.piezas_banco SET fase = 'Atracción' WHERE fase IS NULL;
+UPDATE public.piezas_banco SET fase = 'Atraer' WHERE fase = 'Atracción' OR fase = 'Atraer';
+UPDATE public.piezas_banco SET fase = 'Retener' WHERE fase = 'Valor' OR fase = 'Adoctrinamiento' OR fase = 'Retener';
+UPDATE public.piezas_banco SET fase = 'Convertir' WHERE fase = 'Conversión' OR fase = 'Venta' OR fase = 'Convertir';
 UPDATE public.piezas_banco SET estado = 'En cola' WHERE estado IS NULL;
 UPDATE public.piezas_banco SET origen = 'manual' WHERE origen IS NULL;
 UPDATE public.piezas_banco SET anotaciones = '[]' WHERE anotaciones IS NULL;

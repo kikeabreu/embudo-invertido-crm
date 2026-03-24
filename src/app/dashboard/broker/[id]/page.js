@@ -216,7 +216,7 @@ export default function BrokerDashboard() {
         if (!canEdit) return;
         const insertData = {
             broker_id: brokerId,
-            titulo: pieza.titulo, hook: pieza.hook, fase: pieza.fase, formato: pieza.formato,
+            titulo: pieza.titulo, hook: pieza.hook, fase: pieza.fase || 'Atraer', formato: pieza.formato,
             avatar: pieza.avatar || "", dolor: pieza.dolor || "", cta_dm: pieza.ctaDm || "",
             estado: pieza.estado || 'En cola', cuerpo: pieza.copy || "", recursos_url: pieza.linkRecursos || "",
             link_final: pieza.linkFinal || "", guion: pieza.guion || "", instrucciones: pieza.instrucciones || "",
@@ -275,15 +275,13 @@ export default function BrokerDashboard() {
         try {
             const lastNum = piezas.length > 0 ? Math.max(...piezas.map(p => p.num || 0)) : 0;
             const toInsert = dataArray.map((item, idx) => {
-                // Normalización robusta de fase
+                // Normalización robusta de fase (Atraer, Retener, Convertir)
                 const rawFase = (item.fase || "").trim().toLowerCase();
-                let f = "Atracción"; // Default seguro
+                let f = "Atraer"; // Default seguro
                 
-                if (rawFase.includes("atra")) f = "Atracción";
-                else if (rawFase.includes("val") || rawFase.includes("rete") || rawFase.includes("nutri")) f = "Valor";
-                else if (rawFase.includes("conv") || rawFase.includes("vent") || rawFase.includes("cierr")) f = "Conversión";
-                else if (rawFase.includes("adoc")) f = "Adoctrinamiento";
-                else if (rawFase.includes("vent") || rawFase.includes("prom")) f = "Venta";
+                if (rawFase.includes("atra")) f = "Atraer";
+                else if (rawFase.includes("val") || rawFase.includes("rete") || rawFase.includes("nutri") || rawFase.includes("adoc")) f = "Retener";
+                else if (rawFase.includes("conv") || rawFase.includes("vent") || rawFase.includes("cierr") || rawFase.includes("prom")) f = "Convertir";
 
                 // Normalización de formato
                 const rawFmt = (item.formato || "").trim().toLowerCase();
