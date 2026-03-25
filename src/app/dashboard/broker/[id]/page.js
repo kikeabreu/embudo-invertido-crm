@@ -16,6 +16,7 @@ import OnboardingTab from "@/components/tabs/OnboardingTab";
 import OfertaTab from "@/components/tabs/OfertaTab";
 import AnalyticsTab from "@/components/tabs/AnalyticsTab";
 import HistorialTab from "@/components/tabs/HistorialTab";
+import ProyectosTab from "@/components/tabs/ProyectosTab";
 import AdminTab from "@/components/tabs/AdminTab";
 
 export default function BrokerDashboard() {
@@ -35,6 +36,8 @@ export default function BrokerDashboard() {
     const [onbChecked, setOnbChecked] = useState({});
     const [vars, setVars] = useState({});
     const [secuencias, setSecuencias] = useState({ ciclos: [], activoCicloId: null });
+    const [proyectos, setProyectos] = useState([]);
+    const [tareas, setTareas] = useState([]);
 
     const { toasts, show: toast } = useToast();
     const { confirm, ConfirmUI } = useConfirm();
@@ -104,6 +107,7 @@ export default function BrokerDashboard() {
         { k: "onboarding", l: "🚀 Onboarding" },
         { k: "oferta", l: "💎 Oferta" },
         { k: "analitica", l: "📊 Analítica" },
+        { k: "proyectos", l: "🚀 Proyectos" },
         { k: "historial", l: "🕐 Historial" },
     ].filter(t => {
         if (t.k === "oferta" && isEquipo) return false;
@@ -116,7 +120,21 @@ export default function BrokerDashboard() {
         if (!TABS.find(t => t.k === tab)) {
             setTab("banco");
         }
+        if (brokerId) {
+            fetchProyectos();
+            fetchTareas();
+        }
     }, [currentUser, brokerId, tab]);
+
+    const fetchProyectos = async () => {
+        const { data } = await supabase.from('proyectos').select('*').eq('broker_id', brokerId).order('created_at', { ascending: false });
+        if (data) setProyectos(data);
+    };
+
+    const fetchTareas = async () => {
+        const { data } = await supabase.from('tareas').select('*, comentarios_tareas(*)').order('created_at', { ascending: false });
+        if (data) setTareas(data);
+    };
 
     if (loading) {
         return (
@@ -398,6 +416,57 @@ export default function BrokerDashboard() {
         toast(`⭕ Historia enviada al Banco`);
     };
 
+    // ── GESTIÓN DE PROYECTOS ──────────────────────────────────────────────
+    const saveProyecto = async (proj) => {
+        const { data, error } = await supabase.from('proyectos').upsert({ ...proj, broker_id: brokerId }).select().single();
+        if (!error) {
+            setProyectos(prev => {
+                const exists = prev.find(p => p.id === data.id);
+                return exists ? prev.map(p => p.id === data.id ? data : p) : [data, ...prev];
+            });
+            toast(proj.id ? "Proyecto actualizado" : "Proyecto creado");
+        }
+    };
+
+    const deleteProyecto = async (id) => {
+        const ok = await confirm("¿Eliminar proyecto?", "Se borrarán todas sus tareas.", "Eliminar");
+        if (!ok) return;
+        const { error } = await supabase.from('proyectos').delete().eq('id', id);
+        if (!error) {
+            setProyectos(prev => prev.filter(p => p.id !== id));
+            setTareas(prev => prev.filter(t => t.proyecto_id !== id));
+            toast("Proyecto eliminado");
+        }
+    };
+
+    const saveTarea = async (task) => {
+        const { data, error } = await supabase.from('tareas').upsert(task).select().single();
+        if (!error) {
+            setTareas(prev => {
+                const exists = prev.find(t => t.id === data.id);
+                return exists ? prev.map(t => t.id === data.id ? { ...data, comentarios_tareas: t.comentarios_tareas || [] } : t) : [{ ...data, comentarios_tareas: [] }, ...prev];
+            });
+            toast(task.id ? "Tarea actualizada" : "Tarea creada");
+        }
+    };
+
+    const deleteTarea = async (id) => {
+        const { error } = await supabase.from('tareas').delete().eq('id', id);
+        if (!error) {
+            setTareas(prev => prev.filter(t => t.id !== id));
+            toast("Tarea eliminada");
+        }
+    };
+
+    const addComentario = async (tarea_id, texto, archivos = []) => {
+        const { data, error } = await supabase.from('comentarios_tareas').insert({
+            tarea_id, autor_id: currentUser.id, texto, archivos
+        }).select().single();
+        if (!error) {
+            setTareas(prev => prev.map(t => t.id === tarea_id ? { ...t, comentarios_tareas: [...(t.comentarios_tareas || []), data] } : t));
+        }
+    };
+
     const renderTabContent = () => {
         switch (tab) {
             case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onImport={importPiezas} onDelete={deletePieza} onBulkDelete={bulkDeletePiezas} onBulkUpdate={bulkUpdatePiezas} isViewer={isViewer} canEdit={canEdit} canDelete={canDelete} canImport={isAdmin || isEquipo} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} />;
@@ -407,6 +476,7 @@ export default function BrokerDashboard() {
             case "oferta": return <OfertaTab brokerId={brokerId} isViewer={isViewer} toast={toast} />;
             case "analitica": return <AnalyticsTab piezas={piezas} instalChecked={instalChecked} onbChecked={onbChecked} broker={broker} seqData={secuencias} />;
             case "historial": return <HistorialTab logs={logs} onUndo={undoAction} isViewer={isViewer} />;
+            case "proyectos": return <ProyectosTab proyectos={proyectos} tareas={tareas} onSaveProyecto={saveProyecto} onDeleteProyecto={deleteProyecto} onSaveTarea={saveTarea} onDeleteTarea={deleteTarea} onAddComentario={addComentario} isViewer={isViewer} currentUser={currentUser} brokerId={brokerId} toast={toast} />;
             case "admin": return isAdmin ? <AdminTab brokerId={brokerId} toast={toast} /> : null;
             default: return null;
         }

@@ -1,0 +1,342 @@
+import React, { useState, useEffect } from "react";
+import { G, css, fmtDate } from "@/lib/constants";
+import { GText } from "@/components/ui/UIUtils";
+import { supabase } from "@/lib/supabaseClient";
+
+export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDeleteProyecto, onSaveTarea, onDeleteTarea, onAddComentario, isViewer, currentUser, brokerId, toast }) {
+    const [selProjId, setSelProjId] = useState(null);
+    const [showProjModal, setShowProjModal] = useState(false);
+    const [showTaskModal, setShowTaskModal] = useState(false);
+    const [editProj, setEditProj] = useState(null);
+    const [editTask, setEditTask] = useState(null);
+    const [team, setTeam] = useState([]);
+    
+    // Drive y Menciones
+    const [uploading, setUploading] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [mentionSearch, setMentionSearch] = useState("");
+    const [showMentions, setShowMentions] = useState(false);
+
+    const selProj = proyectos.find(p => p.id === selProjId) || proyectos[0];
+    const projTasks = tareas.filter(t => t.proyecto_id === (selProj?.id));
+
+    useEffect(() => {
+        if (proyectos.length > 0 && !selProjId) setSelProjId(proyectos[0].id);
+        fetchTeam();
+    }, [proyectos]);
+
+    const fetchTeam = async () => {
+        const { data } = await supabase.from('usuarios').select('id, nombre, rol')
+            .or(`rol.in.(Admin,Equipo),id.eq.${brokerId},parent_id.eq.${brokerId}`);
+        if (data) setTeam(data);
+    };
+
+    // --- DRIVE HELPERS (Adaptados de PieceModal) ---
+    const uploadFile = async (file) => {
+        setUploading(true); setProgress(0);
+        try {
+            const res = await fetch('/api/drive-token');
+            if (!res.ok) throw new Error("Error token");
+            const { token, folderId } = await res.json();
+            const metadata = { name: file.name, parents: [folderId] };
+            const initRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
+                method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'X-Upload-Content-Type': file.type || 'application/octet-stream', 'X-Upload-Content-Length': file.size.toString() },
+                body: JSON.stringify(metadata)
+            });
+            const location = initRes.headers.get('Location');
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', location, true);
+            xhr.upload.onprogress = e => { if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100)); };
+            const driveUrl = await new Promise((resolve, reject) => {
+                xhr.onload = async () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const d = JSON.parse(xhr.responseText);
+                        await fetch(`https://www.googleapis.com/drive/v3/files/${d.id}/permissions`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'reader', type: 'anyone' }) });
+                        const uR = await fetch(`https://www.googleapis.com/drive/v3/files/${d.id}?fields=webViewLink`, { headers: { Authorization: `Bearer ${token}` } });
+                        const uD = await uR.json(); resolve(uD.webViewLink);
+                    } else reject("Error subiendo");
+                };
+                xhr.onerror = () => reject("Error red"); xhr.send(file);
+            });
+            return driveUrl;
+        } catch (e) { toast("Error Drive: " + e.message, "error"); return null; }
+        finally { setUploading(false); setProgress(0); }
+    };
+
+    const renderTextWithLinks = (text) => {
+        if (!text) return null;
+        const attachmentRegex = /📎 (.*?):\n(https?:\/\/[^\s]+)\n?/g;
+        const parts = []; let lastIndex = 0; let match;
+        while ((match = attachmentRegex.exec(text)) !== null) {
+            if (match.index > lastIndex) parts.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+            parts.push({ type: 'link', name: match[1], url: match[2] });
+            lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < text.length) parts.push({ type: 'text', content: text.slice(lastIndex) });
+        return parts.map((p, i) => p.type === 'text' ? <span key={i}>{p.content}</span> : <a key={i} href={p.url} target="_blank" style={{ color: G.cyan, textDecoration: "none", background: "rgba(6,182,212,0.1)", padding: "2px 6px", borderRadius: 4, fontSize: 10, display: "inline-block", margin: "2px 0" }}>📎 {p.name}</a>);
+    };
+
+    const STATUS_COLS = [
+        { k: "Inbox", l: "📥 Inbox", c: G.muted },
+        { k: "En curso", l: "⚡ En curso", c: G.orange },
+        { k: "Bloqueado", l: "🛑 Bloqueado", c: G.red },
+        { k: "Hecho", l: "✅ Hecho", c: G.green }
+    ];
+
+    const PRIORITY_ICON = { Baja: "🟢", Media: "🟡", Alta: "🟠", Crítica: "🔴" };
+
+    return (
+        <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
+            {/* Sidebar de Proyectos */}
+            <div style={{ width: 240, borderRight: `1px solid ${G.border}`, display: "flex", flexDirection: "column", background: "rgba(255,255,255,0.01)" }}>
+                <div style={{ padding: 20, borderBottom: `1px solid ${G.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <GText bold size={11} color={G.white} spacing={2}>PROYECTOS</GText>
+                    {!isViewer && <button onClick={() => { setEditProj({ nombre: "", descripcion: "", color: G.purple }); setShowProjModal(true); }} style={{ background: G.purple, border: "none", borderRadius: 4, color: G.white, width: 24, height: 24, cursor: "pointer" }}>+</button>}
+                </div>
+                <div style={{ flex: 1, overflowY: "auto", padding: 10 }}>
+                    {proyectos.map(p => (
+                        <div key={p.id} onClick={() => setSelProjId(p.id)} style={{ padding: "10px 15px", borderRadius: 8, cursor: "pointer", background: selProjId === p.id ? "rgba(255,255,255,0.05)" : "transparent", color: selProjId === p.id ? G.white : G.muted, marginBottom: 4, transition: "0.2s", display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || G.purple }} />
+                            <span style={{ flex: 1 }}>{p.nombre}</span>
+                        </div>
+                    ))}
+                    {proyectos.length === 0 && <div style={{ padding: 20, textAlign: "center", color: G.dimmed, fontSize: 11 }}>Sin proyectos aún</div>}
+                </div>
+            </div>
+
+            {/* Area de Trabajo */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                {selProj ? (
+                    <>
+                        <div style={{ padding: "20px 30px", borderBottom: `1px solid ${G.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div>
+                                <h2 style={{ margin: 0, fontSize: 18, color: G.white }}>{selProj.nombre}</h2>
+                                <p style={{ margin: "5px 0 0", fontSize: 12, color: G.muted }}>{selProj.descripcion || "Sin descripción"}</p>
+                            </div>
+                            <div style={{ display: "flex", gap: 10 }}>
+                                {!isViewer && <button onClick={() => { setEditProj(selProj); setShowProjModal(true); }} style={{ ...css.btn(G.bgGlass), padding: "7px 15px" }}>⚙️ Editar</button>}
+                                {!isViewer && <button onClick={() => { setEditTask({ titulo: "", descripcion: "", prioridad: "Media", estado: "Inbox", proyecto_id: selProj.id }); setShowTaskModal(true); }} style={css.btn()}>+ Nueva Tarea</button>}
+                            </div>
+                        </div>
+
+                        {/* Kanban Board */}
+                        <div style={{ flex: 1, overflowX: "auto", display: "flex", gap: 20, padding: 25, alignItems: "flex-start" }}>
+                            {STATUS_COLS.map(col => (
+                                <div key={col.k} style={{ minWidth: 280, width: 280, display: "flex", flexDirection: "column", maxHeight: "100%" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 15, padding: "0 5px" }}>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: col.c }}>{col.l}</div>
+                                        <div style={{ background: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: 10, fontSize: 10, color: G.muted }}>
+                                            {projTasks.filter(t => t.estado === col.k).length}
+                                        </div>
+                                    </div>
+                                    <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 12 }}>
+                                        {projTasks.filter(t => t.estado === col.k).map(task => (
+                                            <div key={task.id} onClick={() => { setEditTask(task); setShowTaskModal(true); }} style={{ background: G.bgCard, border: `1px solid ${G.border}`, borderRadius: 12, padding: 15, cursor: "pointer", transition: "0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = G.borderHi} onMouseLeave={e => e.currentTarget.style.borderColor = G.border}>
+                                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                                                    <span style={{ fontSize: 10, color: G.muted }}>{PRIORITY_ICON[task.prioridad]} {task.prioridad.toUpperCase()}</span>
+                                                    {task.fecha_limite && <span style={{ fontSize: 9, color: G.orange }}>📅 {task.fecha_limite}</span>}
+                                                </div>
+                                                <div style={{ fontSize: 14, color: G.white, fontWeight: 600, marginBottom: 8 }}>{task.titulo}</div>
+                                                <div style={{ fontSize: 11, color: G.muted, lineBreak: "anywhere", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{task.descripcion}</div>
+                                                
+                                                <div style={{ marginTop: 15, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                    <div style={{ display: "flex", gap: 4 }}>
+                                                        {task.comentarios_tareas?.length > 0 && <span style={{ fontSize: 10, color: G.dimmed }}>💬 {task.comentarios_tareas.length}</span>}
+                                                    </div>
+                                                    <div style={{ width: 24, height: 24, borderRadius: "50%", background: G.purple, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: G.white, border: `1px solid ${G.borderHi}` }}>
+                                                        {team.find(u => u.id === task.asignado_a)?.nombre?.slice(0, 2).toUpperCase() || "?"}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                ) : (
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: G.dimmed }}>
+                        <div style={{ fontSize: 40, marginBottom: 20 }}>🚀</div>
+                        <GText size={14}>Selecciona o crea un proyecto para empezar</GText>
+                    </div>
+                )}
+            </div>
+
+            {/* Modals... (Siguiente paso) */}
+            {/* Modal de Proyecto */}
+            {showProjModal && (
+                <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+                    <div style={{ ...css.card, width: 400, padding: 30 }}>
+                        <GText bold size={12} spacing={2} color={G.purpleHi} marginBottom={20}>{editProj?.id ? "EDITAR PROYECTO" : "NUEVO PROYECTO"}</GText>
+                        <label style={css.label}>NOMBRE</label>
+                        <input value={editProj.nombre} onChange={e => setEditProj({ ...editProj, nombre: e.target.value })} style={{ ...css.input, marginBottom: 20 }} placeholder="Ej: Lanzamiento Q2" />
+                        <label style={css.label}>DESCRIPCIÓN</label>
+                        <textarea value={editProj.descripcion} onChange={e => setEditProj({ ...editProj, descripcion: e.target.value })} style={{ ...css.input, height: 80, marginBottom: 20 }} placeholder="Notas breves..." />
+                        <label style={css.label}>COLOR</label>
+                        <div style={{ display: "flex", gap: 8, marginBottom: 30 }}>
+                            {[G.purple, G.blue, G.green, G.orange, G.red, G.magenta].map(c => (
+                                <div key={c} onClick={() => setEditProj({ ...editProj, color: c })} style={{ width: 24, height: 24, borderRadius: "50%", background: c, border: editProj.color === c ? `2px solid ${G.white}` : "none", cursor: "pointer" }} />
+                            ))}
+                        </div>
+                        <div style={{ display: "flex", gap: 10 }}>
+                            <button onClick={() => setShowProjModal(false)} style={{ ...css.btn(G.bgGlass), flex: 1 }}>Cancelar</button>
+                            <button onClick={() => { onSaveProyecto(editProj); setShowProjModal(false); }} style={{ ...css.btn(), flex: 1 }}>Guardar</button>
+                        </div>
+                        {editProj?.id && <button onClick={() => { onDeleteProyecto(editProj.id); setShowProjModal(false); }} style={{ background: "transparent", border: "none", color: G.red, fontSize: 10, marginTop: 15, cursor: "pointer", width: "100%" }}>ELIMINAR PROYECTO</button>}
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Tarea / Detalle */}
+            {showTaskModal && (
+                <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+                    <div style={{ ...css.cardGlow, width: 800, height: "85vh", display: "flex", overflow: "hidden" }}>
+                        {/* Columna Izquierda: Datos */}
+                        <div style={{ flex: 1.5, padding: 35, overflowY: "auto", borderRight: `1px solid ${G.border}` }}>
+                            <GText bold size={10} color={G.muted} spacing={2} marginBottom={10}>DETALLES DE TAREA</GText>
+                            <input value={editTask.titulo} onChange={e => setEditTask({ ...editTask, titulo: e.target.value })} style={{ ...css.input, fontSize: 24, padding: "5px 0", background: "transparent", border: "none", borderBottom: `1px solid ${G.border}`, borderRadius: 0, marginBottom: 25, fontWeight: 700 }} placeholder="Título de la tarea..." />
+                            
+                            <label style={css.label}>DESCRIPCIÓN</label>
+                            <textarea value={editTask.descripcion} onChange={e => setEditTask({ ...editTask, descripcion: e.target.value })} style={{ ...css.input, minHeight: 120, marginBottom: 25, lineHeight: 1.6 }} placeholder="Escribe los detalles aquí..." />
+                            
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 25 }}>
+                                <div>
+                                    <label style={css.label}>ESTADO</label>
+                                    <select value={editTask.estado} onChange={e => setEditTask({ ...editTask, estado: e.target.value })} style={css.input}>
+                                        {STATUS_COLS.map(s => <option key={s.k} value={s.k}>{s.l}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={css.label}>PRIORIDAD</label>
+                                    <select value={editTask.prioridad} onChange={e => setEditTask({ ...editTask, prioridad: e.target.value })} style={css.input}>
+                                        <option value="Baja">🟢 Baja</option>
+                                        <option value="Media">🟡 Media</option>
+                                        <option value="Alta">🟠 Alta</option>
+                                        <option value="Crítica">🔴 Crítica</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={css.label}>ASIGNADO A</label>
+                                    <select value={editTask.asignado_a || ""} onChange={e => setEditTask({ ...editTask, asignado_a: e.target.value })} style={css.input}>
+                                        <option value="">Sin asignar</option>
+                                        {team.map(u => <option key={u.id} value={u.id}>{u.nombre} ({u.rol})</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={css.label}>FECHA LÍMITE</label>
+                                    <input type="date" value={editTask.fecha_limite || ""} onChange={e => setEditTask({ ...editTask, fecha_limite: e.target.value })} style={css.input} />
+                                </div>
+                            </div>
+                            
+                            <div style={{ display: "flex", gap: 10, marginTop: 40 }}>
+                                <button onClick={() => setShowTaskModal(false)} style={{ ...css.btn(G.bgGlass), flex: 1 }}>Cerrar</button>
+                                <button onClick={() => { onSaveTarea(editTask); setShowTaskModal(false); }} style={{ ...css.btn(), flex: 1 }}>Guardar Cambios</button>
+                            </div>
+                            {editTask.id && <button onClick={() => { onDeleteTarea(editTask.id); setShowTaskModal(false); }} style={{ background: "transparent", border: "none", color: G.red, fontSize: 10, marginTop: 15, cursor: "pointer", width: "100%" }}>ELIMINAR TAREA</button>}
+                        </div>
+
+                        {/* Columna Derecha: Comentarios & Colaboración */}
+                        <div style={{ flex: 1, background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", position: "relative" }}>
+                            <div style={{ padding: 25, borderBottom: `1px solid ${G.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <GText bold size={10} spacing={2}>COMENTARIOS</GText>
+                                <div style={{ display: "flex", gap: 8 }}>
+                                    <label style={{ cursor: "pointer", fontSize: 10, color: G.cyan, padding: "4px 8px", border: `1px solid ${G.cyan}33`, borderRadius: 4, background: G.cyan + "08" }}>
+                                        📎 DRIVE
+                                        <input type="file" style={{ display: "none" }} onChange={async e => {
+                                            const f = e.target.files[0]; if (!f) return;
+                                            const url = await uploadFile(f);
+                                            if (url) {
+                                                const inp = document.getElementById("comment-input");
+                                                inp.value += `\n📎 ${f.name}:\n${url}\n`;
+                                            }
+                                        }} />
+                                    </label>
+                                </div>
+                            </div>
+
+                            {uploading && (
+                                <div style={{ padding: "10px 25px", background: "rgba(6,182,212,0.1)", borderBottom: `1px solid ${G.cyan}22` }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: G.cyan, marginBottom: 5 }}>
+                                        <span>Subiendo archivo...</span>
+                                        <span>{progress}%</span>
+                                    </div>
+                                    <div style={{ height: 3, background: G.border, borderRadius: 2, overflow: "hidden" }}>
+                                        <div style={{ width: `${progress}%`, height: "100%", background: G.cyan, transition: "width 0.2s" }} />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div style={{ flex: 1, overflowY: "auto", padding: 25, display: "flex", flexDirection: "column", gap: 20 }}>
+                                {editTask.comentarios_tareas?.length > 0 ? editTask.comentarios_tareas.map(c => (
+                                    <div key={c.id}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                                            <span style={{ fontSize: 11, fontWeight: 700, color: G.purpleHi }}>{team.find(u => u.id === c.autor_id)?.nombre || "Usuario"}</span>
+                                            <span style={{ fontSize: 9, color: G.dimmed }}>{fmtDate(c.created_at)}</span>
+                                        </div>
+                                        <div style={{ fontSize: 12, color: G.white, background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "0 12px 12px 12px", border: `1px solid ${G.border}`, lineHeight: 1.5 }}>
+                                            {renderTextWithLinks(c.texto)}
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: G.dimmed, fontSize: 11, textAlign: "center" }}>
+                                        Sin comentarios aún.<br/>Menciona con @ o adjunta archivos.
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Mentions Dropdown */}
+                            {showMentions && (
+                                <div style={{ position: "absolute", bottom: 100, left: 20, right: 20, background: "#0F0F2D", border: `1px solid ${G.borderHi}`, borderRadius: 12, boxShadow: "0 -10px 40px rgba(0,0,0,0.5)", maxHeight: 200, overflowY: "auto", zIndex: 10 }}>
+                                    {team.filter(u => u.nombre.toLowerCase().includes(mentionSearch.toLowerCase())).map(u => (
+                                        <div key={u.id} onClick={() => {
+                                            const inp = document.getElementById("comment-input");
+                                            const t = inp.value;
+                                            const lastAt = t.lastIndexOf("@");
+                                            inp.value = t.slice(0, lastAt) + `@${u.nombre} ` + t.slice(lastAt + 1 + mentionSearch.length);
+                                            setShowMentions(false);
+                                            inp.focus();
+                                        }} style={{ padding: "10px 15px", cursor: "pointer", borderBottom: `1px solid ${G.border}`, display: "flex", gap: 10, alignItems: "center" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                            <div style={{ width: 24, height: 24, borderRadius: "50%", background: G.gPurple, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: G.white }}>{u.nombre[0]}</div>
+                                            <div style={{ fontSize: 12, color: G.white }}>{u.nombre} <span style={{ color: G.dimmed, fontSize: 10 }}>({u.rol})</span></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div style={{ padding: 20, borderTop: `1px solid ${G.border}`, background: G.bgCard }}>
+                                <textarea id="comment-input" 
+                                onChange={e => {
+                                    const t = e.target.value;
+                                    const lastAt = t.lastIndexOf("@");
+                                    if (lastAt !== -1 && lastAt >= t.length - 15) {
+                                        const search = t.slice(lastAt + 1);
+                                        if (!search.includes(" ")) {
+                                            setMentionSearch(search);
+                                            setShowMentions(true);
+                                        } else setShowMentions(false);
+                                    } else setShowMentions(false);
+                                }}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter' && !e.shiftKey && !showMentions) {
+                                        e.preventDefault();
+                                        const t = e.target.value.trim();
+                                        if (t) { onAddComentario(editTask.id, t); e.target.value = ""; }
+                                    }
+                                    if (e.key === 'Escape') setShowMentions(false);
+                                }} style={{ ...css.input, minHeight: 80, padding: 15, borderRadius: 12, fontSize: 13 }} placeholder="Escribe un mensaje... usa @ para etiquetar" />
+                                <div style={{ marginTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <span style={{ fontSize: 10, color: G.dimmed }}>SHIFT+ENTER para salto de línea</span>
+                                    <button onClick={() => {
+                                        const inp = document.getElementById("comment-input");
+                                        const t = inp.value.trim();
+                                        if (t) { onAddComentario(editTask.id, t); inp.value = ""; }
+                                    }} style={{ ...css.btn(), padding: "6px 20px" }}>Enviar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
