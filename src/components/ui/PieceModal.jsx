@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { notifyAdmins } from "@/lib/notifUtils";
 import { G, css, ESTADOS_PIEZA, estadoColor, FASES, faseColor, FORMATOS, FORMATO_ICON, fmtDate, uid } from "@/lib/constants";
 
 function AnotacionInput({ onAdd }) {
@@ -253,22 +254,19 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
         if (workflowLoading) return;
         setWorkflowLoading(tipo);
         const TEMPLATES = {
-            copy:    { titulo: `📝 [${piece.titulo}] Revisar y aprobar copy`, descripcion: `Por favor revisa el copy de esta pieza y aprueba o sugiere cambios en la sección de Anotaciones del Banco.\n\nCopy:\n${form.copy || "(sin copy aún)"}`, prioridad: "Media" },
-            grabar:  { titulo: `🎥 [${piece.titulo}] Agendar grabación`, descripcion: `Se necesita coordinar la grabación del video para esta pieza.\n\nGuion:\n${form.guion || "(sin guión aún)"}`, prioridad: "Alta" },
-            edicion: { titulo: `🎬 [${piece.titulo}] Edición de video / diseño`, descripcion: `Archivos crudos:\n${form.linkRecursos || "(pendiente de subir)"} \n\nInstrucciones:\n${form.instrucciones || "Ver pieza en el Banco"}`, prioridad: "Alta" },
-            aprobar: { titulo: `✅ [${piece.titulo}] Aprobación de edición final`, descripcion: `Por favor revisa el video/diseño final y confirma si está listo para publicar.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
-            ads:     { titulo: `🚀 [${piece.titulo}] Lanzar campaña en Meta Ads`, descripcion: `La pieza ha sido aprobada. Proceder a montar la campaña de interacción o leads en Meta Ads.\n\nLink final:\n${form.linkFinal || "(ver Banco)"}`, prioridad: "Crítica" },
-            metricas:{ titulo: `📊 [${piece.titulo}] Cita de métricas (7 días)`, descripcion: `Revisar en conjunto el rendimiento de esta pieza 7 días después de su publicación.`, prioridad: "Media" },
+            copy:    { titulo: `📝 [${piece.titulo}] Revisar y aprobar copy`, descripcion: `Por favor revisa el copy y sugiere cambios en Anotaciones del Banco.\n\nCopy:\n${form.copy || "(sin copy aún)"}`, prioridad: "Media" },
+            grabar:  { titulo: `🎥 [${piece.titulo}] Agendar grabación`, descripcion: `Coordinar la grabación.\n\nGuión:\n${form.guion || "(sin guión aún)"}`, prioridad: "Alta" },
+            edicion: { titulo: `🎬 [${piece.titulo}] Edición de video / diseño`, descripcion: `Archivos crudos:\n${form.linkRecursos || "(pendiente)"} \n\nInstrucciones:\n${form.instrucciones || "Ver pieza en el Banco"}`, prioridad: "Alta" },
+            aprobar: { titulo: `✅ [${piece.titulo}] Aprobación de edición final`, descripcion: `Revisar el video/diseño final.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
+            ads:     { titulo: `🚀 [${piece.titulo}] Lanzar campaña en Meta Ads`, descripcion: `Pieza aprobada. Montar campaña en Meta Ads.\n\nLink:\n${form.linkFinal || "(ver Banco)"}`, prioridad: "Crítica" },
+            metricas:{ titulo: `📊 [${piece.titulo}] Cita de métricas (7 días)`, descripcion: `Revisar el rendimiento de esta pieza 7 días después de su publicación.`, prioridad: "Media" },
         };
         const tpl = TEMPLATES[tipo];
         if (!tpl) { setWorkflowLoading(null); return; }
-
         const fechaLimite = tipo === "metricas"
             ? new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split("T")[0]
             : null;
-
         try {
-            // Create tarea
             const { data: tarea, error } = await supabase.from("tareas").insert({
                 broker_id: brokerId,
                 titulo: tpl.titulo,
@@ -277,24 +275,31 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
                 estado: "inbox",
                 fecha_limite: fechaLimite,
             }).select().single();
-
-            if (!error && tarea) {
-                // Notify assigned user if present
-                if (currentUser?.id) {
-                    await supabase.from("notificaciones").insert({
-                        usuario_id: currentUser.id,
-                        tipo: "workflow",
-                        mensaje: `Nueva tarea creada desde el Banco: "${tpl.titulo}"`,
-                    });
-                }
-                if (toast) toast(`Tarea creada: ${tpl.titulo} 🚀`, "success");
-                if (onCreateTarea) onCreateTarea(tarea);
-            }
+            if (error) throw error;
+            if (toast) toast(`Tarea creada 🚀`, "success");
+            if (onCreateTarea) onCreateTarea(tarea);
+            // Notify admins non-blocking
+            notifyAdmins({
+                tipo: "workflow",
+                mensaje: `⚡ ${currentUser?.nombre || "Alguien"} accionó "${tpl.titulo}" desde el Banco.`,
+            }).catch(() => {});
         } catch(e) {
-            if (toast) toast("Error al crear tarea", "error");
+            console.error("[Workflow] Error:", e);
+            if (toast) toast(`Error al crear tarea: ${e?.message || "Unknown"}`, "error");
         } finally {
             setWorkflowLoading(null);
         }
+    };
+
+    // When a viewer adds an Anotación — notify all admins
+    const handleAnotacion = async (texto) => {
+        const nuevaAnotacion = { id: uid(), texto, ts: new Date().toISOString(), revisada: false, autor: currentUser?.nombre || "Cliente" };
+        f("anotaciones", [...(form.anotaciones || []), nuevaAnotacion]);
+        // Notify admins non-blocking
+        notifyAdmins({
+            tipo: "mencion",
+            mensaje: `💬 ${currentUser?.nombre || "El cliente"} dejó una anotación en "${piece.titulo}": "${texto.slice(0, 80)}${texto.length > 80 ? "..." : ""}"",`,
+        }).catch(() => {});
     };
 
     const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -434,7 +439,7 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
                         </div>
 
                         {isViewer && (
-                            <AnotacionInput onAdd={(texto) => f("anotaciones", [...(form.anotaciones || []), { id: uid(), texto, ts: new Date().toISOString(), revisada: false }])} />
+                            <AnotacionInput onAdd={handleAnotacion} />
                         )}
                     </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { G, css, fmtDate } from "@/lib/constants";
 import { GText } from "@/components/ui/UIUtils";
 import { supabase } from "@/lib/supabaseClient";
+import { notifyUser, notifyMentions } from "@/lib/notifUtils";
 
 export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDeleteProyecto, onSaveTarea, onDeleteTarea, onAddComentario, isViewer, currentUser, brokerId, toast }) {
     const [selProjId, setSelProjId] = useState(null);
@@ -230,7 +231,13 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                             
                             <div style={{ display: "flex", gap: 10, marginTop: 40 }}>
                                 <button onClick={() => setShowTaskModal(false)} style={{ ...css.btn(G.bgGlass), flex: 1 }}>Cerrar</button>
-                                <button onClick={() => { onSaveTarea(editTask); setShowTaskModal(false); }} style={{ ...css.btn(), flex: 1 }}>Guardar Cambios</button>
+                                <button onClick={() => { onSaveTarea(editTask); setShowTaskModal(false); 
+                                    // Notify new assignee if changed
+                                    const original = tareas.find(t => t.id === editTask.id);
+                                    if (editTask.asignado_a && editTask.asignado_a !== original?.asignado_a) {
+                                        notifyUser(editTask.asignado_a, { tipo: "asignacion", mensaje: `📌 ${currentUser?.nombre || "Alguien"} te asignó la tarea: "${editTask.titulo}"` }).catch(() => {});
+                                    }
+                                }} style={{ ...css.btn(), flex: 1 }}>Guardar Cambios</button>
                             </div>
                             {editTask.id && <button onClick={() => { onDeleteTarea(editTask.id); setShowTaskModal(false); }} style={{ background: "transparent", border: "none", color: G.red, fontSize: 10, marginTop: 15, cursor: "pointer", width: "100%" }}>ELIMINAR TAREA</button>}
                         </div>
@@ -320,7 +327,11 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                     if (e.key === 'Enter' && !e.shiftKey && !showMentions) {
                                         e.preventDefault();
                                         const t = e.target.value.trim();
-                                        if (t) { onAddComentario(editTask.id, t); e.target.value = ""; }
+                                        if (t) {
+                                            onAddComentario(editTask.id, t);
+                                            notifyMentions(t, team, currentUser?.nombre || "Alguien").catch(() => {});
+                                            e.target.value = "";
+                                        }
                                     }
                                     if (e.key === 'Escape') setShowMentions(false);
                                 }} style={{ ...css.input, minHeight: 80, padding: 15, borderRadius: 12, fontSize: 13 }} placeholder="Escribe un mensaje... usa @ para etiquetar" />
@@ -329,7 +340,11 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                     <button onClick={() => {
                                         const inp = document.getElementById("comment-input");
                                         const t = inp.value.trim();
-                                        if (t) { onAddComentario(editTask.id, t); inp.value = ""; }
+                                        if (t) {
+                                            onAddComentario(editTask.id, t);
+                                            notifyMentions(t, team, currentUser?.nombre || "Alguien").catch(() => {});
+                                            inp.value = "";
+                                        }
                                     }} style={{ ...css.btn(), padding: "6px 20px" }}>Enviar</button>
                                 </div>
                             </div>
