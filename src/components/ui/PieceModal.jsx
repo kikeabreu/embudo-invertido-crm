@@ -272,7 +272,7 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
                 titulo: tpl.titulo,
                 descripcion: tpl.descripcion,
                 prioridad: tpl.prioridad,
-                estado: "inbox",
+                estado: "Inbox",
                 fecha_limite: fechaLimite,
             }).select().single();
             if (error) throw error;
