@@ -10,7 +10,6 @@ import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 // Tabs
 import BancoTab from "@/components/tabs/BancoTab";
-import SecuenciasTab from "@/components/tabs/SecuenciasTab";
 import InstalacionTab from "@/components/tabs/InstalacionTab";
 import OnboardingTab from "@/components/tabs/OnboardingTab";
 import OfertaTab from "@/components/tabs/OfertaTab";
@@ -35,7 +34,6 @@ export default function BrokerDashboard() {
     const [instalChecked, setInstalChecked] = useState({});
     const [onbChecked, setOnbChecked] = useState({});
     const [vars, setVars] = useState({});
-    const [secuencias, setSecuencias] = useState({ ciclos: [], activoCicloId: null });
     const [proyectos, setProyectos] = useState([]);
     const [tareas, setTareas] = useState([]);
 
@@ -64,10 +62,12 @@ export default function BrokerDashboard() {
             return;
         }
         setBroker(brokerData);
-        setInstalChecked(brokerData.instalacion_checked || {});
-        setOnbChecked(brokerData.onboarding_checked || {});
-        setVars(brokerData.broker_vars || {});
-        setSecuencias(brokerData.secuencias_data || { ciclos: [], activoCicloId: null });
+        const { data: config } = await supabase.from('broker_config').select('*').eq('broker_id', brokerId).single();
+        if (config) {
+            setInstalChecked(config.instalacion_checked || {});
+            setVars(config.broker_vars || {});
+            setOnbChecked(config.onboarding_checked || {});
+        }
 
         const { data: pz } = await supabase.from('piezas_banco').select('*').eq('broker_id', brokerId);
         const mappedPiezas = (pz || []).map(p => {
@@ -102,7 +102,6 @@ export default function BrokerDashboard() {
 
     const TABS = [
         { k: "banco", l: "📋 Banco" },
-        { k: "secuencias", l: "📅 Secuencias" },
         { k: "instalacion", l: "⚡ Instalación" },
         { k: "onboarding", l: "🚀 Onboarding" },
         { k: "oferta", l: "💎 Oferta" },
@@ -111,7 +110,6 @@ export default function BrokerDashboard() {
         { k: "historial", l: "🕐 Historial" },
     ].filter(t => {
         if (t.k === "oferta" && isEquipo) return false;
-        if (t.k === "secuencias" && (isBroker || isCoordinador)) return false;
         return true;
     });
     if (isAdmin) TABS.push({ k: "admin", l: "⚙️ Admin" });
@@ -376,46 +374,6 @@ export default function BrokerDashboard() {
         await updateBrokerConfig('onboarding_checked', newChecked);
     };
 
-    const saveSecuencias = async (s) => {
-        if (!canEdit) return;
-        setSecuencias(s);
-        await updateBrokerConfig('secuencias_data', s);
-    };
-
-    const crearPiezaDesdeSecuencia = async (p, diaNum, cId) => {
-        if (!canEdit) return;
-        const { data, error } = await supabase.from('piezas_banco').insert({
-            broker_id: brokerId, titulo: p.titulo, hook: p.hook || p.titulo, fase: p.fase, formato: p.formato, estado: 'En cola', cuerpo: p.copy || "",
-            guion: p.guion || "", instrucciones: p.instrucciones || "", notas_internas: p.notasInternas || ""
-        }).select().single();
-        if (error) return;
-        setPiezas(ps => [...ps, { ...p, id: data.id, copy: p.copy || "" }]);
-        const cUpd = secuencias.ciclos.map(c => c.id === cId ? { ...c, dias: { ...c.dias, [diaNum]: { ...(c.dias?.[diaNum] || {}), bancoPiezaId: data.id } } } : c);
-        const sUpd = { ...secuencias, ciclos: cUpd };
-        setSecuencias(sUpd);
-        await updateBrokerConfig('secuencias_data', sUpd);
-        toast(`📋 Borrador creado en Banco`);
-    };
-
-    const crearHistoriaEnBanco = async (h, diaNum, cId) => {
-        if (!canEdit) return;
-        const { data, error } = await supabase.from('piezas_banco').insert({
-            broker_id: brokerId, titulo: `Historia D${diaNum}: ${h.tipo}`, hook: h.copy?.slice(0,80) || `Historia D${diaNum}`, fase: 'Conversión', formato: 'Historia', estado: 'En cola', cuerpo: h.copy || ""
-        }).select().single();
-        if (error) return;
-        setPiezas(ps => [...ps, { id: data.id, ...h }]);
-        const cUpd = secuencias.ciclos.map(c => {
-            if (c.id !== cId) return c;
-            const diaA = c.dias?.[diaNum] || {};
-            const hUpd = (diaA.historias || []).map(x => x.id === h.id ? { ...x, bancoPiezaId: data.id } : x);
-            return { ...c, dias: { ...c.dias, [diaNum]: { ...diaA, historias: hUpd } } };
-        });
-        const sUpd = { ...secuencias, ciclos: cUpd };
-        setSecuencias(sUpd);
-        await updateBrokerConfig('secuencias_data', sUpd);
-        toast(`⭕ Historia enviada al Banco`);
-    };
-
     // ── GESTIÓN DE PROYECTOS ──────────────────────────────────────────────
     const saveProyecto = async (proj) => {
         const { data, error } = await supabase.from('proyectos').upsert({ ...proj, broker_id: brokerId }).select().single();
@@ -470,11 +428,10 @@ export default function BrokerDashboard() {
     const renderTabContent = () => {
         switch (tab) {
             case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onImport={importPiezas} onDelete={deletePieza} onBulkDelete={bulkDeletePiezas} onBulkUpdate={bulkUpdatePiezas} isViewer={isViewer} canEdit={canEdit} canDelete={canDelete} canImport={isAdmin || isEquipo} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} />;
-            case "secuencias": return <SecuenciasTab data={secuencias} onSave={saveSecuencias} onCrearEnBanco={crearPiezaDesdeSecuencia} onEnviarHistoriaAlBanco={crearHistoriaEnBanco} isViewer={isViewer} toast={toast} />;
             case "instalacion": return <InstalacionTab data={{ vars, instalChecked }} vars={vars} onToggle={toggleInstal} onVarChange={updateVar} />;
             case "onboarding": return <OnboardingTab checked={onbChecked} onToggle={toggleOnb} mesLabel={"Mes Actual"} toast={toast} />;
             case "oferta": return <OfertaTab brokerId={brokerId} isViewer={isViewer} toast={toast} />;
-            case "analitica": return <AnalyticsTab piezas={piezas} instalChecked={instalChecked} onbChecked={onbChecked} broker={broker} seqData={secuencias} />;
+            case "analitica": return <AnalyticsTab piezas={piezas} instalChecked={instalChecked} onbChecked={onbChecked} broker={broker} />;
             case "historial": return <HistorialTab logs={logs} onUndo={undoAction} isViewer={isViewer} />;
             case "proyectos": return <ProyectosTab proyectos={proyectos} tareas={tareas} onSaveProyecto={saveProyecto} onDeleteProyecto={deleteProyecto} onSaveTarea={saveTarea} onDeleteTarea={deleteTarea} onAddComentario={addComentario} isViewer={isViewer} currentUser={currentUser} brokerId={brokerId} toast={toast} />;
             case "admin": return isAdmin ? <AdminTab brokerId={brokerId} toast={toast} /> : null;
