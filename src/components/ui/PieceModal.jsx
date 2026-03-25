@@ -267,15 +267,15 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
     const sendWorkflowTarea = async (tipo) => {
         if (workflowLoading) return;
         const TEMPLATES = {
-            idear:   { titulo: `🧠 [${piece.titulo}] Investigación y Guion`, descripcion: `Investigar el tema y escribir el primer borrador / guion de la pieza.`, prioridad: "Media" },
-            copy:    { titulo: `📝 [${piece.titulo}] Revisar y aprobar copy`, descripcion: `Por favor revisa el copy y sugiere cambios en Anotaciones del Banco.\n\nCopy:\n${form.copy || "(sin copy aún)"}`, prioridad: "Media" },
-            grabar:  { titulo: `🎥 [${piece.titulo}] Agendar grabación`, descripcion: `Coordinar la grabación.\n\nGuión:\n${form.guion || "(sin guión aún)"}`, prioridad: "Alta" },
-            edicion: { titulo: `🎬 [${piece.titulo}] Edición de video / diseño`, descripcion: `Archivos crudos:\n${form.linkRecursos || "(pendiente)"} \n\nInstrucciones:\n${form.instrucciones || "Ver pieza en el Banco"}`, prioridad: "Alta" },
-            miniatura: { titulo: `🖼️ [${piece.titulo}] Diseño de Miniatura / Portada`, descripcion: `Crear portada o miniatura atractiva para el post/video.\n\nCopy clave:\n${form.hook || ""}`, prioridad: "Media" },
-            aprobar: { titulo: `✅ [${piece.titulo}] Aprobación de edición final`, descripcion: `Revisar el video/diseño final.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
-            programar: { titulo: `📆 [${piece.titulo}] Programar en Redes / Publicar`, descripcion: `Programar la pieza aprobada en las plataformas correspondientes.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
-            ads:     { titulo: `🚀 [${piece.titulo}] Lanzar campaña en Meta Ads`, descripcion: `Pieza aprobada. Montar campaña en Meta Ads.\n\nLink:\n${form.linkFinal || "(ver Banco)"}`, prioridad: "Crítica" },
-            metricas:{ titulo: `📊 [${piece.titulo}] Cita de métricas (7 días)`, descripcion: `Revisar el rendimiento de esta pieza 7 días después de su publicación.`, prioridad: "Media" },
+            idear:   { titulo: `🧠 Investigación y Guion - [${piece.titulo}]`, descripcion: `Investigar el tema y escribir el primer borrador / guion de la pieza.`, prioridad: "Media" },
+            copy:    { titulo: `📝 Revisar y aprobar copy - [${piece.titulo}]`, descripcion: `Por favor revisa el copy y sugiere cambios en Anotaciones del Banco.\n\nCopy:\n${form.copy || "(sin copy aún)"}`, prioridad: "Media" },
+            grabar:  { titulo: `🎥 Agendar grabación - [${piece.titulo}]`, descripcion: `Coordinar la grabación.\n\nGuión:\n${form.guion || "(sin guión aún)"}`, prioridad: "Alta" },
+            edicion: { titulo: `🎬 Edición de video / diseño - [${piece.titulo}]`, descripcion: `Archivos crudos:\n${form.linkRecursos || "(pendiente)"} \n\nInstrucciones:\n${form.instrucciones || "Ver pieza en el Banco"}`, prioridad: "Alta" },
+            miniatura: { titulo: `🖼️ Diseño de Miniatura / Portada - [${piece.titulo}]`, descripcion: `Crear portada o miniatura atractiva para el post/video.\n\nCopy clave:\n${form.hook || ""}`, prioridad: "Media" },
+            aprobar: { titulo: `✅ Aprobación de edición final - [${piece.titulo}]`, descripcion: `Revisar el video/diseño final.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
+            programar: { titulo: `📆 Programar en Redes / Publicar - [${piece.titulo}]`, descripcion: `Programar la pieza aprobada en las plataformas correspondientes.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
+            ads:     { titulo: `🚀 Lanzar campaña en Meta Ads - [${piece.titulo}]`, descripcion: `Pieza aprobada. Montar campaña en Meta Ads.\n\nLink:\n${form.linkFinal || "(ver Banco)"}`, prioridad: "Crítica" },
+            metricas:{ titulo: `📊 Cita de métricas (7 días) - [${piece.titulo}]`, descripcion: `Revisar el rendimiento de esta pieza 7 días después de su publicación.`, prioridad: "Media" },
         };
         const tpl = TEMPLATES[tipo];
         if (!tpl) { setWorkflowLoading(null); return; }
@@ -472,6 +472,33 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
                             <AnotacionInput onAdd={handleAnotacion} />
                         )}
                     </div>
+
+                    {/* ── TAREAS VINCULADAS ── */}
+                    {tareas.filter(t => t.pieza_id === piece.id).length > 0 && (
+                        <div style={{ marginTop: 20, padding: "16px", background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: 12 }}>
+                            <div style={{ fontSize: 9, letterSpacing: 2, color: "rgba(16,185,129,1)", fontFamily: "sans-serif", textTransform: "uppercase", fontWeight: 700, marginBottom: 12 }}>
+                                📋 Tareas Vinculadas
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                {tareas.filter(t => t.pieza_id === piece.id).map(t => (
+                                    <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.05)" }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                            <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: t.estado === "Completada" ? "rgba(16,185,129,0.2)" : "rgba(124,58,237,0.2)", color: t.estado === "Completada" ? G.green : G.purpleHi, fontFamily: "sans-serif" }}>
+                                                {t.estado}
+                                            </span>
+                                            <span style={{ fontSize: 13, color: G.white, fontFamily: "sans-serif" }}>{t.titulo}</span>
+                                        </div>
+                                        <button onClick={() => {
+                                            window.dispatchEvent(new CustomEvent("navigate-tab", { detail: { tab: "proyectos", query: `open_task=${t.id}` } }));
+                                            onClose();
+                                        }} style={{ ...css.btn("rgba(16,185,129,0.1)"), padding: "6px 12px", fontSize: 10, color: G.green, border: "1px solid rgba(16,185,129,0.3)" }}>
+                                            Ir a Tarea 🔗
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* ── ACCIONES WORKFLOW (BANCO ↔ PROYECTOS) ── */}
                     <div style={{ marginTop: 20, padding: "16px", background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 12 }}>
