@@ -64,7 +64,9 @@ export default function NotificationBell({ currentUserId }) {
     const handleClick = (n) => {
         markRead(n);
         if (n.link && n.link.startsWith("tab:")) {
-            window.dispatchEvent(new CustomEvent("navigate-tab", { detail: { tab: n.link.split(":")[1] } }));
+            const raw = n.link.split(":")[1];
+            const [tab, query] = raw.split("?");
+            window.dispatchEvent(new CustomEvent("navigate-tab", { detail: { tab, query } }));
         }
         setOpen(false);
     };

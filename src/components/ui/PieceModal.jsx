@@ -305,7 +305,7 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
             notifyAdmins({
                 tipo: "workflow",
                 mensaje: `⚡ ${currentUser?.nombre || "Alguien"} accionó "${tpl.titulo}" desde el Banco.`,
-                link: "tab:proyectos"
+                link: `tab:proyectos?open_task=${tarea.id}`
             }).catch(() => {});
         } catch(e) {
             console.error("[Workflow] Error:", e);

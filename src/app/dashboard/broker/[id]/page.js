@@ -149,6 +149,13 @@ export default function BrokerDashboard() {
             if (e.detail?.tab && TABS.find(t => t.k === e.detail.tab)) {
                 setTab(e.detail.tab);
             }
+            if (e.detail?.query) {
+                const params = new URLSearchParams("?" + e.detail.query);
+                const openTask = params.get("open_task");
+                if (openTask) {
+                    setTimeout(() => window.dispatchEvent(new CustomEvent("open-task-modal", { detail: { taskId: openTask } })), 100);
+                }
+            }
         };
         window.addEventListener("navigate-tab", handleNavigate);
         return () => window.removeEventListener("navigate-tab", handleNavigate);

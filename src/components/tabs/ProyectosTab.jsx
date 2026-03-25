@@ -25,9 +25,27 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
 
     useEffect(() => {
         if (!selProjId) setSelProjId('banco-tareas');
-
         fetchTeam();
     }, [proyectos]);
+
+    useEffect(() => {
+        const handleOpenTask = (e) => {
+            const taskId = e.detail?.taskId;
+            if (taskId) {
+                const t = tareas.find(x => x.id === taskId);
+                if (t) {
+                    setEditTask(t);
+                    setShowTaskModal(true);
+                    
+                    // Asegurarnos de estar en el proyecto correcto
+                    if (t.proyecto_id) setSelProjId(t.proyecto_id);
+                    else setSelProjId('banco-tareas');
+                }
+            }
+        };
+        window.addEventListener("open-task-modal", handleOpenTask);
+        return () => window.removeEventListener("open-task-modal", handleOpenTask);
+    }, [tareas]);
 
     const fetchTeam = async () => {
         const { data } = await supabase.from('usuarios').select('id, nombre, rol')
@@ -246,7 +264,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                         notifyUser(editTask.asignado_a, { 
                                             tipo: "asignacion", 
                                             mensaje: `📌 ${currentUser?.nombre || "Alguien"} te asignó la tarea: "${editTask.titulo}"`,
-                                            link: "tab:proyectos"
+                                            link: `tab:proyectos?open_task=${editTask.id}`
                                         }).catch(() => {});
                                     }
                                 }} style={{ ...css.btn(), flex: 1 }}>Guardar Cambios</button>
@@ -341,7 +359,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                         const t = e.target.value.trim();
                                         if (t) {
                                             onAddComentario(editTask.id, t);
-                                            notifyMentions(t, team, currentUser?.nombre || "Alguien", "tab:proyectos").catch(() => {});
+                                            notifyMentions(t, team, currentUser?.nombre || "Alguien", `tab:proyectos?open_task=${editTask.id}`).catch(() => {});
                                             e.target.value = "";
                                         }
                                     }
