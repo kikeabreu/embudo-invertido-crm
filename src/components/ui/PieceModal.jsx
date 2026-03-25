@@ -267,10 +267,13 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
     const sendWorkflowTarea = async (tipo) => {
         if (workflowLoading) return;
         const TEMPLATES = {
+            idear:   { titulo: `🧠 [${piece.titulo}] Investigación y Guion`, descripcion: `Investigar el tema y escribir el primer borrador / guion de la pieza.`, prioridad: "Media" },
             copy:    { titulo: `📝 [${piece.titulo}] Revisar y aprobar copy`, descripcion: `Por favor revisa el copy y sugiere cambios en Anotaciones del Banco.\n\nCopy:\n${form.copy || "(sin copy aún)"}`, prioridad: "Media" },
             grabar:  { titulo: `🎥 [${piece.titulo}] Agendar grabación`, descripcion: `Coordinar la grabación.\n\nGuión:\n${form.guion || "(sin guión aún)"}`, prioridad: "Alta" },
             edicion: { titulo: `🎬 [${piece.titulo}] Edición de video / diseño`, descripcion: `Archivos crudos:\n${form.linkRecursos || "(pendiente)"} \n\nInstrucciones:\n${form.instrucciones || "Ver pieza en el Banco"}`, prioridad: "Alta" },
+            miniatura: { titulo: `🖼️ [${piece.titulo}] Diseño de Miniatura / Portada`, descripcion: `Crear portada o miniatura atractiva para el post/video.\n\nCopy clave:\n${form.hook || ""}`, prioridad: "Media" },
             aprobar: { titulo: `✅ [${piece.titulo}] Aprobación de edición final`, descripcion: `Revisar el video/diseño final.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
+            programar: { titulo: `📆 [${piece.titulo}] Programar en Redes / Publicar`, descripcion: `Programar la pieza aprobada en las plataformas correspondientes.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
             ads:     { titulo: `🚀 [${piece.titulo}] Lanzar campaña en Meta Ads`, descripcion: `Pieza aprobada. Montar campaña en Meta Ads.\n\nLink:\n${form.linkFinal || "(ver Banco)"}`, prioridad: "Crítica" },
             metricas:{ titulo: `📊 [${piece.titulo}] Cita de métricas (7 días)`, descripcion: `Revisar el rendimiento de esta pieza 7 días después de su publicación.`, prioridad: "Media" },
         };
@@ -476,10 +479,13 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                             {[
+                                { k: "idear",   icon: "🧠", label: "Investigar / Guion" },
                                 { k: "copy",    icon: "📝", label: "Aprobar Copy" },
                                 { k: "grabar",  icon: "🎥", label: "Agendar Grabación" },
                                 { k: "edicion", icon: "🎬", label: "Enviar a Edición" },
+                                { k: "miniatura", icon: "🖼️", label: "Diseñar Portada" },
                                 { k: "aprobar", icon: "✅", label: "Aprobar Edición" },
+                                { k: "programar", icon: "📆", label: "Programar / Publicar" },
                                 { k: "ads",     icon: "🚀", label: "Lanzar Ads" },
                                 { k: "metricas",icon: "📊", label: "Cita de Métricas" },
                             ].map(({ k, icon, label }) => (
