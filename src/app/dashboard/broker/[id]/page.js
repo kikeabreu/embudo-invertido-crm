@@ -112,7 +112,12 @@ export default function BrokerDashboard() {
     const isEquipo = currentUser?.rol === 'Equipo';
     const isBroker = currentUser?.rol === 'Broker';
     const isCoordinador = currentUser?.rol === 'Coordinador';
-    const canEdit = isAdmin || isEquipo || currentUser?.id === brokerId || (isCoordinador && currentUser?.parent_id === brokerId);
+    
+    const isOwnerOrTeam = currentUser?.id === brokerId || (isCoordinador && currentUser?.parent_id === brokerId) || isAdmin || isEquipo;
+    const isViewer = !isOwnerOrTeam;
+    const isBancoViewer = isBroker || isCoordinador || isViewer;
+
+    const canEdit = isOwnerOrTeam;
     const canDelete = isAdmin || isEquipo;
 
     const TABS = [
@@ -157,7 +162,6 @@ export default function BrokerDashboard() {
         );
     }
 
-    const isViewer = currentUser?.rol === 'Broker' && currentUser.id !== brokerId;
 
     const addLog = async (tipo, descripcion, pieza_id = null, payload = {}) => {
         const actor = currentUser?.nombre || currentUser?.email || 'Sistema';
@@ -369,21 +373,21 @@ export default function BrokerDashboard() {
     };
 
     const toggleInstal = async (id) => {
-        if (!canEdit) return;
+        if (!isAdmin && !isEquipo) return;
         const newChecked = { ...instalChecked, [id]: !instalChecked[id] };
         setInstalChecked(newChecked);
         await updateBrokerConfig('instalacion_checked', newChecked);
     };
 
     const updateVar = async (k, v) => {
-        if (!canEdit) return;
+        if (!isAdmin && !isEquipo) return;
         const newVars = { ...vars, [k]: v };
         setVars(newVars);
         await updateBrokerConfig('broker_vars', newVars);
     };
 
     const toggleOnb = async (id) => {
-        if (!canEdit) return;
+        if (!isAdmin && !isEquipo) return;
         const newChecked = { ...onbChecked, [id]: !onbChecked[id] };
         setOnbChecked(newChecked);
         await updateBrokerConfig('onboarding_checked', newChecked);
@@ -460,7 +464,7 @@ export default function BrokerDashboard() {
 
     const renderTabContent = () => {
         switch (tab) {
-            case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onImport={importPiezas} onDelete={deletePieza} onBulkDelete={bulkDeletePiezas} onBulkUpdate={bulkUpdatePiezas} isViewer={isViewer} canEdit={canEdit} canDelete={canDelete} canImport={isAdmin || isEquipo} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} />;
+            case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onImport={importPiezas} onDelete={deletePieza} onBulkDelete={bulkDeletePiezas} onBulkUpdate={bulkUpdatePiezas} isViewer={isBancoViewer} canEdit={canEdit} canDelete={canDelete} canImport={isAdmin || isEquipo} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} />;
             case "instalacion": return <InstalacionTab data={{ vars, instalChecked }} vars={vars} varsLabels={varsLabels} schema={instalSchema} onToggle={toggleInstal} onVarChange={updateVar} onSaveSchema={saveInstalSchema} onSaveVarsLabels={saveVarsLabels} canEditAdmin={isAdmin || isEquipo} />;
             case "onboarding": return <OnboardingTab checked={onbChecked} schema={onboardingSchema} onToggle={toggleOnb} onSaveSchema={saveOnboardingSchema} canEditAdmin={isAdmin || isEquipo} mesLabel={"Mes Actual"} toast={toast} />;
             case "oferta": return <OfertaTab brokerId={brokerId} isViewer={isViewer} toast={toast} />;
