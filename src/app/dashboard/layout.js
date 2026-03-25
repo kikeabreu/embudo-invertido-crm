@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }) {
     return (
         <div style={{ height: "100vh", background: G.bg, fontFamily: "Georgia,serif", color: G.white, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             {/* Top Header Placeholder */}
-            <header style={{ borderBottom: `1px solid ${G.border}`, padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.02)", backdropFilter: "blur(20px)", flexShrink: 0 }}>
+            <header style={{ borderBottom: `1px solid ${G.border}`, padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.02)", backdropFilter: "blur(20px)", flexShrink: 0, position: "relative", zIndex: 50 }}>
                 <div style={{ flex: 1 }}>
                     <GText g={G.gMagenta} size={8} weight={600} style={{ letterSpacing: 3, textTransform: "uppercase", display: "block", marginBottom: 1 }}>Embudo Invertido™</GText>
                     <div style={{ fontSize: 14, fontWeight: 700, color: G.white }}>Panel de Control</div>

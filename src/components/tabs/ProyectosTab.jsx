@@ -18,11 +18,14 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
     const [mentionSearch, setMentionSearch] = useState("");
     const [showMentions, setShowMentions] = useState(false);
 
-    const selProj = proyectos.find(p => p.id === selProjId) || proyectos[0];
-    const projTasks = tareas.filter(t => t.proyecto_id === (selProj?.id));
+    const BANCO_PROJ = { id: 'banco-tareas', nombre: 'Inbox del Banco ⚡', color: G.orange, esVirtual: true };
+    const allProyectos = [BANCO_PROJ, ...proyectos];
+    const selProj = allProyectos.find(p => p.id === selProjId) || allProyectos[0];
+    const projTasks = tareas.filter(t => selProj?.id === 'banco-tareas' ? (!t.proyecto_id && t.broker_id === brokerId) : t.proyecto_id === selProj?.id);
 
     useEffect(() => {
-        if (proyectos.length > 0 && !selProjId) setSelProjId(proyectos[0].id);
+        if (!selProjId) setSelProjId('banco-tareas');
+
         fetchTeam();
     }, [proyectos]);
 
@@ -94,15 +97,14 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                     <GText bold size={11} color={G.white} spacing={2}>PROYECTOS</GText>
                     {!isViewer && <button onClick={() => { setEditProj({ nombre: "", descripcion: "", color: G.purple }); setShowProjModal(true); }} style={{ background: G.purple, border: "none", borderRadius: 4, color: G.white, width: 24, height: 24, cursor: "pointer" }}>+</button>}
                 </div>
-                <div style={{ flex: 1, overflowY: "auto", padding: 10 }}>
-                    {proyectos.map(p => (
+                    {allProyectos.map(p => (
                         <div key={p.id} onClick={() => setSelProjId(p.id)} style={{ padding: "10px 15px", borderRadius: 8, cursor: "pointer", background: selProjId === p.id ? "rgba(255,255,255,0.05)" : "transparent", color: selProjId === p.id ? G.white : G.muted, marginBottom: 4, transition: "0.2s", display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
                             <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color || G.purple }} />
                             <span style={{ flex: 1 }}>{p.nombre}</span>
                         </div>
                     ))}
-                    {proyectos.length === 0 && <div style={{ padding: 20, textAlign: "center", color: G.dimmed, fontSize: 11 }}>Sin proyectos aún</div>}
-                </div>
+                    {allProyectos.length === 0 && <div style={{ padding: 20, textAlign: "center", color: G.dimmed, fontSize: 11 }}>Sin proyectos aún</div>}
+
             </div>
 
             {/* Area de Trabajo */}
@@ -115,8 +117,8 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                 <p style={{ margin: "5px 0 0", fontSize: 12, color: G.muted }}>{selProj.descripcion || "Sin descripción"}</p>
                             </div>
                             <div style={{ display: "flex", gap: 10 }}>
-                                {!isViewer && <button onClick={() => { setEditProj(selProj); setShowProjModal(true); }} style={{ ...css.btn(G.bgGlass), padding: "7px 15px" }}>⚙️ Editar</button>}
-                                {!isViewer && <button onClick={() => { setEditTask({ titulo: "", descripcion: "", prioridad: "Media", estado: "Inbox", proyecto_id: selProj.id }); setShowTaskModal(true); }} style={css.btn()}>+ Nueva Tarea</button>}
+                                {!selProj.esVirtual && !isViewer && <button onClick={() => { setEditProj(selProj); setShowProjModal(true); }} style={{ ...css.btn(G.bgGlass), padding: "7px 15px" }}>⚙️ Editar</button>}
+                                {!isViewer && <button onClick={() => { setEditTask({ titulo: "", descripcion: "", prioridad: "Media", estado: "Inbox", proyecto_id: selProj.esVirtual ? null : selProj.id, broker_id: brokerId }); setShowTaskModal(true); }} style={css.btn()}>+ Nueva Tarea</button>}
                             </div>
                         </div>
 
@@ -235,7 +237,11 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                     // Notify new assignee if changed
                                     const original = tareas.find(t => t.id === editTask.id);
                                     if (editTask.asignado_a && editTask.asignado_a !== original?.asignado_a) {
-                                        notifyUser(editTask.asignado_a, { tipo: "asignacion", mensaje: `📌 ${currentUser?.nombre || "Alguien"} te asignó la tarea: "${editTask.titulo}"` }).catch(() => {});
+                                        notifyUser(editTask.asignado_a, { 
+                                            tipo: "asignacion", 
+                                            mensaje: `📌 ${currentUser?.nombre || "Alguien"} te asignó la tarea: "${editTask.titulo}"`,
+                                            link: "tab:proyectos"
+                                        }).catch(() => {});
                                     }
                                 }} style={{ ...css.btn(), flex: 1 }}>Guardar Cambios</button>
                             </div>
@@ -329,7 +335,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                         const t = e.target.value.trim();
                                         if (t) {
                                             onAddComentario(editTask.id, t);
-                                            notifyMentions(t, team, currentUser?.nombre || "Alguien").catch(() => {});
+                                            notifyMentions(t, team, currentUser?.nombre || "Alguien", "tab:proyectos").catch(() => {});
                                             e.target.value = "";
                                         }
                                     }

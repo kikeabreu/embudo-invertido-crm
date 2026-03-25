@@ -144,6 +144,16 @@ export default function BrokerDashboard() {
         }
     }, [currentUser, brokerId, tab]);
 
+    useEffect(() => {
+        const handleNavigate = (e) => {
+            if (e.detail?.tab && TABS.find(t => t.k === e.detail.tab)) {
+                setTab(e.detail.tab);
+            }
+        };
+        window.addEventListener("navigate-tab", handleNavigate);
+        return () => window.removeEventListener("navigate-tab", handleNavigate);
+    }, [TABS]);
+
     const fetchProyectos = async () => {
         const { data } = await supabase.from('proyectos').select('*').eq('broker_id', brokerId).order('created_at', { ascending: false });
         if (data) setProyectos(data);

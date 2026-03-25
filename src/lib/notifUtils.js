@@ -61,13 +61,14 @@ export async function notifyUser(userId, { tipo, mensaje, link = null }) {
  * Parse @mentions from a comment text and notify each mentioned user.
  * Expects users array: [{ id, nombre, rol }]
  */
-export async function notifyMentions(texto, allUsers, senderName) {
+export async function notifyMentions(texto, allUsers, senderName, link = null) {
     if (!texto) return;
     const mentioned = allUsers.filter(u => texto.includes(`@${u.nombre}`));
     for (const u of mentioned) {
         await notifyUser(u.id, {
             tipo: "mencion",
             mensaje: `${senderName} te mencionó en un comentario: "${texto.slice(0, 80)}${texto.length > 80 ? "..." : ""}"`,
+            link
         });
     }
 }

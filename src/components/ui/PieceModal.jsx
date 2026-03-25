@@ -282,6 +282,7 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
             notifyAdmins({
                 tipo: "workflow",
                 mensaje: `⚡ ${currentUser?.nombre || "Alguien"} accionó "${tpl.titulo}" desde el Banco.`,
+                link: "tab:proyectos"
             }).catch(() => {});
         } catch(e) {
             console.error("[Workflow] Error:", e);
@@ -298,7 +299,8 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
         // Notify admins non-blocking
         notifyAdmins({
             tipo: "mencion",
-            mensaje: `💬 ${currentUser?.nombre || "El cliente"} dejó una anotación en "${piece.titulo}": "${texto.slice(0, 80)}${texto.length > 80 ? "..." : ""}"",`,
+            mensaje: `💬 ${currentUser?.nombre || "El cliente"} dejó una anotación en "${piece.titulo}": "${texto.slice(0, 80)}${texto.length > 80 ? "..." : ""}"`,
+            link: "tab:banco"
         }).catch(() => {});
     };
 

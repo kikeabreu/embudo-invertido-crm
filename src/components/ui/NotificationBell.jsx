@@ -61,6 +61,14 @@ export default function NotificationBell({ currentUserId }) {
         }
     };
 
+    const handleClick = (n) => {
+        markRead(n);
+        if (n.link && n.link.startsWith("tab:")) {
+            window.dispatchEvent(new CustomEvent("navigate-tab", { detail: { tab: n.link.split(":")[1] } }));
+        }
+        setOpen(false);
+    };
+
     const ICONS = { mencion: "🏷️", asignacion: "📌", vencimiento: "⏰", workflow: "🔗" };
 
     const fmtDate = (ts) => {
@@ -121,12 +129,11 @@ export default function NotificationBell({ currentUserId }) {
                     top: "calc(100% + 8px)",
                     right: 0,
                     width: 340,
-                    background: G.bgCard || "rgba(20,20,30,0.98)",
+                    background: "#0B0B19",
                     border: `1px solid ${G.border}`,
                     borderRadius: 12,
-                    boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
-                    backdropFilter: "blur(20px)",
-                    zIndex: 9999,
+                    boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
+                    zIndex: 999999,
                     overflow: "hidden",
                 }}>
                     {/* Header */}
@@ -150,7 +157,7 @@ export default function NotificationBell({ currentUserId }) {
                         ) : notifs.map(n => (
                             <div
                                 key={n.id}
-                                onClick={() => markRead(n)}
+                                onClick={() => handleClick(n)}
                                 style={{
                                     padding: "12px 16px",
                                     borderBottom: `1px solid ${G.border}`,
