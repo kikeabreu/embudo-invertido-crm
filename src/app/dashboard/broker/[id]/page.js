@@ -464,7 +464,7 @@ export default function BrokerDashboard() {
 
     const renderTabContent = () => {
         switch (tab) {
-            case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onImport={importPiezas} onDelete={deletePieza} onBulkDelete={bulkDeletePiezas} onBulkUpdate={bulkUpdatePiezas} isViewer={isBancoViewer} canEdit={canEdit} canDelete={canDelete} canImport={isAdmin || isEquipo} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} />;
+            case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onImport={importPiezas} onDelete={deletePieza} onBulkDelete={bulkDeletePiezas} onBulkUpdate={bulkUpdatePiezas} isViewer={isBancoViewer} canEdit={canEdit} canDelete={canDelete} canImport={isAdmin || isEquipo} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} currentUser={currentUser} onCreateTarea={(t) => setTareas(prev => [{ ...t, comentarios_tareas: [] }, ...prev])} />;
             case "instalacion": return <InstalacionTab data={{ vars, instalChecked }} vars={vars} varsLabels={varsLabels} schema={instalSchema} onToggle={toggleInstal} onVarChange={updateVar} onSaveSchema={saveInstalSchema} onSaveVarsLabels={saveVarsLabels} canEditAdmin={isAdmin || isEquipo} />;
             case "onboarding": return <OnboardingTab checked={onbChecked} schema={onboardingSchema} onToggle={toggleOnb} onSaveSchema={saveOnboardingSchema} canEditAdmin={isAdmin || isEquipo} mesLabel={"Mes Actual"} toast={toast} />;
             case "oferta": return <OfertaTab brokerId={brokerId} isViewer={isViewer} toast={toast} />;

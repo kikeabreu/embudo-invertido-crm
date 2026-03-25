@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { G, css, ESTADOS_PIEZA, estadoColor, FASES, faseColor, FORMATOS, FORMATO_ICON, fmtDate, uid } from "@/lib/constants";
 
 function AnotacionInput({ onAdd }) {
@@ -243,9 +244,58 @@ function PieceTextArea({ value, onChange, label, rows = 3, placeholder = "", rea
     );
 }
 
-export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRole, onSave, onClose, onDelete, logs, toast }) {
+export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRole, onSave, onClose, onDelete, logs, toast, onCreateTarea, brokerId, currentUser }) {
     const [form, setForm] = useState({ formato: "", fechaProg: "", linkEvidencia: "", origen: "manual", anotaciones: [], ...piece });
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [workflowLoading, setWorkflowLoading] = useState(null);
+
+    const sendWorkflowTarea = async (tipo) => {
+        if (workflowLoading) return;
+        setWorkflowLoading(tipo);
+        const TEMPLATES = {
+            copy:    { titulo: `📝 [${piece.titulo}] Revisar y aprobar copy`, descripcion: `Por favor revisa el copy de esta pieza y aprueba o sugiere cambios en la sección de Anotaciones del Banco.\n\nCopy:\n${form.copy || "(sin copy aún)"}`, prioridad: "Media" },
+            grabar:  { titulo: `🎥 [${piece.titulo}] Agendar grabación`, descripcion: `Se necesita coordinar la grabación del video para esta pieza.\n\nGuion:\n${form.guion || "(sin guión aún)"}`, prioridad: "Alta" },
+            edicion: { titulo: `🎬 [${piece.titulo}] Edición de video / diseño`, descripcion: `Archivos crudos:\n${form.linkRecursos || "(pendiente de subir)"} \n\nInstrucciones:\n${form.instrucciones || "Ver pieza en el Banco"}`, prioridad: "Alta" },
+            aprobar: { titulo: `✅ [${piece.titulo}] Aprobación de edición final`, descripcion: `Por favor revisa el video/diseño final y confirma si está listo para publicar.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
+            ads:     { titulo: `🚀 [${piece.titulo}] Lanzar campaña en Meta Ads`, descripcion: `La pieza ha sido aprobada. Proceder a montar la campaña de interacción o leads en Meta Ads.\n\nLink final:\n${form.linkFinal || "(ver Banco)"}`, prioridad: "Crítica" },
+            metricas:{ titulo: `📊 [${piece.titulo}] Cita de métricas (7 días)`, descripcion: `Revisar en conjunto el rendimiento de esta pieza 7 días después de su publicación.`, prioridad: "Media" },
+        };
+        const tpl = TEMPLATES[tipo];
+        if (!tpl) { setWorkflowLoading(null); return; }
+
+        const fechaLimite = tipo === "metricas"
+            ? new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split("T")[0]
+            : null;
+
+        try {
+            // Create tarea
+            const { data: tarea, error } = await supabase.from("tareas").insert({
+                broker_id: brokerId,
+                titulo: tpl.titulo,
+                descripcion: tpl.descripcion,
+                prioridad: tpl.prioridad,
+                estado: "inbox",
+                fecha_limite: fechaLimite,
+            }).select().single();
+
+            if (!error && tarea) {
+                // Notify assigned user if present
+                if (currentUser?.id) {
+                    await supabase.from("notificaciones").insert({
+                        usuario_id: currentUser.id,
+                        tipo: "workflow",
+                        mensaje: `Nueva tarea creada desde el Banco: "${tpl.titulo}"`,
+                    });
+                }
+                if (toast) toast(`Tarea creada: ${tpl.titulo} 🚀`, "success");
+                if (onCreateTarea) onCreateTarea(tarea);
+            }
+        } catch(e) {
+            if (toast) toast("Error al crear tarea", "error");
+        } finally {
+            setWorkflowLoading(null);
+        }
+    };
 
     const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
@@ -318,7 +368,7 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                         {[{ k: "linkRecursos", l: "Link de recursos (crudos)" }, { k: "linkFinal", l: "Link diseño / video final" }].map(({ k, l }) => (
-                            <FileUploadInput key={k} value={form[k]} onChange={v => f(k, v)} label={l} placeholder="URL o subir archivo..." readOnly={isViewer} toast={toast} />
+                            <FileUploadInput key={k} value={form[k]} onChange={v => f(k, v)} label={l} placeholder="URL o subir archivo..." toast={toast} />
                         ))}
                     </div>
 
@@ -383,9 +433,52 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
                             ))}
                         </div>
 
-                        {userRole === "Viewer" && (
+                        {isViewer && (
                             <AnotacionInput onAdd={(texto) => f("anotaciones", [...(form.anotaciones || []), { id: uid(), texto, ts: new Date().toISOString(), revisada: false }])} />
                         )}
+                    </div>
+
+                    {/* ── ACCIONES WORKFLOW (BANCO ↔ PROYECTOS) ── */}
+                    <div style={{ marginTop: 20, padding: "16px", background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 12 }}>
+                        <div style={{ fontSize: 9, letterSpacing: 2, color: "rgba(167,139,250,1)", fontFamily: "sans-serif", textTransform: "uppercase", fontWeight: 700, marginBottom: 12 }}>
+                            ⚡ Acciones rápidas → Proyectos
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                            {[
+                                { k: "copy",    icon: "📝", label: "Aprobar Copy" },
+                                { k: "grabar",  icon: "🎥", label: "Agendar Grabación" },
+                                { k: "edicion", icon: "🎬", label: "Enviar a Edición" },
+                                { k: "aprobar", icon: "✅", label: "Aprobar Edición" },
+                                { k: "ads",     icon: "🚀", label: "Lanzar Ads" },
+                                { k: "metricas",icon: "📊", label: "Cita de Métricas" },
+                            ].map(({ k, icon, label }) => (
+                                <button
+                                    key={k}
+                                    onClick={() => sendWorkflowTarea(k)}
+                                    disabled={!!workflowLoading}
+                                    style={{
+                                        background: workflowLoading === k ? "rgba(124,58,237,0.2)" : "rgba(124,58,237,0.08)",
+                                        border: "1px solid rgba(124,58,237,0.3)",
+                                        borderRadius: 8,
+                                        color: workflowLoading === k ? G.dimmed : "rgba(167,139,250,1)",
+                                        padding: "7px 12px",
+                                        cursor: workflowLoading ? "wait" : "pointer",
+                                        fontSize: 11,
+                                        fontFamily: "sans-serif",
+                                        fontWeight: 600,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 5,
+                                        transition: "all 0.15s",
+                                    }}
+                                >
+                                    {workflowLoading === k ? "⏳" : icon} {label}
+                                </button>
+                            ))}
+                        </div>
+                        <div style={{ fontSize: 10, color: G.dimmed, fontFamily: "sans-serif", marginTop: 10 }}>
+                            Crea una tarea vinculada a esta pieza en el tablero de Proyectos con un clic.
+                        </div>
                     </div>
 
                     <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { G } from "@/lib/constants";
 import { GText } from "@/components/ui/UIUtils";
+import NotificationBell from "@/components/ui/NotificationBell";
 
 export default function DashboardLayout({ children }) {
     const router = useRouter();
@@ -61,6 +62,7 @@ export default function DashboardLayout({ children }) {
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <NotificationBell currentUserId={user?.id} />
                     <div style={{ width: 26, height: 26, borderRadius: 20, background: G.gPurple, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 10px rgba(124,58,237,0.3)" }}>
                         <span style={{ fontSize: 11, color: G.white, fontWeight: 700 }}>{user?.nombre?.[0] || user?.email?.[0] || "U"}</span>
                     </div>
