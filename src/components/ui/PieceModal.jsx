@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { notifyAdmins } from "@/lib/notifUtils";
 import { G, css, ESTADOS_PIEZA, estadoColor, FASES, faseColor, FORMATOS, FORMATO_ICON, fmtDate, uid } from "@/lib/constants";
@@ -229,6 +229,34 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
                     </div>
                 )
             )}
+
+            {/* Modal de Configuración de Workflow */}
+            {workflowPrompt && (
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, borderRadius: 20 }}>
+                    <div style={{ background: G.bgCard, border: `1px solid ${G.border}`, borderRadius: 12, padding: 25, width: "90%", maxWidth: 400, boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: G.white, marginBottom: 15 }}>{workflowPrompt.tpl.titulo}</div>
+                        <div style={{ fontSize: 12, color: G.muted, marginBottom: 20, lineHeight: 1.5 }}>Selecciona un responsable y una fecha límite para enviar esta tarea al tablero de Proyectos.</div>
+                        
+                        <div style={{ marginBottom: 15 }}>
+                            <label style={{ display: "block", fontSize: 10, color: G.muted, letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>ASIGNAR A:</label>
+                            <select value={promptAssignee} onChange={e => setPromptAssignee(e.target.value)} style={{ ...css.input, width: "100%", padding: 12 }}>
+                                <option value="">Sin asignar (Cualquiera en tu equipo)</option>
+                                {team.map(u => <option key={u.id} value={u.id}>{u.nombre} ({u.rol})</option>)}
+                            </select>
+                        </div>
+                        
+                        <div style={{ marginBottom: 25 }}>
+                            <label style={{ display: "block", fontSize: 10, color: G.muted, letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>FECHA LÍMITE:</label>
+                            <input type="date" value={promptDate} onChange={e => setPromptDate(e.target.value)} style={{ ...css.input, width: "100%", padding: 12 }} />
+                        </div>
+                        
+                        <div style={{ display: "flex", gap: 10 }}>
+                            <button onClick={() => setWorkflowPrompt(null)} style={{ ...css.btn(G.bgGlass), flex: 1, padding: "10px 0" }}>Cancelar</button>
+                            <button onClick={confirmWorkflowTarea} disabled={!!workflowLoading} style={{ ...css.btn(G.purple), flex: 1, padding: "10px 0" }}>{workflowLoading ? "Creando..." : "Crear Tarea"}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -249,10 +277,23 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
     const [form, setForm] = useState({ formato: "", fechaProg: "", linkEvidencia: "", origen: "manual", anotaciones: [], ...piece });
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [workflowLoading, setWorkflowLoading] = useState(null);
+    const [team, setTeam] = useState([]);
+    const [workflowPrompt, setWorkflowPrompt] = useState(null);
+    const [promptAssignee, setPromptAssignee] = useState("");
+    const [promptDate, setPromptDate] = useState("");
+
+    useEffect(() => {
+        const loadTeam = async () => {
+            if (!brokerId) return;
+            const { data } = await supabase.from('usuarios').select('id, nombre, rol')
+                .or(`rol.in.(Admin,Equipo),id.eq.${brokerId},parent_id.eq.${brokerId}`);
+            if (data) setTeam(data);
+        };
+        loadTeam();
+    }, [brokerId]);
 
     const sendWorkflowTarea = async (tipo) => {
         if (workflowLoading) return;
-        setWorkflowLoading(tipo);
         const TEMPLATES = {
             copy:    { titulo: `📝 [${piece.titulo}] Revisar y aprobar copy`, descripcion: `Por favor revisa el copy y sugiere cambios en Anotaciones del Banco.\n\nCopy:\n${form.copy || "(sin copy aún)"}`, prioridad: "Media" },
             grabar:  { titulo: `🎥 [${piece.titulo}] Agendar grabación`, descripcion: `Coordinar la grabación.\n\nGuión:\n${form.guion || "(sin guión aún)"}`, prioridad: "Alta" },
@@ -263,9 +304,17 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
         };
         const tpl = TEMPLATES[tipo];
         if (!tpl) { setWorkflowLoading(null); return; }
-        const fechaLimite = tipo === "metricas"
-            ? new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split("T")[0]
-            : null;
+        
+        const defaultDate = tipo === "metricas" ? new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().split("T")[0] : "";
+        setPromptDate(defaultDate);
+        setPromptAssignee("");
+        setWorkflowPrompt({ tipo, tpl });
+    };
+
+    const confirmWorkflowTarea = async () => {
+        if (!workflowPrompt || workflowLoading) return;
+        setWorkflowLoading(workflowPrompt.tipo);
+        const { tpl } = workflowPrompt;
         try {
             const { data: tarea, error } = await supabase.from("tareas").insert({
                 broker_id: brokerId,
@@ -273,7 +322,9 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
                 descripcion: tpl.descripcion,
                 prioridad: tpl.prioridad,
                 estado: "Inbox",
-                fecha_limite: fechaLimite,
+                fecha_limite: promptDate || null,
+                asignado_a: promptAssignee || null,
+                creador_id: currentUser?.id || null
             }).select().single();
             if (error) throw error;
             if (toast) toast(`Tarea creada 🚀`, "success");
@@ -289,6 +340,7 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
             if (toast) toast(`Error al crear tarea: ${e?.message || "Unknown"}`, "error");
         } finally {
             setWorkflowLoading(null);
+            setWorkflowPrompt(null);
         }
     };
 

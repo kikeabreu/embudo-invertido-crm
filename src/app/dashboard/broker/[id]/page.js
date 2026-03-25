@@ -445,7 +445,8 @@ export default function BrokerDashboard() {
     };
 
     const saveTarea = async (task) => {
-        const { data, error } = await supabase.from('tareas').upsert(task).select().single();
+        const { comentarios_tareas, ...dbTask } = task;
+        const { data, error } = await supabase.from('tareas').upsert(dbTask).select().single();
         if (!error) {
             setTareas(prev => {
                 const exists = prev.find(t => t.id === data.id);

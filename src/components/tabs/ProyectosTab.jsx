@@ -143,10 +143,16 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                                 <div style={{ fontSize: 11, color: G.muted, lineBreak: "anywhere", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{task.descripcion}</div>
                                                 
                                                 <div style={{ marginTop: 15, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                                    <div style={{ display: "flex", gap: 4 }}>
-                                                        {task.comentarios_tareas?.length > 0 && <span style={{ fontSize: 10, color: G.dimmed }}>💬 {task.comentarios_tareas.length}</span>}
+                                                    <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                                                        {task.creador_id && (
+                                                            <div title={`Creado por: ${team.find(u => u.id === task.creador_id)?.nombre || "Autor"}`} style={{ fontSize: 9, color: G.muted, border: `1px dashed rgba(255,255,255,0.2)`, borderRadius: 10, padding: "2px 6px", display: "flex", gap: 3, alignItems: "center", background: "rgba(255,255,255,0.02)" }}>
+                                                                <span style={{color: G.green}}>+</span>
+                                                                {team.find(u => u.id === task.creador_id)?.nombre?.slice(0, 2).toUpperCase() || "?"}
+                                                            </div>
+                                                        )}
+                                                        {task.comentarios_tareas?.length > 0 && <span style={{ fontSize: 10, color: G.dimmed, marginLeft: task.creador_id ? 5 : 0 }}>💬 {task.comentarios_tareas.length}</span>}
                                                     </div>
-                                                    <div style={{ width: 24, height: 24, borderRadius: "50%", background: G.purple, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: G.white, border: `1px solid ${G.borderHi}` }}>
+                                                    <div title={`Asignado a: ${team.find(u => u.id === task.asignado_a)?.nombre || "Sin asignar"}`} style={{ width: 24, height: 24, borderRadius: "50%", background: G.purple, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: G.white, border: `1px solid ${G.borderHi}` }}>
                                                         {team.find(u => u.id === task.asignado_a)?.nombre?.slice(0, 2).toUpperCase() || "?"}
                                                     </div>
                                                 </div>
