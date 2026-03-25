@@ -15,9 +15,14 @@ ALTER TABLE public.tareas ADD CONSTRAINT tareas_estado_check
     CHECK (estado IN ('Inbox', 'inbox', 'En curso', 'en_curso', 'Bloqueado', 'bloqueado', 'Hecho', 'hecho'));
 
 -- 4. Add missing INSERT/UPDATE policies on tareas
-CREATE POLICY IF NOT EXISTS tarea_insert_policy ON public.tareas FOR INSERT WITH CHECK (true);
-CREATE POLICY IF NOT EXISTS tarea_update_policy ON public.tareas FOR UPDATE USING (true);
-CREATE POLICY IF NOT EXISTS tarea_delete_policy ON public.tareas FOR DELETE USING (true);
+DROP POLICY IF EXISTS tarea_insert_policy ON public.tareas;
+CREATE POLICY tarea_insert_policy ON public.tareas FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS tarea_update_policy ON public.tareas;
+CREATE POLICY tarea_update_policy ON public.tareas FOR UPDATE USING (true);
+
+DROP POLICY IF EXISTS tarea_delete_policy ON public.tareas;
+CREATE POLICY tarea_delete_policy ON public.tareas FOR DELETE USING (true);
 
 -- 5. Create the notificaciones table
 CREATE TABLE IF NOT EXISTS public.notificaciones (
@@ -33,13 +38,16 @@ CREATE TABLE IF NOT EXISTS public.notificaciones (
 ALTER TABLE public.notificaciones ENABLE ROW LEVEL SECURITY;
 
 -- Políticas de notificaciones
-CREATE POLICY IF NOT EXISTS notif_select ON public.notificaciones FOR SELECT
+DROP POLICY IF EXISTS notif_select ON public.notificaciones;
+CREATE POLICY notif_select ON public.notificaciones FOR SELECT
 USING (usuario_id = auth.uid()::text);
 
-CREATE POLICY IF NOT EXISTS notif_update ON public.notificaciones FOR UPDATE
+DROP POLICY IF EXISTS notif_update ON public.notificaciones;
+CREATE POLICY notif_update ON public.notificaciones FOR UPDATE
 USING (usuario_id = auth.uid()::text);
 
-CREATE POLICY IF NOT EXISTS notif_insert ON public.notificaciones FOR INSERT
+DROP POLICY IF EXISTS notif_insert ON public.notificaciones;
+CREATE POLICY notif_insert ON public.notificaciones FOR INSERT
 WITH CHECK (auth.uid() IS NOT NULL);
 
 -- 6. Reload schema
