@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { G, css } from "@/lib/constants";
+import { G, css, pct } from "@/lib/constants";
+import { INSTALACION_SECTIONS, ONBOARDING_STEPS } from "@/lib/data";
 import { GText, PBar } from "@/components/ui/UIUtils";
 import { useToast, Toasts } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
@@ -34,6 +35,14 @@ export default function BrokerDashboard() {
     const [instalChecked, setInstalChecked] = useState({});
     const [onbChecked, setOnbChecked] = useState({});
     const [vars, setVars] = useState({});
+    const [instalSchema, setInstalSchema] = useState([]);
+    const [onboardingSchema, setOnboardingSchema] = useState([]);
+    const [varsLabels, setVarsLabels] = useState([
+        { k: "nombre", l: "Nombre / Marca" },
+        { k: "zona", l: "Zona / Colonia" },
+        { k: "nicho", l: "Nicho (primerizo / patrimonial / lifestyle)" },
+        { k: "cta", l: "CTA principal (ej: INVERTIR)" }
+    ]);
     const [proyectos, setProyectos] = useState([]);
     const [tareas, setTareas] = useState([]);
 
@@ -67,6 +76,12 @@ export default function BrokerDashboard() {
             setInstalChecked(config.instalacion_checked || {});
             setVars(config.broker_vars || {});
             setOnbChecked(config.onboarding_checked || {});
+            setInstalSchema(config.instalacion_schema || INSTALACION_SECTIONS);
+            setOnboardingSchema(config.onboarding_schema || ONBOARDING_STEPS);
+            if (config.vars_labels) setVarsLabels(config.vars_labels);
+        } else {
+            setInstalSchema(INSTALACION_SECTIONS);
+            setOnboardingSchema(ONBOARDING_STEPS);
         }
 
         const { data: pz } = await supabase.from('piezas_banco').select('*').eq('broker_id', brokerId);
@@ -374,6 +389,24 @@ export default function BrokerDashboard() {
         await updateBrokerConfig('onboarding_checked', newChecked);
     };
 
+    const saveInstalSchema = async (sch) => {
+        if (!isAdmin && !isEquipo) return;
+        setInstalSchema(sch);
+        await updateBrokerConfig('instalacion_schema', sch);
+    };
+
+    const saveOnboardingSchema = async (sch) => {
+        if (!isAdmin && !isEquipo) return;
+        setOnboardingSchema(sch);
+        await updateBrokerConfig('onboarding_schema', sch);
+    };
+
+    const saveVarsLabels = async (labels) => {
+        if (!isAdmin && !isEquipo) return;
+        setVarsLabels(labels);
+        await updateBrokerConfig('vars_labels', labels);
+    };
+
     // ── GESTIÓN DE PROYECTOS ──────────────────────────────────────────────
     const saveProyecto = async (proj) => {
         const { data, error } = await supabase.from('proyectos').upsert({ ...proj, broker_id: brokerId }).select().single();
@@ -428,8 +461,8 @@ export default function BrokerDashboard() {
     const renderTabContent = () => {
         switch (tab) {
             case "banco": return <BancoTab piezas={piezas} onSave={savePieza} onAdd={addPieza} onImport={importPiezas} onDelete={deletePieza} onBulkDelete={bulkDeletePiezas} onBulkUpdate={bulkUpdatePiezas} isViewer={isViewer} canEdit={canEdit} canDelete={canDelete} canImport={isAdmin || isEquipo} logs={logs} toast={toast} userRole={currentUser?.rol} brokerId={brokerId} />;
-            case "instalacion": return <InstalacionTab data={{ vars, instalChecked }} vars={vars} onToggle={toggleInstal} onVarChange={updateVar} />;
-            case "onboarding": return <OnboardingTab checked={onbChecked} onToggle={toggleOnb} mesLabel={"Mes Actual"} toast={toast} />;
+            case "instalacion": return <InstalacionTab data={{ vars, instalChecked }} vars={vars} varsLabels={varsLabels} schema={instalSchema} onToggle={toggleInstal} onVarChange={updateVar} onSaveSchema={saveInstalSchema} onSaveVarsLabels={saveVarsLabels} canEditAdmin={isAdmin || isEquipo} />;
+            case "onboarding": return <OnboardingTab checked={onbChecked} schema={onboardingSchema} onToggle={toggleOnb} onSaveSchema={saveOnboardingSchema} canEditAdmin={isAdmin || isEquipo} mesLabel={"Mes Actual"} toast={toast} />;
             case "oferta": return <OfertaTab brokerId={brokerId} isViewer={isViewer} toast={toast} />;
             case "analitica": return <AnalyticsTab piezas={piezas} instalChecked={instalChecked} onbChecked={onbChecked} broker={broker} />;
             case "historial": return <HistorialTab logs={logs} onUndo={undoAction} isViewer={isViewer} />;
