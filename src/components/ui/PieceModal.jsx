@@ -229,34 +229,6 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
                     </div>
                 )
             )}
-
-            {/* Modal de Configuración de Workflow */}
-            {workflowPrompt && (
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, borderRadius: 20 }}>
-                    <div style={{ background: G.bgCard, border: `1px solid ${G.border}`, borderRadius: 12, padding: 25, width: "90%", maxWidth: 400, boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}>
-                        <div style={{ fontSize: 16, fontWeight: 700, color: G.white, marginBottom: 15 }}>{workflowPrompt.tpl.titulo}</div>
-                        <div style={{ fontSize: 12, color: G.muted, marginBottom: 20, lineHeight: 1.5 }}>Selecciona un responsable y una fecha límite para enviar esta tarea al tablero de Proyectos.</div>
-                        
-                        <div style={{ marginBottom: 15 }}>
-                            <label style={{ display: "block", fontSize: 10, color: G.muted, letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>ASIGNAR A:</label>
-                            <select value={promptAssignee} onChange={e => setPromptAssignee(e.target.value)} style={{ ...css.input, width: "100%", padding: 12 }}>
-                                <option value="">Sin asignar (Cualquiera en tu equipo)</option>
-                                {team.map(u => <option key={u.id} value={u.id}>{u.nombre} ({u.rol})</option>)}
-                            </select>
-                        </div>
-                        
-                        <div style={{ marginBottom: 25 }}>
-                            <label style={{ display: "block", fontSize: 10, color: G.muted, letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>FECHA LÍMITE:</label>
-                            <input type="date" value={promptDate} onChange={e => setPromptDate(e.target.value)} style={{ ...css.input, width: "100%", padding: 12 }} />
-                        </div>
-                        
-                        <div style={{ display: "flex", gap: 10 }}>
-                            <button onClick={() => setWorkflowPrompt(null)} style={{ ...css.btn(G.bgGlass), flex: 1, padding: "10px 0" }}>Cancelar</button>
-                            <button onClick={confirmWorkflowTarea} disabled={!!workflowLoading} style={{ ...css.btn(G.purple), flex: 1, padding: "10px 0" }}>{workflowLoading ? "Creando..." : "Crear Tarea"}</button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
@@ -559,6 +531,34 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
                     </div>
                 </div>
             </div>
+
+            {/* Modal de Configuración de Workflow */}
+            {workflowPrompt && (
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, borderRadius: 20 }}>
+                    <div style={{ background: G.bgCard, border: `1px solid ${G.border}`, borderRadius: 12, padding: 25, width: "90%", maxWidth: 400, boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: G.white, marginBottom: 15 }}>{workflowPrompt.tpl.titulo}</div>
+                        <div style={{ fontSize: 12, color: G.muted, marginBottom: 20, lineHeight: 1.5 }}>Selecciona un responsable y una fecha límite para enviar esta tarea al tablero de Proyectos.</div>
+                        
+                        <div style={{ marginBottom: 15 }}>
+                            <label style={{ display: "block", fontSize: 10, color: G.muted, letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>ASIGNAR A:</label>
+                            <select value={promptAssignee} onChange={e => setPromptAssignee(e.target.value)} style={{ ...css.input, width: "100%", padding: 12 }}>
+                                <option value="">Sin asignar (Cualquiera en tu equipo)</option>
+                                {team.map(u => <option key={u.id} value={u.id}>{u.nombre} ({u.rol})</option>)}
+                            </select>
+                        </div>
+                        
+                        <div style={{ marginBottom: 25 }}>
+                            <label style={{ display: "block", fontSize: 10, color: G.muted, letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>FECHA LÍMITE:</label>
+                            <input type="date" value={promptDate} onChange={e => setPromptDate(e.target.value)} style={{ ...css.input, width: "100%", padding: 12 }} />
+                        </div>
+                        
+                        <div style={{ display: "flex", gap: 10 }}>
+                            <button onClick={() => setWorkflowPrompt(null)} style={{ ...css.btn(G.bgGlass), flex: 1, padding: "10px 0" }}>Cancelar</button>
+                            <button onClick={confirmWorkflowTarea} disabled={!!workflowLoading} style={{ ...css.btn(G.purple), flex: 1, padding: "10px 0" }}>{workflowLoading ? "Creando..." : "Crear Tarea"}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
