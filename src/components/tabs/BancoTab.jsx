@@ -27,6 +27,20 @@ export default function BancoTab({ piezas = [], onSave, onAdd, onImport, onDelet
     const [calMes, setCalMes] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
     const [form, setForm] = useState({ fase: "Atracción", avatar: "", dolor: "", titulo: "", hook: "", ctaDm: "", formato: "", fechaProg: "" });
 
+    useEffect(() => {
+        const handleOpenPiece = (e) => {
+            const pieceId = e.detail?.pieceId;
+            if (pieceId) {
+                const p = piezas.find(x => x.id === pieceId);
+                if (p) {
+                    setEditPiece(p);
+                }
+            }
+        };
+        window.addEventListener("open-piece-modal", handleOpenPiece);
+        return () => window.removeEventListener("open-piece-modal", handleOpenPiece);
+    }, [piezas]);
+
     const filtered = piezas
         .filter(p => {
             if (filterFase !== "Todas" && p.fase !== filterFase) return false;

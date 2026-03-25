@@ -299,7 +299,8 @@ export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRo
                 estado: "Inbox",
                 fecha_limite: promptDate || null,
                 asignado_a: promptAssignee || null,
-                creador_id: currentUser?.id || null
+                creador_id: currentUser?.id || null,
+                pieza_id: piece.id
             }).select().single();
             if (error) throw error;
             if (toast) toast(`Tarea creada 🚀`, "success");

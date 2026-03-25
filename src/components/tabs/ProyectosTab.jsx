@@ -255,6 +255,17 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                 </div>
                             </div>
                             
+                            {editTask?.pieza_id && (
+                                <div style={{ marginBottom: 25 }}>
+                                    <button onClick={() => {
+                                        window.dispatchEvent(new CustomEvent("navigate-tab", { detail: { tab: "banco", query: `open_piece=${editTask.pieza_id}` } }));
+                                        setShowTaskModal(false);
+                                    }} style={{ ...css.btn(G.bgGlass), width: "100%", padding: "12px 0", color: G.cyan, border: `1px dashed ${G.cyan}66`, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                                        🔗 Ir al Post Original en el Banco
+                                    </button>
+                                </div>
+                            )}
+                            
                             <div style={{ display: "flex", gap: 10, marginTop: 40 }}>
                                 <button onClick={() => setShowTaskModal(false)} style={{ ...css.btn(G.bgGlass), flex: 1 }}>Cerrar</button>
                                 <button onClick={() => { onSaveTarea(editTask); setShowTaskModal(false); 

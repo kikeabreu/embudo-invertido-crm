@@ -155,6 +155,10 @@ export default function BrokerDashboard() {
                 if (openTask) {
                     setTimeout(() => window.dispatchEvent(new CustomEvent("open-task-modal", { detail: { taskId: openTask } })), 100);
                 }
+                const openPiece = params.get("open_piece");
+                if (openPiece) {
+                    setTimeout(() => window.dispatchEvent(new CustomEvent("open-piece-modal", { detail: { pieceId: openPiece } })), 100);
+                }
             }
         };
         window.addEventListener("navigate-tab", handleNavigate);
