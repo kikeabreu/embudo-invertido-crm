@@ -245,7 +245,7 @@ function PieceTextArea({ value, onChange, label, rows = 3, placeholder = "", rea
     );
 }
 
-export default function PieceModal({ piece, isViewer, canEdit, canDelete, userRole, onSave, onClose, onDelete, logs, toast, onCreateTarea, brokerId, currentUser }) {
+export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canDelete, userRole, onSave, onClose, onDelete, logs, toast, onCreateTarea, brokerId, currentUser }) {
     const [form, setForm] = useState({ formato: "", fechaProg: "", linkEvidencia: "", origen: "manual", anotaciones: [], ...piece });
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [workflowLoading, setWorkflowLoading] = useState(null);
