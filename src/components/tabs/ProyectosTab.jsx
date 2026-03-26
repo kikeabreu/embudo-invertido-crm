@@ -26,14 +26,52 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
     const [viewMode, setViewMode] = useState("kanban"); // kanban | lista | calendario
     const [filterAssignee, setFilterAssignee] = useState("Todas");
     const [filterPriority, setFilterPriority] = useState("Todas");
+    const [filterStatus, setFilterStatus] = useState("Todos");
+    const [filterDate, setFilterDate] = useState("Todas");
+    const [sortBy, setSortBy] = useState("defecto"); // defecto | prioridad | fecha_limite | estado
     const [calMes, setCalMes] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
 
-    const projTasks = projTasksRaw.filter(t => {
-        if (filterPriority !== "Todas" && t.prioridad !== filterPriority) return false;
-        if (filterAssignee === "Mis tareas" && t.asignado_a !== currentUser?.id) return false;
-        if (filterAssignee !== "Todas" && filterAssignee !== "Mis tareas" && t.asignado_a !== filterAssignee) return false;
-        return true;
-    });
+    const hoy = new Date().toLocaleString("sv").split(" ")[0]; // YYYY-MM-DD
+    const getWeekEnd = () => {
+        const d = new Date();
+        const diff = d.getDate() + (7 - d.getDay()) % 7;
+        const weekEnd = new Date(d.setDate(diff));
+        return weekEnd.toLocaleString("sv").split(" ")[0];
+    };
+    const thisWeekEnd = getWeekEnd();
+    const thisMonth = hoy.substring(0, 7);
+
+    const projTasks = projTasksRaw
+        .filter(t => {
+            if (filterPriority !== "Todas" && t.prioridad !== filterPriority) return false;
+            if (filterAssignee === "Mis tareas" && t.asignado_a !== currentUser?.id) return false;
+            if (filterAssignee !== "Todas" && filterAssignee !== "Mis tareas" && t.asignado_a !== filterAssignee) return false;
+            if (filterStatus !== "Todos" && t.estado !== filterStatus) return false;
+            
+            if (filterDate === "Atrasadas" && (!t.fecha_limite || t.fecha_limite >= hoy || t.estado === "Hecho")) return false;
+            if (filterDate === "Hoy" && t.fecha_limite !== hoy) return false;
+            if (filterDate === "Esta semana" && (!t.fecha_limite || t.fecha_limite < hoy || t.fecha_limite > thisWeekEnd)) return false;
+            if (filterDate === "Este mes" && (!t.fecha_limite || !t.fecha_limite.startsWith(thisMonth))) return false;
+            
+            return true;
+        })
+        .sort((a, b) => {
+            if (sortBy === "fecha_limite") {
+                if (!a.fecha_limite) return 1;
+                if (!b.fecha_limite) return -1;
+                return a.fecha_limite.localeCompare(b.fecha_limite);
+            }
+            if (sortBy === "prioridad") {
+                const pMap = { "Crítica": 1, "Alta": 2, "Media": 3, "Baja": 4 };
+                return (pMap[a.prioridad] || 9) - (pMap[b.prioridad] || 9);
+            }
+            if (sortBy === "estado") {
+                const sMap = { "Inbox": 1, "En curso": 2, "Bloqueado": 3, "Hecho": 4 };
+                return (sMap[a.estado] || 9) - (sMap[b.estado] || 9);
+            }
+            // default
+            return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        });
 
     useEffect(() => {
         if (!selProjId) setSelProjId('banco-tareas');
@@ -178,6 +216,36 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                     <option value="Alta">🟠 Alta</option>
                                     <option value="Media">🟡 Media</option>
                                     <option value="Baja">🟢 Baja</option>
+                                </select>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <label style={{ fontSize: 10, color: G.muted, fontWeight: 700, letterSpacing: 1 }}>ESTADO:</label>
+                                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto" }}>
+                                    <option value="Todos">🌐 Todos</option>
+                                    <option value="Inbox">📥 Inbox</option>
+                                    <option value="En curso">⚡ En curso</option>
+                                    <option value="Bloqueado">🛑 Bloqueado</option>
+                                    <option value="Hecho">✅ Hecho</option>
+                                </select>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <label style={{ fontSize: 10, color: G.muted, fontWeight: 700, letterSpacing: 1 }}>LÍMITE:</label>
+                                <select value={filterDate} onChange={e => setFilterDate(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto" }}>
+                                    <option value="Todas">📅 Todas</option>
+                                    <option value="Atrasadas">⚠️ Atrasadas</option>
+                                    <option value="Hoy">🔥 Hoy</option>
+                                    <option value="Esta semana">📆 Esta semana</option>
+                                    <option value="Este mes">🗓️ Este mes</option>
+                                </select>
+                            </div>
+                            <div style={{ width: 1, height: 20, background: G.border }} />
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <label style={{ fontSize: 10, color: G.muted, fontWeight: 700, letterSpacing: 1 }}>ORDENAR:</label>
+                                <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto", background: "rgba(124,58,237,0.1)", borderColor: "rgba(124,58,237,0.3)" }}>
+                                    <option value="defecto">🕒 Recientes primero</option>
+                                    <option value="fecha_limite">⏰ Por fecha límite</option>
+                                    <option value="prioridad">🔥 Por prioridad</option>
+                                    <option value="estado">📊 Por estado</option>
                                 </select>
                             </div>
                             <div style={{ marginLeft: "auto", fontSize: 11, color: G.muted }}>
