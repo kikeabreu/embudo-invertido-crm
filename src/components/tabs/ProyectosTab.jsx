@@ -21,7 +21,19 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
     const BANCO_PROJ = { id: 'banco-tareas', nombre: 'Inbox del Banco ⚡', color: G.orange, esVirtual: true };
     const allProyectos = [BANCO_PROJ, ...proyectos];
     const selProj = allProyectos.find(p => p.id === selProjId) || allProyectos[0];
-    const projTasks = tareas.filter(t => selProj?.id === 'banco-tareas' ? (!t.proyecto_id && t.broker_id === brokerId) : t.proyecto_id === selProj?.id);
+    const projTasksRaw = tareas.filter(t => selProj?.id === 'banco-tareas' ? (!t.proyecto_id && t.broker_id === brokerId) : t.proyecto_id === selProj?.id);
+
+    const [viewMode, setViewMode] = useState("kanban"); // kanban | lista | calendario
+    const [filterAssignee, setFilterAssignee] = useState("Todas");
+    const [filterPriority, setFilterPriority] = useState("Todas");
+    const [calMes, setCalMes] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
+
+    const projTasks = projTasksRaw.filter(t => {
+        if (filterPriority !== "Todas" && t.prioridad !== filterPriority) return false;
+        if (filterAssignee === "Mis tareas" && t.asignado_a !== currentUser?.id) return false;
+        if (filterAssignee !== "Todas" && filterAssignee !== "Mis tareas" && t.asignado_a !== filterAssignee) return false;
+        return true;
+    });
 
     useEffect(() => {
         if (!selProjId) setSelProjId('banco-tareas');
@@ -140,8 +152,42 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                             </div>
                         </div>
 
+                        {/* Barra de Filtros y Vistas */}
+                        <div style={{ padding: "10px 30px", borderBottom: `1px solid ${G.border}`, display: "flex", gap: 15, background: "rgba(0,0,0,0.15)", alignItems: "center", flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.05)", padding: 4, borderRadius: 8 }}>
+                                {["kanban", "lista", "calendario"].map(v => (
+                                    <button key={v} onClick={() => setViewMode(v)} style={{ background: viewMode === v ? "rgba(124,58,237,0.2)" : "transparent", color: viewMode === v ? G.white : G.muted, border: "none", padding: "6px 14px", borderRadius: 6, fontSize: 11, cursor: "pointer", textTransform: "capitalize", fontWeight: viewMode === v ? 600 : 400 }}>
+                                        {v === "kanban" ? "📋 " : v === "lista" ? "📝 " : "📅 "}{v}
+                                    </button>
+                                ))}
+                            </div>
+                            <div style={{ width: 1, height: 20, background: G.border }} />
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <label style={{ fontSize: 10, color: G.muted, fontWeight: 700, letterSpacing: 1 }}>ASIGNADO A:</label>
+                                <select value={filterAssignee} onChange={e => setFilterAssignee(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto" }}>
+                                    <option value="Todas">👥 Todos</option>
+                                    <option value="Mis tareas">👤 Mis tareas</option>
+                                    {team.map(u => <option key={u.id} value={u.id}>{u.nombre}</option>)}
+                                </select>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <label style={{ fontSize: 10, color: G.muted, fontWeight: 700, letterSpacing: 1 }}>PRIORIDAD:</label>
+                                <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto" }}>
+                                    <option value="Todas">⚪ Todas</option>
+                                    <option value="Crítica">🔴 Crítica</option>
+                                    <option value="Alta">🟠 Alta</option>
+                                    <option value="Media">🟡 Media</option>
+                                    <option value="Baja">🟢 Baja</option>
+                                </select>
+                            </div>
+                            <div style={{ marginLeft: "auto", fontSize: 11, color: G.muted }}>
+                                Mostrando <span style={{ color: G.white, fontWeight: 700 }}>{projTasks.length}</span> tareas
+                            </div>
+                        </div>
+
                         {/* Kanban Board */}
-                        <div style={{ flex: 1, overflowX: "auto", display: "flex", gap: 20, padding: 25, alignItems: "flex-start" }}>
+                        {viewMode === "kanban" && (
+                            <div style={{ flex: 1, overflowX: "auto", display: "flex", gap: 20, padding: 25, alignItems: "flex-start" }}>
                             {STATUS_COLS.map(col => (
                                 <div key={col.k} style={{ minWidth: 280, width: 280, display: "flex", flexDirection: "column", maxHeight: "100%" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 15, padding: "0 5px" }}>
@@ -180,6 +226,82 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                 </div>
                             ))}
                         </div>
+                        )}
+
+                        {/* Vista Lista */}
+                        {viewMode === "lista" && (
+                            <div style={{ flex: 1, padding: 25, overflowY: "auto" }}>
+                                <div style={{ display: "flex", alignItems: "center", padding: "10px 16px", borderBottom: `1px solid ${G.border}`, background: G.bgCard, borderRadius: 8, marginBottom: 8 }}>
+                                    <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 120 }}>ESTADO</span>
+                                    <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 80 }}>PRIORIDAD</span>
+                                    <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", flex: 1 }}>TÍTULO</span>
+                                    <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 120 }}>LÍMITE</span>
+                                    <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 120 }}>ASIGNADO A</span>
+                                </div>
+                                {projTasks.map(task => (
+                                    <div key={task.id} onClick={() => { setEditTask(task); setShowTaskModal(true); }} style={{ ...css.card, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer", transition: "0.2s", marginBottom: 6 }} onMouseEnter={e => e.currentTarget.style.borderColor = G.borderHi} onMouseLeave={e => e.currentTarget.style.borderColor = G.border}>
+                                        <div style={{ width: 120, fontSize: 11, color: STATUS_COLS.find(s => s.k === task.estado)?.c || G.muted }}>{STATUS_COLS.find(s => s.k === task.estado)?.l}</div>
+                                        <div style={{ width: 80, fontSize: 11 }}>{PRIORITY_ICON[task.prioridad]} {task.prioridad}</div>
+                                        <div style={{ flex: 1, fontSize: 13, color: G.white, fontWeight: 600 }}>{task.titulo}</div>
+                                        <div style={{ width: 120, fontSize: 11, color: task.fecha_limite ? G.orange : G.dimmed }}>{task.fecha_limite ? `📅 ${task.fecha_limite}` : "—"}</div>
+                                        <div style={{ width: 120, display: "flex", alignItems: "center", gap: 6 }}>
+                                            {task.asignado_a ? (
+                                                <>
+                                                    <div style={{ width: 18, height: 18, borderRadius: "50%", background: G.purple, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: G.white }}>{team.find(u => u.id === task.asignado_a)?.nombre?.slice(0, 2).toUpperCase() || "?"}</div>
+                                                    <span style={{ fontSize: 11, color: G.muted }}>{team.find(u => u.id === task.asignado_a)?.nombre?.split(" ")[0]}</span>
+                                                </>
+                                            ) : <span style={{ fontSize: 11, color: G.dimmed }}>Sin asignar</span>}
+                                        </div>
+                                    </div>
+                                ))}
+                                {projTasks.length === 0 && <div style={{ textAlign: "center", padding: 40, color: G.dimmed, fontSize: 12, fontFamily: "sans-serif" }}>No hay tareas que coincidan con los filtros.</div>}
+                            </div>
+                        )}
+
+                        {/* Vista Calendario */}
+                        {viewMode === "calendario" && (() => {
+                            const startDay = new Date(calMes.y, calMes.m, 1).getDay();
+                            const totalDays = new Date(calMes.y, calMes.m + 1, 0).getDate();
+                            const todayStr = new Date().toLocaleString("sv").split(" ")[0]; // YYYY-MM-DD local
+                            
+                            return (
+                                <div style={{ flex: 1, padding: 25, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                                        <GText bold size={14} color={G.white} spacing={2}>
+                                            {new Date(calMes.y, calMes.m).toLocaleString('es', { month: 'long', year: 'numeric' }).toUpperCase()}
+                                        </GText>
+                                        <div style={{ display: "flex", gap: 10 }}>
+                                            <button onClick={() => setCalMes(m => m.m === 0 ? { y: m.y - 1, m: 11 } : { ...m, m: m.m - 1 })} style={{ ...css.btn(G.bgGlass), padding: "4px 12px" }}>‹ Anterior</button>
+                                            <button onClick={() => setCalMes(m => m.m === 11 ? { y: m.y + 1, m: 0 } : { ...m, m: m.m + 1 })} style={{ ...css.btn(G.bgGlass), padding: "4px 12px" }}>Siguiente ›</button>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 10, flex: 1 }}>
+                                        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(d => <div key={d} style={{ textAlign: "center", fontSize: 10, color: G.muted, fontWeight: 700 }}>{d}</div>)}
+                                        {Array.from({ length: startDay }).map((_, i) => <div key={`blank-${i}`} />)}
+                                        {Array.from({ length: totalDays }).map((_, i) => {
+                                            const d = i + 1;
+                                            const dateStr = `${calMes.y}-${String(calMes.m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                                            const isHoy = dateStr === todayStr;
+                                            const tsForDay = projTasks.filter(t => t.fecha_limite === dateStr);
+                                            
+                                            return (
+                                                <div key={d} style={{ background: isHoy ? "rgba(124,58,237,0.08)" : G.bgCard, border: `1px solid ${isHoy ? G.purple : G.border}`, borderRadius: 8, padding: "8px 4px", minHeight: 100, display: "flex", flexDirection: "column", gap: 4 }}>
+                                                    <div style={{ fontSize: 10, color: isHoy ? G.purpleHi : G.muted, textAlign: "right", fontWeight: isHoy ? 700 : 400, marginBottom: 4 }}>{d}</div>
+                                                    {tsForDay.map(t => {
+                                                        const stat = STATUS_COLS.find(s => s.k === t.estado) || { c: G.muted };
+                                                        return (
+                                                            <div key={t.id} onClick={() => { setEditTask(t); setShowTaskModal(true); }} style={{ fontSize: 9, padding: "4px 6px", background: stat.c + "22", color: stat.c, borderRadius: 4, cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", border: `1px solid ${stat.c}44`, fontFamily: "sans-serif" }} title={t.titulo}>
+                                                                {PRIORITY_ICON[t.prioridad]} {t.titulo}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })()}
                     </>
                 ) : (
                     <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: G.dimmed }}>
