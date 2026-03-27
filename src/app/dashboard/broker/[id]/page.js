@@ -247,12 +247,12 @@ export default function BrokerDashboard() {
     };
 
     const updateBrokerConfig = async (column, value) => {
-        const { data, error } = await supabase.from('usuarios').update({ [column]: value }).eq('id', brokerId).select().single();
+        const { data, error } = await supabase.from('broker_config').update({ [column]: value }).eq('broker_id', brokerId).select().single();
         if (error) {
             console.error("Error updating config:", error);
             toast("Error SQL: " + error.message, "error");
         } else if (!data) {
-            toast("Error crítico: 0 filas actualizadas (RLS activo)", "error");
+            toast("Error: 0 filas actualizadas (RLS activo)", "error");
         } else {
             toast("✓ Guardado correctamente", "success");
         }
