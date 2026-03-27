@@ -248,7 +248,12 @@ export default function BrokerDashboard() {
 
     const updateBrokerConfig = async (column, value) => {
         const { error } = await supabase.from('usuarios').update({ [column]: value }).eq('id', brokerId);
-        if (error) console.error("Error updating config:", error);
+        if (error) {
+            console.error("Error updating config:", error);
+            toast("Error del servidor: " + error.message, "error");
+        } else {
+            toast("✓ Guardado correctamente", "success");
+        }
     };
 
     const savePieza = async (pieza) => {
