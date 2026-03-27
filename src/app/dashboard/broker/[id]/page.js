@@ -247,7 +247,7 @@ export default function BrokerDashboard() {
     };
 
     const updateBrokerConfig = async (column, value) => {
-        const { data, error } = await supabase.from('broker_config').update({ [column]: value }).eq('broker_id', brokerId).select().single();
+        const { data, error } = await supabase.from('broker_config').upsert({ broker_id: brokerId, [column]: value }).select().single();
         if (error) {
             console.error("Error updating config:", error);
             toast("Error SQL: " + error.message, "error");
