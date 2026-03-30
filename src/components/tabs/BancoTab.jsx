@@ -25,7 +25,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
     const [editPiece, setEditPiece] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [calMes, setCalMes] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
-    const [form, setForm] = useState({ fase: "Atracción", avatar: "", dolor: "", titulo: "", hook: "", ctaDm: "", formato: "", fechaProg: "" });
+    const [form, setForm] = useState({ fase: "Atraer", avatar: "", dolor: "", titulo: "", hook: "", ctaDm: "", formato: "", fechaProg: "" });
 
     useEffect(() => {
         const handleOpenPiece = (e) => {
@@ -421,7 +421,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                         <div><label style={css.label}>Fecha programada</label>
                             <input type="date" value={form.fechaProg || ""} onChange={e => setForm({ ...form, fechaProg: e.target.value })} style={{ ...css.input, colorScheme: "dark" }} />
                         </div>
-                        <button onClick={() => { if (form.titulo.trim()) { onAdd({ ...form, id: uid(), num: piezas.length + 1, estado: "En cola", copy: "", guion: "", instrucciones: "", notasInternas: "", linkRecursos: "", linkFinal: "", linkEvidencia: "", origen: "manual", origenRef: null, anotaciones: [] }); setShowForm(false); setForm({ fase: "Atracción", avatar: "", dolor: "", titulo: "", hook: "", ctaDm: "", formato: "", fechaProg: "" }); } }} style={{ ...css.btn(G.gGreen) }}>+ Agregar</button>
+                        <button onClick={() => { if (form.titulo.trim()) { onAdd({ ...form, id: uid(), num: piezas.length + 1, estado: "En cola", copy: "", guion: "", instrucciones: "", notasInternas: "", linkRecursos: "", linkFinal: "", linkEvidencia: "", origen: "manual", origenRef: null, anotaciones: [] }); setShowForm(false); setForm({ fase: "Atraer", avatar: "", dolor: "", titulo: "", hook: "", ctaDm: "", formato: "", fechaProg: "" }); } }} style={{ ...css.btn(G.gGreen) }}>+ Agregar</button>
                     </div>
                 </div>
             )}

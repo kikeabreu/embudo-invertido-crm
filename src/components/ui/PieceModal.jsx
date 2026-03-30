@@ -393,7 +393,28 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
                             {new Date(form.fechaProg + "T12:00:00").toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                         </span>}
                     </div>
-                    <div style={{ fontSize: 8, letterSpacing: 3, color: G.dimmed, textTransform: "uppercase", fontFamily: "sans-serif", paddingBottom: 8, borderBottom: `1px solid ${G.border}`, marginBottom: 14 }}>Contenido del post</div>
+
+                    <div style={{ fontSize: 8, letterSpacing: 3, color: G.dimmed, textTransform: "uppercase", fontFamily: "sans-serif", paddingBottom: 8, borderBottom: `1px solid ${G.border}`, marginBottom: 14 }}>Estrategia del Post</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 18 }}>
+                        <div>
+                            <label style={css.label}>Avatar</label>
+                            <input value={form.avatar || ""} onChange={e => f("avatar", e.target.value)} readOnly={isViewer} placeholder="A quién le hablas..." style={css.input} />
+                        </div>
+                        <div>
+                            <label style={css.label}>Dolor / Deseo</label>
+                            <input value={form.dolor || ""} onChange={e => f("dolor", e.target.value)} readOnly={isViewer} placeholder="Qué resuelve..." style={css.input} />
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                            <label style={css.label}>Hook (Gancho Inicial)</label>
+                            <input value={form.hook || ""} onChange={e => f("hook", e.target.value)} readOnly={isViewer} placeholder="Frase que atrapa al instante..." style={css.input} />
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                            <label style={css.label}>CTA (Llamado a la acción)</label>
+                            <input value={form.ctaDm || ""} onChange={e => f("ctaDm", e.target.value)} readOnly={isViewer} placeholder="Ej: Comenta la palabra XYZ..." style={css.input} />
+                        </div>
+                    </div>
+
+                    <div style={{ fontSize: 8, letterSpacing: 3, color: G.dimmed, textTransform: "uppercase", fontFamily: "sans-serif", paddingBottom: 8, borderBottom: `1px solid ${G.border}`, marginBottom: 14 }}>Contenido del Post</div>
                     <PieceTextArea value={form.copy} onChange={e => f("copy", e.target.value)} label="Copy completo" rows={4} placeholder="Escribe el copy completo del post aquí..." readOnly={isViewer} />
                     <PieceTextArea value={form.guion} onChange={e => f("guion", e.target.value)} label="Hook & estructura del guión" rows={3} placeholder="Hook, desarrollo, CTA..." readOnly={isViewer} />
 
