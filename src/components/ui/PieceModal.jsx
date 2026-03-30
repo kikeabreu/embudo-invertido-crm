@@ -396,13 +396,9 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
 
                     <div style={{ fontSize: 8, letterSpacing: 3, color: G.dimmed, textTransform: "uppercase", fontFamily: "sans-serif", paddingBottom: 8, borderBottom: `1px solid ${G.border}`, marginBottom: 14 }}>Estrategia del Post</div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 18 }}>
-                        <div>
+                        <div style={{ gridColumn: "1 / -1" }}>
                             <label style={css.label}>Avatar</label>
                             <input value={form.avatar || ""} onChange={e => f("avatar", e.target.value)} readOnly={isViewer} placeholder="A quién le hablas..." style={css.input} />
-                        </div>
-                        <div>
-                            <label style={css.label}>Dolor / Deseo</label>
-                            <input value={form.dolor || ""} onChange={e => f("dolor", e.target.value)} readOnly={isViewer} placeholder="Qué resuelve..." style={css.input} />
                         </div>
                         <div style={{ gridColumn: "1 / -1" }}>
                             <label style={css.label}>Hook (Gancho Inicial)</label>
