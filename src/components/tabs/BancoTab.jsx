@@ -347,7 +347,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
   {
     "titulo": "Título de la pieza",
     "fase": "Atraer",
-    "formato": "Reel Corto",
+    "formato": "Reel",
     "fechaProg": "YYYY-MM-DD",
     "avatar": "A quién va dirigido...",
     "hook": "Frase gancho...",
