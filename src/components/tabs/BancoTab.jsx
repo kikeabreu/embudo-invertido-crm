@@ -24,6 +24,8 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
     const [vista, setVista] = useState("lista"); // lista | kanban | calendario | cards
     const [editPiece, setEditPiece] = useState(null);
     const [showForm, setShowForm] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [importText, setImportText] = useState("");
     const [calMes, setCalMes] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
     const [form, setForm] = useState({ fase: "Atraer", avatar: "", dolor: "", titulo: "", hook: "", ctaDm: "", formato: "", fechaProg: "" });
 
@@ -367,7 +369,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                                     📋 Formato
                                 </button>
                                 <button 
-                                    onClick={() => document.getElementById('import-json').click()} 
+                                    onClick={() => setShowImportModal(true)} 
                                     style={{ ...css.btn(), background: "rgba(255,255,255,0.05)", border: `1px solid ${G.border}`, fontSize: 11 }}
                                 >
                                     📥 Importar
@@ -491,6 +493,53 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                         >
                             Cancelar
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {showImportModal && (
+                <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: 20 }}>
+                    <div style={{ background: "#11111b", border: `1px solid ${G.border}`, borderRadius: 16, padding: 24, width: 600, maxWidth: "100%" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                            <span style={{ color: G.gGreen, fontWeight: 700, letterSpacing: 1, fontSize: 13 }}>IMPORTAR PIEZAS (JSON)</span>
+                            <button onClick={() => { setShowImportModal(false); setImportText(""); }} style={{ background: "transparent", border: "none", color: G.muted, cursor: "pointer", fontSize: 16 }}>✕</button>
+                        </div>
+                        <p style={{ color: G.muted, fontSize: 13, marginBottom: 16 }}>
+                            Pega el texto JSON generado por Claude o ChatGPT aquí:
+                        </p>
+                        <textarea
+                            value={importText}
+                            onChange={e => setImportText(e.target.value)}
+                            placeholder='[\n  {\n    "titulo": "Mi pieza...",\n    "fase": "Atraer"\n  }\n]'
+                            style={{ ...css.input, minHeight: 200, fontFamily: "monospace", fontSize: 11, background: "rgba(0,0,0,0.3)", resize: "vertical" }}
+                            readOnly={!canImport}
+                        />
+                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20 }}>
+                            <button
+                                onClick={() => document.getElementById('import-json').click()}
+                                style={{ ...css.btn(), background: "rgba(255,255,255,0.05)", border: `1px solid ${G.border}`, fontSize: 13 }}
+                                disabled={!canImport}
+                            >
+                                📂 O subir archivo .json
+                            </button>
+                            <button
+                                onClick={() => {
+                                    try {
+                                        const data = JSON.parse(importText);
+                                        if (!Array.isArray(data)) throw new Error("El JSON debe ser una lista/array de objetos comenzando con [ y terminando con ].");
+                                        onImport(data);
+                                        setShowImportModal(false);
+                                        setImportText("");
+                                    } catch (e) {
+                                        toast("Error al leer JSON pegado: " + e.message, "error");
+                                    }
+                                }}
+                                style={{ ...css.btn(G.gGreen), fontSize: 13 }}
+                                disabled={!canImport || !importText.trim()}
+                            >
+                                ✨ Importar código pegado
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
