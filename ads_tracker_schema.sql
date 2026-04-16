@@ -1,6 +1,9 @@
 -- Schema para el módulo "Ads Tracker" dinámico
 -- Tablas: ads_campaigns, ads_metrics
 
+-- 0. Añadir columna faltante en broker_config para guardar las opciones globales
+ALTER TABLE public.broker_config ADD COLUMN IF NOT EXISTS ads_config JSONB;
+
 -- 1. Tabla de campañas de anuncios
 CREATE TABLE IF NOT EXISTS public.ads_campaigns (
     id UUID DEFAULT extensions.uuid_generate_v4() PRIMARY KEY,

@@ -222,7 +222,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
     const sortedDates = Object.keys(dateMap).sort();
     
     const lineChartData = {
-        labels: sortedDates.map(d => new Date(d).toLocaleDateString('es-MX', { month: 'short', day: 'numeric'})),
+        labels: sortedDates.map(d => new Date(d + 'T12:00:00').toLocaleDateString('es-MX', { month: 'short', day: 'numeric'})),
         datasets: [
             {
                 label: 'Gasto',
@@ -442,7 +442,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                                         return (
                                             <tr key={m.id} style={{ borderBottom: `1px solid ${G.border}`, transition: "background 0.2s" }}>
                                                 <td style={{ padding: "14px 15px", fontWeight: 500 }}>
-                                                    {new Date(m.fecha).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}
+                                                    {new Date(m.fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}
                                                 </td>
                                                 <td style={{ padding: "14px 15px" }}>
                                                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
