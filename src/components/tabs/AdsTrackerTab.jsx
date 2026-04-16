@@ -43,6 +43,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
     const [campaigns, setCampaigns] = useState([]);
     const [metrics, setMetrics] = useState([]);
     const [globalConfig, setGlobalConfig] = useState(defaultOptions);
+    const [configInputs, setConfigInputs] = useState({});
 
     // Modals
     const [showCampaignModal, setShowCampaignModal] = useState(false);
@@ -79,11 +80,16 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
         if (bconfig && bconfig.ads_config) {
             setGlobalConfig({ ...defaultOptions, ...bconfig.ads_config });
         }
-
         setLoading(false);
     };
 
-    const saveOptions = async (newConfig) => {
+    const saveOptions = async () => {
+        const newConfig = { ...globalConfig };
+        ["plataformas", "objetivos", "fases", "origenes"].forEach(k => {
+            if (configInputs[k] !== undefined) {
+                newConfig[k] = configInputs[k].split(",").map(v => v.trim()).filter(Boolean);
+            }
+        });
         setGlobalConfig(newConfig);
         const { error } = await supabase.from("broker_config").upsert({ broker_id: brokerId, ads_config: newConfig });
         if (error) toast("Error guardando config", "error");
@@ -481,16 +487,13 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                                     <label style={{ display: "block", fontSize: 12, textTransform: "uppercase", color: G.white, marginBottom: 8, letterSpacing: 1 }}>{key}</label>
                                     <textarea 
                                         style={{...css.input, minHeight: 60}}
-                                        value={(globalConfig[key] || []).join(", ")}
-                                        onChange={(e) => {
-                                            const vals = e.target.value.split(",").map(v => v.trim()).filter(Boolean);
-                                            setGlobalConfig({ ...globalConfig, [key]: vals });
-                                        }}
+                                        value={configInputs[key] ?? (globalConfig[key] || []).join(", ")}
+                                        onChange={(e) => setConfigInputs({ ...configInputs, [key]: e.target.value })}
                                         placeholder={`Escribe opciones separadas por coma...`}
                                     />
                                 </div>
                             ))}
-                            <button onClick={() => saveOptions(globalConfig)} style={{ ...css.btn(G.gCyan), fontSize: 13, padding: "10px 20px" }}>💾 Guardar Configuración Global</button>
+                            <button onClick={() => saveOptions()} style={{ ...css.btn(G.gCyan), fontSize: 13, padding: "10px 20px" }}>💾 Guardar Configuración Global</button>
                         </div>
                     )}
                 </>
