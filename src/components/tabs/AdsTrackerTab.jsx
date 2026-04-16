@@ -263,7 +263,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
     // COMPONENTE CONTENEDOR (TV MODE ENVELOP)
     const containerStyle = isTVMode 
         ? { position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 99999, background: G.bg, padding: 40, overflowY: "auto" } 
-        : { padding: 25, maxWidth: 1400, margin: "0 auto", color: G.white, fontFamily: "sans-serif" };
+        : { padding: 25, maxWidth: 1400, margin: "0 auto", color: G.white, fontFamily: "sans-serif", overflowY: "auto", height: "100%", boxSizing: "border-box" };
 
     return (
         <div style={containerStyle}>
