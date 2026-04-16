@@ -18,6 +18,7 @@ import AnalyticsTab from "@/components/tabs/AnalyticsTab";
 import HistorialTab from "@/components/tabs/HistorialTab";
 import ProyectosTab from "@/components/tabs/ProyectosTab";
 import AdminTab from "@/components/tabs/AdminTab";
+import AdsTrackerTab from "@/components/tabs/AdsTrackerTab";
 
 export default function BrokerDashboard() {
     const params = useParams();
@@ -125,6 +126,7 @@ export default function BrokerDashboard() {
         { k: "instalacion", l: "⚡ Instalación" },
         { k: "onboarding", l: "🚀 Onboarding" },
         { k: "oferta", l: "💎 Oferta" },
+        { k: "ads", l: "📈 Ads Tracker" },
         { k: "analitica", l: "📊 Analítica" },
         { k: "proyectos", l: "🚀 Proyectos" },
         { k: "historial", l: "🕐 Historial" },
@@ -499,6 +501,7 @@ export default function BrokerDashboard() {
             case "instalacion": return <InstalacionTab data={{ vars, checked: instalChecked }} vars={vars} varsLabels={varsLabels} schema={instalSchema} onToggle={toggleInstal} onVarChange={updateVar} onSaveSchema={saveInstalSchema} onSaveVarsLabels={saveVarsLabels} canEditAdmin={isAdmin || isEquipo} />;
             case "onboarding": return <OnboardingTab checked={onbChecked} schema={onboardingSchema} onToggle={toggleOnb} onSaveSchema={saveOnboardingSchema} canEditAdmin={isAdmin || isEquipo} mesLabel={"Mes Actual"} toast={toast} />;
             case "oferta": return <OfertaTab brokerId={brokerId} isViewer={isViewer} toast={toast} />;
+            case "ads": return <AdsTrackerTab brokerId={brokerId} toast={toast} currentUser={currentUser} isViewer={isViewer} />;
             case "analitica": return <AnalyticsTab piezas={piezas} instalChecked={instalChecked} onbChecked={onbChecked} broker={broker} />;
             case "historial": return <HistorialTab logs={logs} onUndo={undoAction} isViewer={isViewer} />;
             case "proyectos": return <ProyectosTab proyectos={proyectos} tareas={tareas} onSaveProyecto={saveProyecto} onDeleteProyecto={deleteProyecto} onSaveTarea={saveTarea} onDeleteTarea={deleteTarea} onAddComentario={addComentario} isViewer={isViewer} currentUser={currentUser} brokerId={brokerId} toast={toast} />;
