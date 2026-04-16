@@ -131,6 +131,8 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
         if (!(await supabase.from("ads_metrics").delete().eq("id", id)).error) { setMetrics(prev => prev.filter(m => m.id !== id)); toast("Eliminada"); }
     };
 
+    const getCampName = (cid) => campaigns.find(c => c.id === cid)?.nombre || "Desconocida";
+    
     const getCampColor = (cid) => {
         const p = campaigns.find(c => c.id === cid)?.config?.plataforma;
         return p?.includes("Meta") ? "#3b82f6" : p?.includes("Google") ? "#f59e0b" : p?.includes("TikTok") ? "#ec4899" : "#8b5cf6";
