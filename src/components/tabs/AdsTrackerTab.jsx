@@ -140,7 +140,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
     
     // Obtener keys dinámicos disponibles en el JSONB
     const dynamicKeysSet = new Set(["gasto", "ingresos", "leads", "cpc", "clicks", "alcance"]);
-    metrics.forEach(m => Object.keys(m.metrics).forEach(k => dynamicKeysSet.add(k)));
+    metrics.forEach(m => Object.keys(m.metrics || {}).forEach(k => dynamicKeysSet.add(k)));
     const dynamicKeys = Array.from(dynamicKeysSet).sort();
 
     // 1. Filtrado de Fechas
@@ -157,18 +157,19 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
         .filter(m => new Date(m.fecha + 'T12:00:00') >= cutoffDate);
 
     // KPIs Agrupados
-    const tGasto = filteredMetrics.reduce((a,m) => a + (m.metrics.gasto || 0), 0);
-    const tIngreso = filteredMetrics.reduce((a,m) => a + (m.metrics.ingresos || 0), 0);
-    const tLeads = filteredMetrics.reduce((a,m) => a + (m.metrics.leads || 0), 0);
+    const tGasto = filteredMetrics.reduce((a,m) => a + ((m.metrics||{}).gasto || 0), 0);
+    const tIngreso = filteredMetrics.reduce((a,m) => a + ((m.metrics||{}).ingresos || 0), 0);
+    const tLeads = filteredMetrics.reduce((a,m) => a + ((m.metrics||{}).leads || 0), 0);
     const dCpl = tLeads > 0 ? (tGasto / tLeads) : 0;
     const dRoas = tGasto > 0 ? (tIngreso / tGasto) : 0;
 
     // 2. Gráfica 1: Líneas Personalizables
     const dateMap = {};
     filteredMetrics.forEach(m => {
+        const met = m.metrics || {};
         if (!dateMap[m.fecha]) dateMap[m.fecha] = { y1: 0, y2: 0 };
-        dateMap[m.fecha].y1 += (m.metrics[lineY1] || 0);
-        dateMap[m.fecha].y2 += (m.metrics[lineY2] || 0);
+        dateMap[m.fecha].y1 += (met[lineY1] || 0);
+        dateMap[m.fecha].y2 += (met[lineY2] || 0);
     });
     const sortedDates = Object.keys(dateMap).sort();
 
@@ -195,10 +196,11 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
     const hasData = filteredMetrics.length > 0;
     if (hasData) {
         filteredMetrics.forEach(m => {
+            const met = m.metrics || {};
             const c = campaigns.find(x => x.id === m.campaign_id);
             const grp = c?.config?.[pieGroup] || "Sin Definir";
             if (!pieDataMap[grp]) pieDataMap[grp] = 0;
-            pieDataMap[grp] += (m.metrics[pieMetric] || 0);
+            pieDataMap[grp] += (met[pieMetric] || 0);
         });
     }
 
@@ -343,17 +345,18 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                                 <tbody>
                                     {campaigns.length === 0 && <tr><td colSpan="5" style={{ padding: 30, textAlign: "center", color: G.dimmed }}>Espacio en blanco. Comienza tu arquitectura.</td></tr>}
                                     {campaigns.map(c => {
-                                        const cspent = metrics.filter(m => m.campaign_id === c.id).reduce((acc, m) => acc + (m.metrics.gasto||0), 0);
+                                        const cspent = metrics.filter(m => m.campaign_id === c.id).reduce((acc, m) => acc + ((m.metrics || {}).gasto||0), 0);
+                                        const conf = c.config || {};
                                         return (
                                             <tr key={c.id} style={{ borderBottom: `1px solid ${G.border}`, transition: "background 0.2s", ":hover": { background: "rgba(255,255,255,0.02)" } }}>
                                                 <td style={{ padding: "16px 18px" }}>
                                                     <div style={{ fontWeight: 600, fontSize: 15, color: G.white }}>{c.nombre}</div>
-                                                    <div style={{ fontSize: 12, color: getCampColor(c.id), marginTop: 4 }}>{c.config?.objetivo || "—"}</div>
+                                                    <div style={{ fontSize: 12, color: getCampColor(c.id), marginTop: 4 }}>{conf.objetivo || "—"}</div>
                                                 </td>
                                                 <td style={{ padding: "16px 18px" }}>
                                                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                                                        <span style={css.tag(getCampColor(c.id))}>{c.config?.plataforma || "—"}</span>
-                                                        <span style={css.tag(G.muted)}>{c.config?.fase || "—"}</span>
+                                                        <span style={css.tag(getCampColor(c.id))}>{conf.plataforma || "—"}</span>
+                                                        <span style={css.tag(G.muted)}>{conf.fase || "—"}</span>
                                                     </div>
                                                 </td>
                                                 <td style={{ padding: "16px 18px" }}>
@@ -364,7 +367,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                                                 <td style={{ padding: "16px 18px", textAlign: "right" }}>
                                                     {!isViewer && (
                                                         <>
-                                                            <button onClick={() => { setEditCampId(c.id); setCampForm({ nombre: c.nombre, estado: c.estado, presupuesto_mensual: c.presupuesto_mensual, ...c.config }); setShowCampaignModal(true); }} style={{ background: "transparent", border: "none", color: G.cyan, cursor: "pointer", fontSize: 12, marginRight: 15, fontWeight:600 }}>Editar</button>
+                                                            <button onClick={() => { setEditCampId(c.id); setCampForm({ nombre: c.nombre, estado: c.estado, presupuesto_mensual: c.presupuesto_mensual, ...conf }); setShowCampaignModal(true); }} style={{ background: "transparent", border: "none", color: G.cyan, cursor: "pointer", fontSize: 12, marginRight: 15, fontWeight:600 }}>Editar</button>
                                                             {isAdmin && <button onClick={() => deleteCampaign(c.id)} style={{ background: "transparent", border: "none", color: G.red, cursor: "pointer", fontSize: 12 }}>Eliminar</button>}
                                                         </>
                                                     )}
@@ -394,23 +397,24 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                                     {metrics.length === 0 && <tr><td colSpan="7" style={{ padding: 30, textAlign: "center", color: G.dimmed }}>La bitácora está vacía. Añade el primer día.</td></tr>}
                                     {metrics.map(m => {
                                         const stdKeys = ['gasto', 'leads', 'ingresos'];
-                                        const custEntries = Object.entries(m.metrics).filter(([k,v]) => !stdKeys.includes(k) && v !== '');
+                                        const met = m.metrics || {};
+                                        const custEntries = Object.entries(met).filter(([k,v]) => !stdKeys.includes(k) && v !== '');
                                         return (
                                             <tr key={m.id} style={{ borderBottom: `1px solid ${G.border}`}}>
                                                 <td style={{ padding: "14px 15px", fontWeight: 600, color: G.cyan }}>{new Date(m.fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'short', day:'numeric', month:'short' })}</td>
                                                 <td style={{ padding: "14px 15px", fontSize: 13 }}>
                                                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ display:"inline-block", width:8, height:8, borderRadius:'50%', background: getCampColor(m.campaign_id), boxShadow:`0 0 8px ${getCampColor(m.campaign_id)}` }}></span>{getCampName(m.campaign_id)}</div>
                                                 </td>
-                                                <td style={{ padding: "14px 15px", textAlign: "right", fontFamily:"Georgia" }}>{fmt(m.metrics.gasto)}</td>
-                                                <td style={{ padding: "14px 15px", textAlign: "right", fontFamily:"Georgia" }}>{fmtN(m.metrics.leads)}</td>
-                                                <td style={{ padding: "14px 15px", textAlign: "right", fontFamily:"Georgia", color: m.metrics.ingresos > 0 ? '#4ade80' : 'inherit' }}>{fmt(m.metrics.ingresos)}</td>
+                                                <td style={{ padding: "14px 15px", textAlign: "right", fontFamily:"Georgia" }}>{fmt(met.gasto)}</td>
+                                                <td style={{ padding: "14px 15px", textAlign: "right", fontFamily:"Georgia" }}>{fmtN(met.leads)}</td>
+                                                <td style={{ padding: "14px 15px", textAlign: "right", fontFamily:"Georgia", color: met.ingresos > 0 ? '#4ade80' : 'inherit' }}>{fmt(met.ingresos)}</td>
                                                 <td style={{ padding: "14px 15px", fontSize: 11, color: G.muted }}>
                                                     <div style={{display:'flex', gap:5, flexWrap:'wrap'}}>{custEntries.map(([k,v]) => <span key={k} style={{background:'rgba(255,255,255,0.05)', padding:'2px 6px', borderRadius:4}}>{k}: {fmtN(v)}</span>)}</div>
                                                 </td>
                                                 <td style={{ padding: "14px 15px", textAlign: "right" }}>
                                                     {!isViewer && (
                                                         <>
-                                                            <button onClick={() => { setEditMetricId(m.id); setMetricForm({ campaign_id: m.campaign_id, fecha: m.fecha, ...m.metrics }); setShowMetricModal(true); }} style={{ background: "transparent", border: "none", color: G.white, cursor: "pointer", fontSize: 12, marginRight: 10 }}>Editar</button>
+                                                            <button onClick={() => { setEditMetricId(m.id); setMetricForm({ campaign_id: m.campaign_id, fecha: m.fecha, ...met }); setShowMetricModal(true); }} style={{ background: "transparent", border: "none", color: G.white, cursor: "pointer", fontSize: 12, marginRight: 10 }}>Editar</button>
                                                             {isAdmin && <button onClick={() => deleteMetric(m.id)} style={{ background: "transparent", border: "none", color: G.red, cursor: "pointer", fontSize: 12 }}>✕</button>}
                                                         </>
                                                     )}
