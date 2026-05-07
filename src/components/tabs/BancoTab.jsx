@@ -475,6 +475,19 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                             {FASES.map(f => <option key={f} value={f}>{f}</option>)}
                         </select>
 
+                        <select 
+                            onChange={(e) => {
+                                if (!e.target.value) return;
+                                onBulkUpdate(selectedIds, { formato: e.target.value });
+                                setSelectedIds([]);
+                                e.target.value = "";
+                            }}
+                            style={{ ...css.input, width: "auto", fontSize: 11, padding: "5px 10px" }}
+                        >
+                            <option value="">Cambiar Formato...</option>
+                            {FORMATOS.map(f => <option key={f} value={f}>{f}</option>)}
+                        </select>
+
                         {canDelete && (
                             <button 
                                 onClick={() => {
