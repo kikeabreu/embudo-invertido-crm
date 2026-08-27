@@ -363,14 +363,14 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                                         navigator.clipboard.writeText(template);
                                         toast("Formato copiado. Pégalo en Claude.");
                                     }} 
-                                    style={{ ...css.btn(), background: "rgba(255,255,255,0.05)", border: `1px solid ${G.border}`, fontSize: 11 }}
+                                    style={{ ...css.btn("rgba(255,255,255,0.05)"), border: `1px solid ${G.border}`, fontSize: 11 }}
                                     title="Copiar formato para Claude"
                                 >
                                     📋 Formato
                                 </button>
                                 <button 
                                     onClick={() => setShowImportModal(true)} 
-                                    style={{ ...css.btn(), background: "rgba(255,255,255,0.05)", border: `1px solid ${G.border}`, fontSize: 11 }}
+                                    style={{ ...css.btn("rgba(255,255,255,0.05)"), border: `1px solid ${G.border}`, fontSize: 11 }}
                                 >
                                     📥 Importar
                                 </button>
@@ -530,7 +530,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20 }}>
                             <button
                                 onClick={() => document.getElementById('import-json').click()}
-                                style={{ ...css.btn(), background: "rgba(255,255,255,0.05)", border: `1px solid ${G.border}`, fontSize: 13 }}
+                                style={{ ...css.btn("rgba(255,255,255,0.05)"), border: `1px solid ${G.border}`, fontSize: 13 }}
                                 disabled={!canImport}
                             >
                                 📂 O subir archivo .json

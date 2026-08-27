@@ -25,7 +25,7 @@ export const css = {
     input: { background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 10, color: G.white, fontSize: 13, padding: "9px 13px", fontFamily: "Gilroy, sans-serif", width: "100%", boxSizing: "border-box", outline: "none" },
     label: { fontSize: 11, letterSpacing: "0.14em", color: G.naranja, fontFamily: "Gilroy, sans-serif", textTransform: "uppercase", fontWeight: 800, marginBottom: 6, display: "block" },
     btn: (g = G.gPurple) => {
-        const isLight = !g || g === G.bgGlass || g === "transparent" || String(g).includes("rgba(255,255,255,0") || String(g).includes("rgba(16,185,129,0");
+        const isLight = !g || g === G.bgGlass || g === "transparent" || g === "#FFFFFF" || g === "#fff" || g === "white" || (typeof g === "string" && (g.includes("rgba(255,255,255,") || g.includes("rgba(16,185,129,0")));
         return { background: g, border: "none", borderRadius: 10, color: isLight ? G.white : "#FFFFFF", padding: "10px 20px", cursor: "pointer", fontSize: 12, fontFamily: "Gilroy, sans-serif", fontWeight: 800, letterSpacing: 0.5, boxShadow: isLight ? "none" : "0 4px 12px rgba(112,96,216,0.28)" };
     },
     tag: (c) => ({ fontSize: 10, letterSpacing: 1.5, color: c, border: `1px solid ${c}`, borderRadius: 20, padding: "2px 9px", fontFamily: "Gilroy, sans-serif", textTransform: "uppercase", fontWeight: 700, whiteSpace: "nowrap", display: "inline-block" }),
