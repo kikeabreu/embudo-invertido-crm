@@ -243,7 +243,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                             <div style={{ width: 1, height: 20, background: G.border }} />
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <label style={{ fontSize: 10, color: G.muted, fontWeight: 700, letterSpacing: 1 }}>ORDENAR:</label>
-                                <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto", background: "#FFFFFF", borderColor: G.borderHi }}>
+                                <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto" }}>
                                     <option value="defecto">🕒 Recientes primero</option>
                                     <option value="fecha_limite">⏰ Por fecha límite</option>
                                     <option value="prioridad">🔥 Por prioridad</option>

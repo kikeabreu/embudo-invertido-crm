@@ -5,16 +5,16 @@ export const G = {
     bgGlass: "#F3F4F6",
     border: "#E5E7EB",
     borderHi: "#B8C0CC",
-    gPurple: "linear-gradient(135deg,#E5E7EB,#CBD5E1)",
-    gViolet: "linear-gradient(135deg,#DDE3EA,#F3F4F6)",
-    gMagenta: "linear-gradient(135deg,#111827,#6B7280)",
-    gGreen: "linear-gradient(135deg,#CCFBF1,#99F6E4)",
-    gOrange: "linear-gradient(135deg,#FEF3C7,#FED7AA)",
-    gBlue: "linear-gradient(135deg,#DBEAFE,#E2E8F0)",
-    gCyan: "linear-gradient(135deg,#CFFAFE,#DBEAFE)",
-    purple: "#374151", purpleHi: "#111827", purpleDim: "#EEF2F7",
-    magenta: "#6B7280", green: "#0F766E", orange: "#B45309", blue: "#2563EB", red: "#DC2626", cyan: "#0E7490",
-    white: "#111827", muted: "#6B7280", dimmed: "#9CA3AF",
+    gPurple: "linear-gradient(135deg,#6D28D9,#7C3AED)",
+    gViolet: "linear-gradient(135deg,#5B21B6,#7C3AED)",
+    gMagenta: "linear-gradient(135deg,#9D174D,#BE185D)",
+    gGreen: "linear-gradient(135deg,#047857,#059669)",
+    gOrange: "linear-gradient(135deg,#B45309,#D97706)",
+    gBlue: "linear-gradient(135deg,#1E40AF,#2563EB)",
+    gCyan: "linear-gradient(135deg,#0E7490,#0891B2)",
+    purple: "#7C3AED", purpleHi: "#111827", purpleDim: "#F3E8FF",
+    magenta: "#BE185D", green: "#047857", orange: "#B45309", blue: "#1E40AF", red: "#DC2626", cyan: "#0E7490",
+    white: "#111827", muted: "#4B5563", dimmed: "#6B7280",
 };
 
 export const css = {
@@ -22,7 +22,7 @@ export const css = {
     cardGlow: { background: G.bgCard, border: `1px solid ${G.border}`, borderRadius: 12, boxShadow: "0 16px 40px rgba(15,23,42,0.08)" },
     input: { background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 8, color: G.white, fontSize: 13, padding: "9px 13px", fontFamily: "sans-serif", width: "100%", boxSizing: "border-box", outline: "none" },
     label: { fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", marginBottom: 6, display: "block" },
-    btn: (g = G.gPurple) => ({ background: g, border: `1px solid ${G.border}`, borderRadius: 8, color: G.white, padding: "9px 20px", cursor: "pointer", fontSize: 12, fontFamily: "sans-serif", fontWeight: 700, letterSpacing: 0.5 }),
+    btn: (g = G.gPurple) => ({ background: g, border: "none", borderRadius: 8, color: "#FFFFFF", padding: "9px 20px", cursor: "pointer", fontSize: 12, fontFamily: "sans-serif", fontWeight: 700, letterSpacing: 0.5 }),
     tag: (c) => ({ fontSize: 9, letterSpacing: 1.5, color: c, border: `1px solid ${c}`, borderRadius: 20, padding: "2px 9px", fontFamily: "sans-serif", textTransform: "uppercase", whiteSpace: "nowrap", display: "inline-block" }),
 };
 
