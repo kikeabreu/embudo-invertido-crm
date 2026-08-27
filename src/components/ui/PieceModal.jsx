@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { notifyAdmins } from "@/lib/notifUtils";
-import { G, css, ESTADOS_PIEZA, estadoColor, FASES, faseColor, FORMATOS, FORMATO_ICON, fmtDate, uid } from "@/lib/constants";
+import { G, css, ESTADOS_PIEZA, estadoColor, FASES, FORMATOS, FORMATO_ICON, FORMATO_META, fmtDate, uid } from "@/lib/constants";
+
+const getFormatoMeta = (formato) => FORMATO_META[formato] || { label: formato || "Sin formato", short: "TIPO", tone: G.muted, bg: "#F3F4F6" };
+
+const previewText = (value = "", limit = 110) => {
+    const clean = String(value || "").replace(/\s+/g, " ").trim();
+    return clean.length > limit ? clean.slice(0, limit).trim() + "..." : clean;
+};
 
 function AnotacionInput({ onAdd }) {
     const [texto, setTexto] = useState("");
@@ -266,16 +273,17 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
 
     const sendWorkflowTarea = async (tipo) => {
         if (workflowLoading) return;
+        const tituloPieza = form.titulo || piece.titulo || "Pieza sin título";
         const TEMPLATES = {
-            idear:   { titulo: `🧠 Investigación y Guion - [${piece.titulo}]`, descripcion: `Investigar el tema y escribir el primer borrador / guion de la pieza.`, prioridad: "Media" },
-            copy:    { titulo: `📝 Revisar y aprobar copy - [${piece.titulo}]`, descripcion: `Por favor revisa el copy y sugiere cambios en Anotaciones del Banco.\n\nCopy:\n${form.copy || "(sin copy aún)"}`, prioridad: "Media" },
-            grabar:  { titulo: `🎥 Agendar grabación - [${piece.titulo}]`, descripcion: `Coordinar la grabación.\n\nGuión:\n${form.guion || "(sin guión aún)"}`, prioridad: "Alta" },
-            edicion: { titulo: `🎬 Edición de video / diseño - [${piece.titulo}]`, descripcion: `Archivos crudos:\n${form.linkRecursos || "(pendiente)"} \n\nInstrucciones:\n${form.instrucciones || "Ver pieza en el Banco"}`, prioridad: "Alta" },
-            miniatura: { titulo: `🖼️ Diseño de Miniatura / Portada - [${piece.titulo}]`, descripcion: `Crear portada o miniatura atractiva para el post/video.\n\nCopy clave:\n${form.hook || ""}`, prioridad: "Media" },
-            aprobar: { titulo: `✅ Aprobación de edición final - [${piece.titulo}]`, descripcion: `Revisar el video/diseño final.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
-            programar: { titulo: `📆 Programar en Redes / Publicar - [${piece.titulo}]`, descripcion: `Programar la pieza aprobada en las plataformas correspondientes.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
-            ads:     { titulo: `🚀 Lanzar campaña en Meta Ads - [${piece.titulo}]`, descripcion: `Pieza aprobada. Montar campaña en Meta Ads.\n\nLink:\n${form.linkFinal || "(ver Banco)"}`, prioridad: "Crítica" },
-            metricas:{ titulo: `📊 Cita de métricas (7 días) - [${piece.titulo}]`, descripcion: `Revisar el rendimiento de esta pieza 7 días después de su publicación.`, prioridad: "Media" },
+            idear:   { titulo: `🧠 Investigación y Guion - [${tituloPieza}]`, descripcion: `Investigar el tema y escribir el primer borrador / guion de la pieza.`, prioridad: "Media" },
+            copy:    { titulo: `📝 Revisar y aprobar copy - [${tituloPieza}]`, descripcion: `Por favor revisa el copy y sugiere cambios en Anotaciones del Banco.\n\nCopy:\n${form.copy || "(sin copy aún)"}`, prioridad: "Media" },
+            grabar:  { titulo: `🎥 Agendar grabación - [${tituloPieza}]`, descripcion: `Coordinar la grabación.\n\nGuión:\n${form.guion || "(sin guión aún)"}`, prioridad: "Alta" },
+            edicion: { titulo: `🎬 Edición de video / diseño - [${tituloPieza}]`, descripcion: `Archivos crudos:\n${form.linkRecursos || "(pendiente)"} \n\nInstrucciones:\n${form.instrucciones || "Ver pieza en el Banco"}`, prioridad: "Alta" },
+            miniatura: { titulo: `🖼️ Diseño de Miniatura / Portada - [${tituloPieza}]`, descripcion: `Crear portada o miniatura atractiva para el post/video.\n\nCopy clave:\n${form.hook || ""}`, prioridad: "Media" },
+            aprobar: { titulo: `✅ Aprobación de edición final - [${tituloPieza}]`, descripcion: `Revisar el video/diseño final.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
+            programar: { titulo: `📆 Programar en Redes / Publicar - [${tituloPieza}]`, descripcion: `Programar la pieza aprobada en las plataformas correspondientes.\n\nLink final:\n${form.linkFinal || "(pendiente)"}`, prioridad: "Alta" },
+            ads:     { titulo: `🚀 Lanzar campaña en Meta Ads - [${tituloPieza}]`, descripcion: `Pieza aprobada. Montar campaña en Meta Ads.\n\nLink:\n${form.linkFinal || "(ver Banco)"}`, prioridad: "Crítica" },
+            metricas:{ titulo: `📊 Cita de métricas (7 días) - [${tituloPieza}]`, descripcion: `Revisar el rendimiento de esta pieza 7 días después de su publicación.`, prioridad: "Media" },
         };
         const tpl = TEMPLATES[tipo];
         if (!tpl) { setWorkflowLoading(null); return; }
@@ -335,6 +343,8 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
     const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
     const pLogs = (logs || []).filter(l => l.pieceId === piece.id).sort((a, b) => b.ts.localeCompare(a.ts));
+    const formatoMeta = getFormatoMeta(form.formato);
+    const resumen = previewText(form.copy || form.guion || form.instrucciones || form.hook || "", 170);
 
     return (
         <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
@@ -346,10 +356,30 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
                                 style={{ ...css.input, padding: "2px 8px", fontSize: 10, height: 22, borderRadius: 6, fontWeight: 700, color: G.white, width: "auto" }}>
                                 {FASES.map(f => <option key={f} value={f}>{f}</option>)}
                             </select>
+                            <span style={{ fontSize: 9, color: formatoMeta.tone, background: formatoMeta.bg, border: `1px solid ${formatoMeta.tone}44`, borderRadius: 6, padding: "4px 8px", fontFamily: "Gilroy, sans-serif", fontWeight: 900, letterSpacing: "0.08em", textTransform: "uppercase" }}>{formatoMeta.short}</span>
                             <span style={{ fontSize: 9, color: G.muted, fontFamily: "sans-serif", alignSelf: "center" }}>#{piece.num}</span>
                         </div>
-                        <div style={{ fontSize: 16, color: G.white, fontFamily: "Georgia,serif", lineHeight: 1.3 }}>{piece.titulo}</div>
-                        <div style={{ fontSize: 11, color: G.muted, fontFamily: "sans-serif", marginTop: 4, fontStyle: "italic" }}>"{piece.hook}"</div>
+                        <input
+                            value={form.titulo || ""}
+                            onChange={e => f("titulo", e.target.value)}
+                            readOnly={isViewer}
+                            placeholder="Título del post..."
+                            style={{
+                                ...css.input,
+                                border: "none",
+                                borderBottom: `1px solid ${G.border}`,
+                                borderRadius: 0,
+                                padding: "4px 0 8px",
+                                fontSize: 22,
+                                color: G.white,
+                                fontFamily: "Georgia,serif",
+                                lineHeight: 1.25,
+                                fontWeight: 700,
+                                background: "transparent",
+                            }}
+                        />
+                        <div style={{ fontSize: 11, color: G.muted, fontFamily: "sans-serif", marginTop: 7, fontStyle: "italic" }}>"{form.hook}"</div>
+                        {resumen && <div style={{ marginTop: 10, maxWidth: 720, color: G.muted, fontFamily: "sans-serif", fontSize: 12, lineHeight: 1.45 }}>{resumen}</div>}
                     </div>
                     <button onClick={onClose} style={{ background: "transparent", border: "none", color: G.muted, fontSize: 18, cursor: "pointer", flexShrink: 0 }}>✕</button>
                 </div>

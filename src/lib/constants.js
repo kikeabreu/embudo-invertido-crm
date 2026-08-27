@@ -25,8 +25,21 @@ export const css = {
     input: { background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 10, color: G.white, fontSize: 13, padding: "9px 13px", fontFamily: "Gilroy, sans-serif", width: "100%", boxSizing: "border-box", outline: "none" },
     label: { fontSize: 11, letterSpacing: "0.14em", color: G.naranja, fontFamily: "Gilroy, sans-serif", textTransform: "uppercase", fontWeight: 800, marginBottom: 6, display: "block" },
     btn: (g = G.gPurple) => {
-        const isLight = !g || g === G.bgGlass || g === "transparent" || g === "#FFFFFF" || g === "#fff" || g === "white" || (typeof g === "string" && (g.includes("rgba(255,255,255,") || g.includes("rgba(16,185,129,0")));
-        return { background: g, border: "none", borderRadius: 10, color: isLight ? G.white : "#FFFFFF", padding: "10px 20px", cursor: "pointer", fontSize: 12, fontFamily: "Gilroy, sans-serif", fontWeight: 800, letterSpacing: 0.5, boxShadow: isLight ? "none" : "0 4px 12px rgba(112,96,216,0.28)" };
+        const bg = g || G.gPurple;
+        const bgString = typeof bg === "string" ? bg : "";
+        const isLight = !bgString
+            || bgString === G.bgGlass
+            || bgString === G.bgCard
+            || bgString === G.purpleDim
+            || bgString === "transparent"
+            || bgString === "#FFFFFF"
+            || bgString === "#fff"
+            || bgString === "white"
+            || bgString.includes("rgba(255,255,255,")
+            || bgString.includes("rgba(16,185,129,0")
+            || bgString.includes("rgba(245,158,11,0")
+            || bgString.includes("rgba(112,96,216,0");
+        return { background: bg, border: "none", borderRadius: 10, color: isLight ? G.white : "#FFFFFF", padding: "10px 20px", cursor: "pointer", fontSize: 12, fontFamily: "Gilroy, sans-serif", fontWeight: 800, letterSpacing: 0.5, boxShadow: isLight ? "none" : "0 4px 12px rgba(112,96,216,0.28)" };
     },
     tag: (c) => ({ fontSize: 10, letterSpacing: 1.5, color: c, border: `1px solid ${c}`, borderRadius: 20, padding: "2px 9px", fontFamily: "Gilroy, sans-serif", textTransform: "uppercase", fontWeight: 700, whiteSpace: "nowrap", display: "inline-block" }),
 };
@@ -56,6 +69,13 @@ export const fmtDate = iso => { const d = new Date(iso); return `${d.toLocaleDat
 
 export const FORMATOS = ["Reel", "Carrusel", "Foto estática", "Historia", "Video largo (YouTube/IGTV)"];
 export const FORMATO_ICON = { "Reel": "REEL", "Carrusel": "CARRUSEL", "Foto estática": "FOTO", "Historia": "STORY", "Video largo (YouTube/IGTV)": "VIDEO" };
+export const FORMATO_META = {
+    "Reel": { label: "Reel", short: "REEL", tone: "#7060D8", bg: "#F1EFFC" },
+    "Carrusel": { label: "Carrusel", short: "CAR", tone: "#0E7490", bg: "#E6F6F8" },
+    "Foto estática": { label: "Foto", short: "FOTO", tone: "#B45309", bg: "#FBF0DC" },
+    "Historia": { label: "Historia", short: "STORY", tone: "#F08048", bg: "#FFF0E8" },
+    "Video largo (YouTube/IGTV)": { label: "Video largo", short: "VIDEO", tone: "#1F9D6B", bg: "#E5F4ED" },
+};
 
 export const stor = async (op, key, val) => {
     if (typeof window === "undefined") return null;

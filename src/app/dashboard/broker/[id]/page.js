@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { G, css, pct } from "@/lib/constants";
 import { INSTALACION_SECTIONS, ONBOARDING_STEPS } from "@/lib/data";
@@ -23,6 +23,7 @@ import EditorAnalyticsTab from "@/components/tabs/EditorAnalyticsTab";
 
 export default function BrokerDashboard() {
     const params = useParams();
+    const searchParams = useSearchParams();
     const brokerId = params?.id;
     const router = useRouter();
 
@@ -95,6 +96,7 @@ export default function BrokerDashboard() {
                 copy: p.cuerpo || "",
                 linkRecursos: p.recursos_url || "",
                 linkFinal: p.link_final || "",
+                linkEvidencia: p.link_evidencia || "",
                 ctaDm: p.cta_dm || "",
                 fechaProg: p.fecha_prog || "",
                 guion: p.guion || "",
@@ -168,6 +170,18 @@ export default function BrokerDashboard() {
         window.addEventListener("navigate-tab", handleNavigate);
         return () => window.removeEventListener("navigate-tab", handleNavigate);
     }, [TABS]);
+
+    useEffect(() => {
+        if (loading) return;
+        const targetTab = searchParams.get("tab");
+        const targetPiece = searchParams.get("piece");
+        if (targetTab && TABS.find(t => t.k === targetTab)) {
+            setTab(targetTab);
+        }
+        if (targetPiece) {
+            setTimeout(() => window.dispatchEvent(new CustomEvent("open-piece-modal", { detail: { pieceId: targetPiece } })), 150);
+        }
+    }, [loading, searchParams, TABS]);
 
     const fetchProyectos = async () => {
         const { data } = await supabase.from('proyectos').select('*').eq('broker_id', brokerId).order('created_at', { ascending: false });
@@ -269,6 +283,7 @@ export default function BrokerDashboard() {
             titulo: pieza.titulo, hook: pieza.hook, fase: pieza.fase, formato: pieza.formato,
             avatar: pieza.avatar, dolor: pieza.dolor, cta_dm: pieza.ctaDm, estado: pieza.estado,
             cuerpo: pieza.copy, recursos_url: pieza.linkRecursos, link_final: pieza.linkFinal,
+            link_evidencia: pieza.linkEvidencia,
             guion: pieza.guion, instrucciones: pieza.instrucciones, notas_internas: pieza.notasInternas,
             anotaciones: JSON.stringify(pieza.anotaciones || []),
             fecha_prog: pieza.fechaProg || null
@@ -389,6 +404,7 @@ export default function BrokerDashboard() {
                     copy: p.cuerpo || "",
                     linkRecursos: p.recursos_url || "",
                     linkFinal: p.link_final || "",
+                    linkEvidencia: p.link_evidencia || "",
                     ctaDm: p.cta_dm || "",
                     fechaProg: p.fecha_prog || "",
                     guion: p.guion || "",

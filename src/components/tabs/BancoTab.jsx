@@ -1,13 +1,53 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { G, css, FASES, ESTADOS_PIEZA, FORMATOS, FORMATO_ICON, faseColor, faseGrad, estadoColor, pct, uid } from "@/lib/constants";
+import { G, css, FASES, ESTADOS_PIEZA, FORMATOS, FORMATO_ICON, FORMATO_META, faseColor, faseGrad, estadoColor, pct, uid } from "@/lib/constants";
 import { PBar, GText } from "@/components/ui/UIUtils";
 import PieceModal from "@/components/ui/PieceModal";
 
+const textPreview = (value = "", length = 110) => {
+    const clean = String(value || "").replace(/\s+/g, " ").trim();
+    if (!clean) return "";
+    return clean.length > length ? clean.slice(0, length).trim() + "..." : clean;
+};
+
+const getPieceBrief = (piece) => {
+    const source = piece.copy || piece.guion || piece.instrucciones || piece.hook || piece.avatar || "";
+    return textPreview(source, 150);
+};
+
+const getFormatoMeta = (formato) => FORMATO_META[formato] || { label: formato || "Sin formato", short: "TIPO", tone: G.muted, bg: "#F3F4F6" };
+
+function FormatBadge({ formato, compact = false }) {
+    const meta = getFormatoMeta(formato);
+    return (
+        <span style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            minWidth: compact ? 42 : 0,
+            justifyContent: "center",
+            background: meta.bg,
+            color: meta.tone,
+            border: `1px solid ${meta.tone}44`,
+            borderRadius: 7,
+            padding: compact ? "2px 6px" : "4px 8px",
+            fontSize: compact ? 8 : 10,
+            lineHeight: 1,
+            fontFamily: "Gilroy, sans-serif",
+            fontWeight: 900,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            whiteSpace: "nowrap",
+        }}>
+            {compact ? meta.short : meta.label}
+        </span>
+    );
+}
+
 function BancoSel({ val, set, opts }) {
     return (
-        <select value={val} onChange={e => set(e.target.value)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${G.border}`, borderRadius: 8, color: G.purpleHi, fontSize: 11, padding: "6px 10px", fontFamily: "sans-serif", cursor: "pointer" }}>
+        <select value={val} onChange={e => set(e.target.value)} style={{ background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 8, color: G.purpleHi, fontSize: 11, padding: "6px 10px", fontFamily: "Gilroy, sans-serif", cursor: "pointer" }}>
             {opts.map(o => <option key={o.v ?? o} value={o.v ?? o}>{o.l ?? o}</option>)}
         </select>
     );
@@ -91,7 +131,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                 </div>
                 <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 78, textAlign: "center" }}>FASE</span>
                 <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 92, textAlign: "center" }}>ESTADO</span>
-                <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 150, textAlign: "center" }}>FORMATO</span>
+                <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 150, textAlign: "center" }}>TIPO</span>
                 <span style={{ fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", width: 76, textAlign: "center" }}>ACCIONES</span>
             </div>
             {filtered.length === 0 && <div style={{ textAlign: "center", padding: 40, color: G.dimmed, fontFamily: "sans-serif", fontSize: 12 }}>Sin piezas que coincidan con los filtros.</div>}
@@ -101,6 +141,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                 const isFromSeq = p.origen === "secuencia";
                 const bc = isFromSeq ? G.cyan + "33" : G.border;
                 const isSel = selectedIds.includes(p.id);
+                const brief = getPieceBrief(p);
                 return (
                     <div key={p.id} style={{ ...css.card, padding: "12px 16px", display: "grid", gridTemplateColumns: "30px 28px 78px 92px 1fr 140px 76px", gap: 10, alignItems: "center", cursor: "pointer", borderColor: isSel ? G.borderHi : bc, background: isSel ? "#EEF2F7" : G.bgCard, transition: "0.2s" }}
                         onClick={() => setEditPiece(p)}>
@@ -120,6 +161,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                                 {isFromSeq && <span style={{ fontSize: 7, color: G.cyan, border: `1px solid ${G.cyan}33`, borderRadius: 3, padding: "1px 4px" }}>📅 Seq</span>}
                             </div>
                             <div style={{ fontSize: 10, color: G.muted, fontFamily: "sans-serif", fontStyle: "italic" }}>"{p.hook?.slice(0, 60)}{(p.hook?.length ?? 0) > 60 ? "…" : ""}"</div>
+                            {brief && <div style={{ fontSize: 9, color: G.dimmed, fontFamily: "sans-serif", marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{brief}</div>}
                             <div style={{ display: "flex", gap: 8, marginTop: 3 }}>
                                 {hasDetails && <span style={{ fontSize: 7, color: G.purple }}>● contenido</span>}
                                 {p.fechaProg && <span style={{ fontSize: 7, color: G.blue }}>📅 {p.fechaProg}</span>}
@@ -129,8 +171,8 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                             </div>
                         </div>
                         <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
-                            {p.formato ? <span style={{ fontSize: 9, color: G.purpleHi, border: `1px solid ${G.purpleHi}33`, borderRadius: 4, padding: "1px 5px" }}>{FORMATO_ICON[p.formato]} {p.formato}</span>
-                                : <span style={{ ...css.tag(G.blue), fontSize: 7 }}>{p.avatar || "—"}</span>}
+                            <FormatBadge formato={p.formato} />
+                            {p.avatar && <span style={{ fontSize: 8, color: G.muted, border: `1px solid ${G.border}`, borderRadius: 6, padding: "3px 6px", fontFamily: "sans-serif" }}>{textPreview(p.avatar, 18)}</span>}
                         </div>
                         <div style={{ display: "flex", gap: 5, justifyContent: "flex-end" }}>
                             <button onClick={(e) => { e.stopPropagation(); setEditPiece(p); }} style={{ background: "transparent", border: `1px solid ${G.border}`, borderRadius: 5, cursor: "pointer", color: G.purpleHi, fontSize: 10, padding: "3px 8px" }}>✎</button>
@@ -148,24 +190,30 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
             {filtered.length === 0 && <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 40, color: G.dimmed, fontFamily: "sans-serif", fontSize: 12 }}>Sin piezas.</div>}
             {filtered.map(p => {
                 const bc = p.origen === "secuencia" ? G.cyan + "33" : G.border;
+                const brief = getPieceBrief(p);
+                const meta = getFormatoMeta(p.formato);
                 return (
-                    <div key={p.id} onClick={() => setEditPiece(p)} style={{ ...css.card, padding: "16px", cursor: "pointer", borderColor: bc, transition: "all 0.15s", display: "flex", flexDirection: "column", gap: 10 }}
+                    <div key={p.id} onClick={() => setEditPiece(p)} style={{ ...css.card, padding: "16px", cursor: "pointer", borderColor: bc, transition: "all 0.15s", display: "flex", flexDirection: "column", gap: 10, minHeight: 245 }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = G.borderHi; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(15,23,42,0.08)"; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = bc; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                                 <span style={css.tag(faseColor(p.fase))}>{p.fase}</span>
-                                {p.formato && <span style={{ fontSize: 9, color: G.purpleHi, border: `1px solid ${G.purpleHi}33`, borderRadius: 10, padding: "2px 7px" }}>{FORMATO_ICON[p.formato]} {p.formato}</span>}
+                                <FormatBadge formato={p.formato} compact />
                             </div>
                             <span style={{ ...css.tag(estadoColor(p.estado)), borderRadius: 4, fontSize: 8 }}>{p.estado}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: meta.bg, border: `1px solid ${meta.tone}33`, borderRadius: 10, padding: "8px 10px" }}>
+                            <span style={{ fontSize: 18, lineHeight: 1, fontWeight: 900, color: meta.tone, fontFamily: "Gilroy, sans-serif" }}>{meta.short}</span>
+                            <span style={{ fontSize: 9, color: meta.tone, fontFamily: "sans-serif", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>{p.origen === "secuencia" ? "Secuencia" : "Manual"}</span>
                         </div>
                         <div>
                             <div style={{ fontSize: 13, color: G.white, fontFamily: "sans-serif", fontWeight: 700, marginBottom: 5, lineHeight: 1.3 }}>{p.titulo}</div>
                             <div style={{ fontSize: 10, color: G.muted, fontFamily: "sans-serif", fontStyle: "italic", lineHeight: 1.5 }}>"{p.hook?.slice(0, 80)}{(p.hook?.length ?? 0) > 80 ? "…" : ""}"</div>
                         </div>
-                        {p.copy && <div style={{ fontSize: 10, color: G.dimmed, fontFamily: "sans-serif", lineHeight: 1.5, padding: "8px 10px", background: "rgba(255,255,255,0.04)", borderRadius: 6, borderLeft: `2px solid ${faseColor(p.fase)}44` }}>
-                            {p.copy.slice(0, 100)}{p.copy.length > 100 ? "…" : ""}
-                        </div>}
+                        <div style={{ fontSize: 10, color: brief ? G.muted : G.dimmed, fontFamily: "sans-serif", lineHeight: 1.55, padding: "10px 11px", background: "#F7F9F9", borderRadius: 8, borderLeft: `3px solid ${faseColor(p.fase)}66`, minHeight: 58, display: "flex", alignItems: "center" }}>
+                            {brief || "Sin resumen todavía. Agrega hook, copy o guion para ubicar esta pieza rápido."}
+                        </div>
                         <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", marginTop: "auto" }}>
                             {p.fechaProg && <span style={{ fontSize: 9, color: G.blue }}>📅 {p.fechaProg}</span>}
                             {p.linkEvidencia && <span style={{ fontSize: 9, color: G.green }}>🔗</span>}
@@ -193,14 +241,15 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                         <div style={{ padding: "8px", display: "flex", flexDirection: "column", gap: 6, maxHeight: 500, overflowY: "auto" }}>
                             {col.length === 0 && <div style={{ fontSize: 10, color: G.dimmed, fontFamily: "sans-serif", textAlign: "center", padding: "16px 0" }}>—</div>}
                             {col.map(p => (
-                                <div key={p.id} onClick={() => setEditPiece(p)} style={{ padding: "10px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 8, border: `1px solid ${p.origen === "secuencia" ? G.cyan + "33" : G.border}`, cursor: "pointer", transition: "all 0.15s" }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}>
+                                    <div key={p.id} onClick={() => setEditPiece(p)} style={{ padding: "10px 12px", background: "#FFFFFF", borderRadius: 8, border: `1px solid ${p.origen === "secuencia" ? G.cyan + "33" : G.border}`, cursor: "pointer", transition: "all 0.15s" }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = G.bgCardHover; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = "#FFFFFF"; }}>
                                     <div style={{ display: "flex", gap: 5, marginBottom: 5, flexWrap: "wrap" }}>
                                         <span style={{ ...css.tag(faseColor(p.fase)), fontSize: 7, padding: "1px 5px" }}>{p.fase}</span>
-                                        {p.formato && <span style={{ fontSize: 9 }}>{FORMATO_ICON[p.formato]}</span>}
+                                        <FormatBadge formato={p.formato} compact />
                                     </div>
                                     <div style={{ fontSize: 11, color: G.white, fontFamily: "sans-serif", fontWeight: 600, lineHeight: 1.3, marginBottom: 4 }}>{p.titulo}</div>
+                                    {getPieceBrief(p) && <div style={{ fontSize: 9, color: G.dimmed, fontFamily: "sans-serif", lineHeight: 1.35, marginBottom: 5 }}>{textPreview(getPieceBrief(p), 72)}</div>}
                                     {p.fechaProg && <div style={{ fontSize: 9, color: G.blue }}>📅 {p.fechaProg}</div>}
                                 </div>
                             ))}
@@ -256,11 +305,11 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                             <div key={dateStr} style={{ minHeight: 72, padding: "6px", background: isToday ? "#EEF2F7" : "#FFFFFF", border: `1px solid ${isToday ? G.borderHi : G.border}`, borderRadius: 8 }}>
                                 <div style={{ fontSize: 10, color: isToday ? G.purpleHi : G.muted, fontFamily: "monospace", fontWeight: isToday ? 800 : 400, marginBottom: 4 }}>{d}</div>
                                 {dayPiezas.slice(0, 3).map(p => (
-                                    <div key={p.id} onClick={() => setEditPiece(p)} style={{ fontSize: 8, color: G.white, fontFamily: "sans-serif", background: faseColor(p.fase) + "33", border: `1px solid ${faseColor(p.fase)}55`, borderRadius: 4, padding: "2px 5px", marginBottom: 3, cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "background 0.15s" }}
-                                        onMouseEnter={e => e.currentTarget.style.background = faseColor(p.fase) + "66"}
-                                        onMouseLeave={e => e.currentTarget.style.background = faseColor(p.fase) + "33"}
+                                    <div key={p.id} onClick={() => setEditPiece(p)} style={{ fontSize: 8, color: G.white, fontFamily: "sans-serif", background: getFormatoMeta(p.formato).bg, border: `1px solid ${getFormatoMeta(p.formato).tone}55`, borderRadius: 4, padding: "3px 5px", marginBottom: 3, cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "background 0.15s" }}
+                                        onMouseEnter={e => e.currentTarget.style.background = G.bgCardHover}
+                                        onMouseLeave={e => e.currentTarget.style.background = getFormatoMeta(p.formato).bg}
                                         title={p.titulo}>
-                                        {FORMATO_ICON[p.formato] || "●"} {p.titulo.slice(0, 18)}{p.titulo.length > 18 ? "…" : ""}
+                                        {getFormatoMeta(p.formato).short} · {p.titulo.slice(0, 22)}{p.titulo.length > 22 ? "…" : ""}
                                     </div>
                                 ))}
                                 {dayPiezas.length > 3 && <div style={{ fontSize: 8, color: G.dimmed, fontFamily: "sans-serif" }}>+{dayPiezas.length - 3} más</div>}
@@ -325,11 +374,11 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                 <BancoSel val={filterEst} set={setFilterEst} opts={[{ v: "Todos", l: "Estado: Todos" }, ...ESTADOS_PIEZA.map(e => ({ v: e, l: e }))]} />
                 <BancoSel val={filterFormato} set={setFilterFormato} opts={[{ v: "Todos", l: "Formato: Todos" }, ...FORMATOS.map(f => ({ v: f, l: f }))]} />
                 <BancoSel val={filterOrigen} set={setFilterOrigen} opts={[{ v: "Todos", l: "Origen: Todos" }, { v: "manual", l: "Manual" }, { v: "secuencia", l: "Secuencia" }]} />
-                <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ background: "rgba(255,255,255,0.06)", border: `1px solid ${G.border}`, borderRadius: 8, color: G.purpleHi, fontSize: 11, padding: "6px 10px", fontFamily: "sans-serif", cursor: "pointer" }}>
+                <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 8, color: G.purpleHi, fontSize: 11, padding: "6px 10px", fontFamily: "Gilroy, sans-serif", cursor: "pointer" }}>
                     <option value="num">Orden: #</option>
                     <option value="fecha">Orden: Fecha</option>
                 </select>
-                <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: 3, border: `1px solid ${G.border}` }}>
+                <div style={{ display: "flex", gap: 2, background: "#F7F9F9", borderRadius: 8, padding: 3, border: `1px solid ${G.border}` }}>
                     {VISTAS.map(v => (
                         <button key={v.id} onClick={() => setVista(v.id)} title={v.label}
                             style={{ background: vista === v.id ? G.purpleDim : "transparent", border: `1px solid ${vista === v.id ? G.borderHi : "transparent"}`, borderRadius: 6, color: vista === v.id ? G.purpleHi : G.muted, fontSize: 13, padding: "4px 9px", cursor: "pointer", transition: "all 0.15s" }}>

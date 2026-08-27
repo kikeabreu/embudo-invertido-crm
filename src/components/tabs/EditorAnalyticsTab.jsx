@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { G, css } from "@/lib/constants";
+import { G, css, USERS } from "@/lib/constants";
 import { GText, StatCard } from "@/components/ui/UIUtils";
 
-export default function EditorAnalyticsTab({ tareas, broker }) {
+export default function EditorAnalyticsTab({ tareas = [], broker }) {
     const [selectedEditor, setSelectedEditor] = useState("Todos");
     const [team, setTeam] = useState([]);
     const [loadingTeam, setLoadingTeam] = useState(true);
@@ -13,12 +13,29 @@ export default function EditorAnalyticsTab({ tareas, broker }) {
 
     useEffect(() => {
         const fetchTeam = async () => {
-            const { data } = await supabase.from('usuarios').select('*').eq('rol', 'Equipo');
-            if (data) setTeam(data);
+            const { data } = await supabase.from('usuarios').select('*');
+            let list = data || [];
+            
+            // Add USERS constants if not present
+            USERS.forEach(u => {
+                if (!list.some(x => x.id === u.id || x.nombre === u.name)) {
+                    list.push({ id: u.id, nombre: u.name, rol: u.role });
+                }
+            });
+
+            // Extract assignees from tareas (e.g. "Carlos" or any string/ID)
+            const taskAssignees = Array.from(new Set(tareas.map(t => t.asignado_a).filter(Boolean)));
+            taskAssignees.forEach(a => {
+                if (!list.some(x => x.id === a || x.nombre === a)) {
+                    list.push({ id: a, nombre: a, rol: "Editor" });
+                }
+            });
+
+            setTeam(list);
             setLoadingTeam(false);
         };
         fetchTeam();
-    }, []);
+    }, [tareas]);
 
     useEffect(() => {
         if (broker?.precio_pactado) {
@@ -39,9 +56,14 @@ export default function EditorAnalyticsTab({ tareas, broker }) {
     // Filter completed tasks (Aprobado / Hecho)
     const completedTasks = tareas.filter(t => t.estado === "Aprobado" || t.estado === "Hecho");
     
+    const selectedObj = team.find(e => e.id === selectedEditor || e.nombre === selectedEditor);
+
     const displayTasks = selectedEditor === "Todos" 
         ? completedTasks 
-        : completedTasks.filter(t => t.asignado_a === selectedEditor);
+        : completedTasks.filter(t => 
+            t.asignado_a === selectedEditor || 
+            (selectedObj && (t.asignado_a === selectedObj.id || t.asignado_a === selectedObj.nombre))
+        );
 
     // Calculate metrics
     const totalPoints = displayTasks.reduce((acc, t) => acc + (t.puntos_esfuerzo || 1), 0);

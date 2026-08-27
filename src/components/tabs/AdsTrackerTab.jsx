@@ -284,11 +284,17 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
             <div style={{ display: "flex", flexWrap: "wrap", gap: 15, justifyContent: "space-between", alignItems: "center", marginBottom: 30, paddingBottom: 15, borderBottom: isTVMode ? 'none' : `1px solid ${G.border}` }}>
                 
                 {!isTVMode && (
-                    <div style={{ display: "flex", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 4, borderBottom: `1px solid ${G.border}` }}>
                         {[{ v: "dashboard", l: "📊 Dashboard" }, { v: "campaigns", l: "📁 Campañas" }, { v: "metrics", l: "🗓️ Registros" }].map(t => (
-                            <button key={t.v} onClick={() => setView(t.v)} style={{ ...css.btn(view === t.v ? G.gPurple : "transparent"), border: view === t.v ? 'none' : `1px solid ${G.borderHi}`, borderRadius: 12 }}>{t.l}</button>
+                            <button key={t.v} onClick={() => setView(t.v)} style={{ position: "relative", background: view === t.v ? G.purpleDim : "transparent", color: view === t.v ? G.white : G.muted, border: "none", borderRadius: 10, padding: "12px 16px", cursor: "pointer", fontFamily: "Gilroy, sans-serif", fontSize: 13, fontWeight: 900, letterSpacing: "0.01em", transition: "color 180ms ease, background 180ms ease" }}>
+                                {t.l}
+                                <span style={{ position: "absolute", left: 12, right: 12, bottom: -5, height: 3, borderRadius: "3px 3px 0 0", background: view === t.v ? G.naranja : "transparent" }} />
+                            </button>
                         ))}
-                        {isAdmin && <button onClick={() => setView("config")} style={{ ...css.btn(view === "config" ? G.gCyan : "transparent"), border: view === "config" ? 'none' : `1px solid ${G.borderHi}`, borderRadius: 12 }}>⚙️</button>}
+                        {isAdmin && <button onClick={() => setView("config")} style={{ position: "relative", background: view === "config" ? G.purpleDim : "transparent", color: view === "config" ? G.white : G.muted, border: "none", borderRadius: 10, padding: "12px 16px", cursor: "pointer", fontFamily: "Gilroy, sans-serif", fontSize: 13, fontWeight: 900, transition: "color 180ms ease, background 180ms ease" }}>
+                            ⚙️
+                            <span style={{ position: "absolute", left: 12, right: 12, bottom: -5, height: 3, borderRadius: "3px 3px 0 0", background: view === "config" ? G.naranja : "transparent" }} />
+                        </button>}
                     </div>
                 )}
                 
@@ -296,9 +302,9 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
 
                 {view === "dashboard" && (
                     <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
-                        <div style={{ display: "flex", background: "#F3F4F6", borderRadius: 12, padding: 4, border: `1px solid ${G.border}` }}>
+                        <div style={{ display: "flex", background: G.bgGlass, borderRadius: 12, padding: 4, border: `1px solid ${G.border}` }}>
                             {[{ v: "7", l: "7 Días" }, { v: "30", l: "30 Días" }, { v: "month", l: "Este Mes" }, { v: "all", l: "Siempre" }].map(d => (
-                                <button key={d.v} onClick={() => setDateRange(d.v)} style={{ background: dateRange === d.v ? 'rgba(255,255,255,0.1)' : 'transparent', color: dateRange === d.v ? '#fff' : G.muted, border: 'none', padding: '6px 14px', borderRadius: 8, fontSize: 13, cursor: "pointer", transition: "0.2s" }}>{d.l}</button>
+                                <button key={d.v} onClick={() => setDateRange(d.v)} style={{ background: dateRange === d.v ? "#FFFFFF" : "transparent", color: dateRange === d.v ? G.white : G.muted, border: dateRange === d.v ? `1px solid ${G.border}` : "1px solid transparent", boxShadow: dateRange === d.v ? "0 1px 3px rgba(8,16,16,0.08)" : "none", padding: '6px 14px', borderRadius: 8, fontSize: 13, fontFamily: "Gilroy, sans-serif", fontWeight: dateRange === d.v ? 800 : 300, cursor: "pointer", transition: "background 180ms ease, color 180ms ease, box-shadow 180ms ease" }}>{d.l}</button>
                             ))}
                         </div>
                         {!isTVMode && <button onClick={() => setIsTVMode(true)} style={{...css.btn(G.gCyan), borderRadius:12}}>📺 Sala de Guerra</button>}
