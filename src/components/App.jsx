@@ -328,7 +328,7 @@ export default function App() {
                     </div>
                     <div style={{ width: 1, height: 20, background: G.border }} />
                     <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                        <div style={{ width: 26, height: 26, borderRadius: 20, background: G.gPurple, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 10px rgba(124,58,237,0.3)" }}>
+                        <div style={{ width: 26, height: 26, borderRadius: 20, background: G.gPurple, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(15,23,42,0.08)" }}>
                             <span style={{ fontSize: 11, color: G.white, fontWeight: 700 }}>{user?.name[0]}</span>
                         </div>
                         <span style={{ fontSize: 10, color: G.muted, fontFamily: "sans-serif" }}>{user?.name}</span>

@@ -19,6 +19,7 @@ import HistorialTab from "@/components/tabs/HistorialTab";
 import ProyectosTab from "@/components/tabs/ProyectosTab";
 import AdminTab from "@/components/tabs/AdminTab";
 import AdsTrackerTab from "@/components/tabs/AdsTrackerTab";
+import EditorAnalyticsTab from "@/components/tabs/EditorAnalyticsTab";
 
 export default function BrokerDashboard() {
     const params = useParams();
@@ -129,6 +130,7 @@ export default function BrokerDashboard() {
         { k: "ads", l: "📈 Ads Tracker" },
         { k: "analitica", l: "📊 Analítica" },
         { k: "proyectos", l: "🚀 Proyectos" },
+        { k: "editor", l: "✂️ Editor Analytics" },
         { k: "historial", l: "🕐 Historial" },
     ].filter(t => {
         if (t.k === "oferta" && isEquipo) return false;
@@ -505,6 +507,7 @@ export default function BrokerDashboard() {
             case "analitica": return <AnalyticsTab piezas={piezas} instalChecked={instalChecked} onbChecked={onbChecked} broker={broker} />;
             case "historial": return <HistorialTab logs={logs} onUndo={undoAction} isViewer={isViewer} />;
             case "proyectos": return <ProyectosTab proyectos={proyectos} tareas={tareas} onSaveProyecto={saveProyecto} onDeleteProyecto={deleteProyecto} onSaveTarea={saveTarea} onDeleteTarea={deleteTarea} onAddComentario={addComentario} isViewer={isViewer} currentUser={currentUser} brokerId={brokerId} toast={toast} />;
+            case "editor": return <EditorAnalyticsTab tareas={tareas} broker={broker} />;
             case "admin": return isAdmin ? <AdminTab brokerId={brokerId} toast={toast} /> : null;
             default: return null;
         }

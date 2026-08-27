@@ -66,7 +66,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                 return (pMap[a.prioridad] || 9) - (pMap[b.prioridad] || 9);
             }
             if (sortBy === "estado") {
-                const sMap = { "Inbox": 1, "En curso": 2, "Bloqueado": 3, "Hecho": 4 };
+                const sMap = { "Inbox": 1, "Edición": 2, "Bloqueado": 3, "Revisión Cliente": 4, "Aprobado": 5 };
                 return (sMap[a.estado] || 9) - (sMap[b.estado] || 9);
             }
             // default
@@ -150,9 +150,10 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
 
     const STATUS_COLS = [
         { k: "Inbox", l: "📥 Inbox", c: G.muted },
-        { k: "En curso", l: "⚡ En curso", c: G.orange },
+        { k: "Edición", l: "⚡ Edición", c: G.orange },
         { k: "Bloqueado", l: "🛑 Bloqueado", c: G.red },
-        { k: "Hecho", l: "✅ Hecho", c: G.green }
+        { k: "Revisión Cliente", l: "👀 Revisión", c: G.cyan },
+        { k: "Aprobado", l: "✅ Aprobado", c: G.green }
     ];
 
     const PRIORITY_ICON = { Baja: "🟢", Media: "🟡", Alta: "🟠", Crítica: "🔴" };
@@ -186,7 +187,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                             </div>
                             <div style={{ display: "flex", gap: 10 }}>
                                 {!selProj.esVirtual && !isViewer && <button onClick={() => { setEditProj(selProj); setShowProjModal(true); }} style={{ ...css.btn(G.bgGlass), padding: "7px 15px" }}>⚙️ Editar</button>}
-                                {!isViewer && <button onClick={() => { setEditTask({ titulo: "", descripcion: "", prioridad: "Media", estado: "Inbox", proyecto_id: selProj.esVirtual ? null : selProj.id, broker_id: brokerId }); setShowTaskModal(true); }} style={css.btn()}>+ Nueva Tarea</button>}
+                                {!isViewer && <button onClick={() => { setEditTask({ titulo: "", descripcion: "", prioridad: "Media", estado: "Inbox", puntos_esfuerzo: 1, proyecto_id: selProj.esVirtual ? null : selProj.id, broker_id: brokerId }); setShowTaskModal(true); }} style={css.btn()}>+ Nueva Tarea</button>}
                             </div>
                         </div>
 
@@ -194,7 +195,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                         <div style={{ padding: "10px 30px", borderBottom: `1px solid ${G.border}`, display: "flex", gap: 15, background: "rgba(0,0,0,0.15)", alignItems: "center", flexWrap: "wrap" }}>
                             <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.05)", padding: 4, borderRadius: 8 }}>
                                 {["kanban", "lista", "calendario"].map(v => (
-                                    <button key={v} onClick={() => setViewMode(v)} style={{ background: viewMode === v ? "rgba(124,58,237,0.2)" : "transparent", color: viewMode === v ? G.white : G.muted, border: "none", padding: "6px 14px", borderRadius: 6, fontSize: 11, cursor: "pointer", textTransform: "capitalize", fontWeight: viewMode === v ? 600 : 400 }}>
+                                    <button key={v} onClick={() => setViewMode(v)} style={{ background: viewMode === v ? "#FFFFFF" : "transparent", color: viewMode === v ? G.white : G.muted, border: `1px solid ${viewMode === v ? G.border : "transparent"}`, padding: "6px 14px", borderRadius: 6, fontSize: 11, cursor: "pointer", textTransform: "capitalize", fontWeight: viewMode === v ? 600 : 400 }}>
                                         {v === "kanban" ? "📋 " : v === "lista" ? "📝 " : "📅 "}{v}
                                     </button>
                                 ))}
@@ -223,9 +224,10 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                 <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto" }}>
                                     <option value="Todos">🌐 Todos</option>
                                     <option value="Inbox">📥 Inbox</option>
-                                    <option value="En curso">⚡ En curso</option>
+                                    <option value="Edición">⚡ Edición</option>
                                     <option value="Bloqueado">🛑 Bloqueado</option>
-                                    <option value="Hecho">✅ Hecho</option>
+                                    <option value="Revisión Cliente">👀 Revisión</option>
+                                    <option value="Aprobado">✅ Aprobado</option>
                                 </select>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -241,7 +243,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                             <div style={{ width: 1, height: 20, background: G.border }} />
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <label style={{ fontSize: 10, color: G.muted, fontWeight: 700, letterSpacing: 1 }}>ORDENAR:</label>
-                                <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto", background: "rgba(124,58,237,0.1)", borderColor: "rgba(124,58,237,0.3)" }}>
+                                <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto", background: "#FFFFFF", borderColor: G.borderHi }}>
                                     <option value="defecto">🕒 Recientes primero</option>
                                     <option value="fecha_limite">⏰ Por fecha límite</option>
                                     <option value="prioridad">🔥 Por prioridad</option>
@@ -353,7 +355,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                             const tsForDay = projTasks.filter(t => t.fecha_limite === dateStr);
                                             
                                             return (
-                                                <div key={d} style={{ background: isHoy ? "rgba(124,58,237,0.08)" : G.bgCard, border: `1px solid ${isHoy ? G.purple : G.border}`, borderRadius: 8, padding: "8px 4px", minHeight: 100, display: "flex", flexDirection: "column", gap: 4 }}>
+                                                <div key={d} style={{ background: isHoy ? "#EEF2F7" : G.bgCard, border: `1px solid ${isHoy ? G.borderHi : G.border}`, borderRadius: 8, padding: "8px 4px", minHeight: 100, display: "flex", flexDirection: "column", gap: 4 }}>
                                                     <div style={{ fontSize: 10, color: isHoy ? G.purpleHi : G.muted, textAlign: "right", fontWeight: isHoy ? 700 : 400, marginBottom: 4 }}>{d}</div>
                                                     {tsForDay.map(t => {
                                                         const stat = STATUS_COLS.find(s => s.k === t.estado) || { c: G.muted };
@@ -440,6 +442,10 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                     </select>
                                 </div>
                                 <div>
+                                    <label style={css.label}>PUNTOS DE ESFUERZO</label>
+                                    <input type="number" min="1" max="10" value={editTask.puntos_esfuerzo || 1} onChange={e => setEditTask({ ...editTask, puntos_esfuerzo: parseInt(e.target.value) || 1 })} style={css.input} />
+                                </div>
+                                <div>
                                     <label style={css.label}>FECHA LÍMITE</label>
                                     <input type="date" value={editTask.fecha_limite || ""} onChange={e => setEditTask({ ...editTask, fecha_limite: e.target.value })} style={css.input} />
                                 </div>
@@ -474,7 +480,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                         </div>
 
                         {/* Columna Derecha: Comentarios & Colaboración */}
-                        <div style={{ flex: 1, background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", position: "relative" }}>
+                        <div style={{ flex: 1, background: "#F9FAFB", display: "flex", flexDirection: "column", position: "relative" }}>
                             <div style={{ padding: 25, borderBottom: `1px solid ${G.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                 <GText bold size={10} spacing={2}>COMENTARIOS</GText>
                                 <div style={{ display: "flex", gap: 8 }}>
@@ -524,7 +530,7 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
 
                             {/* Mentions Dropdown */}
                             {showMentions && (
-                                <div style={{ position: "absolute", bottom: 100, left: 20, right: 20, background: "#0F0F2D", border: `1px solid ${G.borderHi}`, borderRadius: 12, boxShadow: "0 -10px 40px rgba(0,0,0,0.5)", maxHeight: 200, overflowY: "auto", zIndex: 10 }}>
+                                <div style={{ position: "absolute", bottom: 100, left: 20, right: 20, background: "#FFFFFF", border: `1px solid ${G.borderHi}`, borderRadius: 12, boxShadow: "0 -10px 40px rgba(15,23,42,0.12)", maxHeight: 200, overflowY: "auto", zIndex: 10 }}>
                                     {team.filter(u => u.nombre.toLowerCase().includes(mentionSearch.toLowerCase())).map(u => (
                                         <div key={u.id} onClick={() => {
                                             const inp = document.getElementById("comment-input");

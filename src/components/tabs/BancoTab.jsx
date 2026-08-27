@@ -102,7 +102,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                 const bc = isFromSeq ? G.cyan + "33" : G.border;
                 const isSel = selectedIds.includes(p.id);
                 return (
-                    <div key={p.id} style={{ ...css.card, padding: "12px 16px", display: "grid", gridTemplateColumns: "30px 28px 78px 92px 1fr 140px 76px", gap: 10, alignItems: "center", cursor: "pointer", borderColor: isSel ? G.purple : bc, background: isSel ? "rgba(124,58,237,0.08)" : G.bgCard, transition: "0.2s" }}
+                    <div key={p.id} style={{ ...css.card, padding: "12px 16px", display: "grid", gridTemplateColumns: "30px 28px 78px 92px 1fr 140px 76px", gap: 10, alignItems: "center", cursor: "pointer", borderColor: isSel ? G.borderHi : bc, background: isSel ? "#EEF2F7" : G.bgCard, transition: "0.2s" }}
                         onClick={() => setEditPiece(p)}>
                         <input 
                             type="checkbox" 
@@ -150,7 +150,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                 const bc = p.origen === "secuencia" ? G.cyan + "33" : G.border;
                 return (
                     <div key={p.id} onClick={() => setEditPiece(p)} style={{ ...css.card, padding: "16px", cursor: "pointer", borderColor: bc, transition: "all 0.15s", display: "flex", flexDirection: "column", gap: 10 }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = G.borderHi; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.3)"; }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = G.borderHi; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(15,23,42,0.08)"; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = bc; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -253,7 +253,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                         const dayPiezas = byDate[dateStr] || [];
                         const isToday = dateStr === todayStr;
                         return (
-                            <div key={dateStr} style={{ minHeight: 72, padding: "6px", background: isToday ? "rgba(124,58,237,0.1)" : "rgba(255,255,255,0.02)", border: `1px solid ${isToday ? G.purpleHi + "44" : G.border}`, borderRadius: 8 }}>
+                            <div key={dateStr} style={{ minHeight: 72, padding: "6px", background: isToday ? "#EEF2F7" : "#FFFFFF", border: `1px solid ${isToday ? G.borderHi : G.border}`, borderRadius: 8 }}>
                                 <div style={{ fontSize: 10, color: isToday ? G.purpleHi : G.muted, fontFamily: "monospace", fontWeight: isToday ? 800 : 400, marginBottom: 4 }}>{d}</div>
                                 {dayPiezas.slice(0, 3).map(p => (
                                     <div key={p.id} onClick={() => setEditPiece(p)} style={{ fontSize: 8, color: G.white, fontFamily: "sans-serif", background: faseColor(p.fase) + "33", border: `1px solid ${faseColor(p.fase)}55`, borderRadius: 4, padding: "2px 5px", marginBottom: 3, cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "background 0.15s" }}
@@ -423,7 +423,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                             </select>
                         </div>
                         <div><label style={css.label}>Fecha programada</label>
-                            <input type="date" value={form.fechaProg || ""} onChange={e => setForm({ ...form, fechaProg: e.target.value })} style={{ ...css.input, colorScheme: "dark" }} />
+                            <input type="date" value={form.fechaProg || ""} onChange={e => setForm({ ...form, fechaProg: e.target.value })} style={{ ...css.input, colorScheme: "light" }} />
                         </div>
                         <button onClick={() => { if (form.titulo.trim()) { onAdd({ ...form, id: uid(), num: piezas.length + 1, estado: "En cola", copy: "", guion: "", instrucciones: "", notasInternas: "", linkRecursos: "", linkFinal: "", linkEvidencia: "", origen: "manual", origenRef: null, anotaciones: [] }); setShowForm(false); setForm({ fase: "Atraer", avatar: "", dolor: "", titulo: "", hook: "", ctaDm: "", formato: "", fechaProg: "" }); } }} style={{ ...css.btn(G.gGreen) }}>+ Agregar</button>
                     </div>
@@ -437,9 +437,9 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
             {selectedIds.length > 0 && (
                 <div style={{ 
                     position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", 
-                    background: "#121232", border: `1px solid ${G.purple}`, borderRadius: 12, 
+                    background: "#FFFFFF", border: `1px solid ${G.borderHi}`, borderRadius: 12, 
                     padding: "12px 20px", display: "flex", alignItems: "center", gap: 16, 
-                    boxShadow: "0 10px 40px rgba(0,0,0,0.5)", zIndex: 1000,
+                    boxShadow: "0 16px 40px rgba(15,23,42,0.14)", zIndex: 1000,
                     animation: "slideUp 0.3s ease-out"
                 }}>
                     <style>{`
@@ -511,8 +511,8 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
             )}
 
             {showImportModal && (
-                <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: 20 }}>
-                    <div style={{ background: "#11111b", border: `1px solid ${G.border}`, borderRadius: 16, padding: 24, width: 600, maxWidth: "100%" }}>
+                <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: 20 }}>
+                    <div style={{ background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 16, padding: 24, width: 600, maxWidth: "100%", boxShadow: "0 24px 60px rgba(15,23,42,0.16)" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                             <span style={{ color: G.gGreen, fontWeight: 700, letterSpacing: 1, fontSize: 13 }}>IMPORTAR PIEZAS (JSON)</span>
                             <button onClick={() => { setShowImportModal(false); setImportText(""); }} style={{ background: "transparent", border: "none", color: G.muted, cursor: "pointer", fontSize: 16 }}>✕</button>
@@ -524,7 +524,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                             value={importText}
                             onChange={e => setImportText(e.target.value)}
                             placeholder='[\n  {\n    "titulo": "Mi pieza...",\n    "fase": "Atraer"\n  }\n]'
-                            style={{ ...css.input, minHeight: 200, fontFamily: "monospace", fontSize: 11, background: "rgba(0,0,0,0.3)", resize: "vertical" }}
+                            style={{ ...css.input, minHeight: 200, fontFamily: "monospace", fontSize: 11, background: "#F9FAFB", resize: "vertical" }}
                             readOnly={!canImport}
                         />
                         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20 }}>

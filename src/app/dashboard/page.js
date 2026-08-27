@@ -86,7 +86,7 @@ function AdminCreateModal({ onClose, onSuccess, brokers }) {
                             </div>
                             <div>
                                 <label style={css.label}>Fecha de Corte</label>
-                                <input type="date" value={form.fecha_corte} onChange={e => setForm({ ...form, fecha_corte: e.target.value })} style={{ ...css.input, colorScheme: "dark" }} />
+                                <input type="date" value={form.fecha_corte} onChange={e => setForm({ ...form, fecha_corte: e.target.value })} style={{ ...css.input, colorScheme: "light" }} />
                             </div>
                         </div>
                     )}
@@ -105,7 +105,7 @@ function BrokerList({ brokers, onSelect, onShowCreate, onDelete, isAdmin }) {
         <div style={{ background: G.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32 }}>
             <div style={{ width: "100%", maxWidth: 580 }}>
                 <div style={{ textAlign: "center", marginBottom: 40 }}>
-                    <div style={{ width: 64, height: 64, background: G.gMagenta, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 28, boxShadow: "0 0 40px rgba(236,72,153,0.3)" }}>▼</div>
+                    <div style={{ width: 64, height: 64, background: G.gPurple, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 28, boxShadow: "0 16px 40px rgba(15,23,42,0.08)" }}>▼</div>
                     <GText g={G.gMagenta} size={10} weight={600} style={{ letterSpacing: 4, textTransform: "uppercase", display: "block", marginBottom: 10 }}>Agencia Top Seller</GText>
                     <div style={{ fontSize: 26, color: G.white, fontFamily: "Georgia,serif", marginBottom: 6 }}>Embudo Invertido™</div>
                     <div style={{ fontSize: 11, color: G.muted, fontFamily: "sans-serif", letterSpacing: 1 }}>{isAdmin ? "Panel de Gestión de Clientes" : "Selecciona tu cuenta de Broker"}</div>

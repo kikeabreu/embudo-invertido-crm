@@ -255,7 +255,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
 
     const pieData = {
         labels: Object.keys(pieDataMap),
-        datasets: [{ data: Object.values(pieDataMap), backgroundColor: ['rgba(59,130,246,0.9)','rgba(168,85,247,0.9)','rgba(236,72,153,0.9)','rgba(16,185,129,0.9)','rgba(245,158,11,0.9)','rgba(6,182,212,0.9)'], borderWidth: 0, hoverOffset: 10 }]
+        datasets: [{ data: Object.values(pieDataMap), backgroundColor: ['rgba(37,99,235,0.75)','rgba(75,85,99,0.75)','rgba(107,114,128,0.75)','rgba(15,118,110,0.75)','rgba(180,83,9,0.75)','rgba(14,116,144,0.75)'], borderWidth: 0, hoverOffset: 10 }]
     };
     const commonChartOptions = { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }, legend: { position: 'top', labels: { color: G.white, boxWidth: 10, usePointStyle: true } } } };
 
@@ -296,7 +296,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
 
                 {view === "dashboard" && (
                     <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
-                        <div style={{ display: "flex", background: "rgba(0,0,0,0.2)", borderRadius: 12, padding: 4, border: `1px solid ${G.border}` }}>
+                        <div style={{ display: "flex", background: "#F3F4F6", borderRadius: 12, padding: 4, border: `1px solid ${G.border}` }}>
                             {[{ v: "7", l: "7 Días" }, { v: "30", l: "30 Días" }, { v: "month", l: "Este Mes" }, { v: "all", l: "Siempre" }].map(d => (
                                 <button key={d.v} onClick={() => setDateRange(d.v)} style={{ background: dateRange === d.v ? 'rgba(255,255,255,0.1)' : 'transparent', color: dateRange === d.v ? '#fff' : G.muted, border: 'none', padding: '6px 14px', borderRadius: 8, fontSize: 13, cursor: "pointer", transition: "0.2s" }}>{d.l}</button>
                             ))}
@@ -454,7 +454,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                             
                             {/* EMBUDOGRAMA MODO REGULAR (No TV) */}
                             {!isTVMode && (
-                                <div style={{ ...css.card, padding: "30px 40px", marginBottom: 25, display: "flex", flexDirection: "column", alignItems: "center", background: "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.4))" }}>
+                                <div style={{ ...css.card, padding: "30px 40px", marginBottom: 25, display: "flex", flexDirection: "column", alignItems: "center", background: "linear-gradient(180deg, #FFFFFF, #F9FAFB)" }}>
                                     <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 25, letterSpacing: 1 }}>⚙️ FUNNEL DE CONVERSIÓN RASTREADO</div>
                                     <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                                         
@@ -499,7 +499,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                                 {!isViewer && <button onClick={() => { setEditCampId(null); setCampForm({ plataforma: globalConfig.plataformas[0], objetivo: globalConfig.objetivos[0] }); setShowCampaignModal(true); }} style={{ ...css.btn(G.gCyan) }}>+ Estructurar Nueva</button>}
                             </div>
                             <table style={{ width: "100%", borderCollapse: "collapse", background: G.bgCard, borderRadius: 16, overflow: "hidden", border: `1px solid ${G.border}` }}>
-                                <thead style={{ background: "rgba(0,0,0,0.3)" }}>
+                                <thead style={{ background: "#F3F4F6" }}>
                                     <tr>{['Campaña','Configuración','Presupuesto / Estatus','Inversión y Retorno','Acciones'].map(h => <th key={h} style={{ padding: "14px 18px", textAlign: "left", fontSize:11, color:G.muted, textTransform:'uppercase' }}>{h}</th>)}</tr>
                                 </thead>
                                 <tbody>
@@ -528,7 +528,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                                 {!isViewer && <button onClick={() => { setEditMetricId(null); setMetricForm({ fecha: new Date().toISOString().slice(0, 10) }); setShowMetricModal(true); }} style={{ ...css.btn(G.gMagenta) }}>+ Alimentar Bitácora</button>}
                             </div>
                             <table style={{ width: "100%", borderCollapse: "collapse", background: G.bgCard, borderRadius: 16, overflow: "hidden", border: `1px solid ${G.border}` }}>
-                                <thead style={{ background: "rgba(0,0,0,0.3)" }}>
+                                <thead style={{ background: "#F3F4F6" }}>
                                     <tr>{['Fecha','Origen','Gasto','Leads','Retorno','Campos Custom','Acciones'].map(h => <th key={h} style={{ padding: "14px 15px", textAlign: "left", fontSize:11, color:G.muted, textTransform:"uppercase" }}>{h}</th>)}</tr>
                                 </thead>
                                 <tbody>
@@ -558,7 +558,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                             <div style={{ fontSize: 20, marginBottom: 5, fontWeight: 600 }}>Diccionarios y Alertas Centralizadas</div>
                             <div style={{ color: G.muted, fontSize: 13, marginBottom: 25 }}>Parámetros maestros para alimentar los sub-módulos.</div>
                             
-                            <div style={{ background: "rgba(0,0,0,0.4)", border: `1px solid ${G.border}`, borderRadius: 12, padding: 20, marginBottom: 20 }}>
+                            <div style={{ background: "#F9FAFB", border: `1px solid ${G.border}`, borderRadius: 12, padding: 20, marginBottom: 20 }}>
                                 <div style={{ fontSize: 14, color: G.red, fontWeight: 700, marginBottom: 15 }}>🚨 LÍMITES GLOBALES PARA AVISOS EN EL DASHBOARD</div>
                                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                                     <div>
@@ -574,7 +574,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
 
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
                                 {["plataformas", "objetivos", "fases", "origenes"].map(key => (
-                                    <div key={key} style={{ background: "rgba(0,0,0,0.2)", padding: 20, borderRadius: 16, border: `1px solid ${G.border}` }}>
+                                    <div key={key} style={{ background: "#FFFFFF", padding: 20, borderRadius: 16, border: `1px solid ${G.border}` }}>
                                         <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", color: G.cyan, fontWeight:700, marginBottom: 12, letterSpacing: 1 }}>{key}</label>
                                         <textarea style={{...css.input, minHeight: 70, fontSize:13, lineHeight: 1.5}} value={configInputs[key] ?? (globalConfig[key] || []).join(", ")} onChange={(e) => setConfigInputs({ ...configInputs, [key]: e.target.value })} />
                                     </div>
@@ -602,7 +602,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                                 <div><label style={css.label}>Pto Mensual Estimado</label><input type="number" step="0.01" style={css.input} value={campForm.presupuesto_mensual || ""} onChange={e => setCampForm({...campForm, presupuesto_mensual: e.target.value})} placeholder="$" /></div>
                             </div>
 
-                            <div style={{ marginTop: 15, background: "rgba(0,0,0,0.3)", padding: 15, borderRadius: 12, border: `1px solid ${G.border}` }}>
+                            <div style={{ marginTop: 15, background: "#F9FAFB", padding: 15, borderRadius: 12, border: `1px solid ${G.border}` }}>
                                 <label style={{ ...css.label, color: G.red }}>Límite Exclusivo de Campaña (Opcional)</label>
                                 <div>
                                     <input type="number" style={css.input} placeholder={`CPL Límite Estricto para [${campForm.nombre||'Campaña'}]`} value={campForm.limite_cpl || ""} onChange={e => setCampForm({...campForm, limite_cpl: e.target.value})} />
@@ -610,7 +610,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                                 </div>
                             </div>
 
-                            <div style={{ marginTop: 15, background: "rgba(0,0,0,0.3)", padding: 15, borderRadius: 12, border: `1px solid ${G.border}` }}>
+                            <div style={{ marginTop: 15, background: "#F9FAFB", padding: 15, borderRadius: 12, border: `1px solid ${G.border}` }}>
                                 <label style={{ ...css.label, color: G.cyan }}>Data Custom (JSONB Payload)</label>
                                 <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
                                     <input style={{...css.input, flex:1}} placeholder="Key" id="customKeyCamp" />
@@ -637,7 +637,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                         <div style={{ fontSize: 20, marginBottom: 25, fontWeight:700, color: G.white }}>{editMetricId ? "Alterar Registro" : "Inyección de Datos (Día)"}</div>
                         <form onSubmit={handleSaveMetric} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
                             <div><label style={css.label}>Campaña Origen</label><select required style={css.input} value={metricForm.campaign_id || ""} onChange={e => setMetricForm({...metricForm, campaign_id: e.target.value})}><option value="">Select...</option>{campaigns.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}</select></div>
-                            <div><label style={css.label}>Fecha Operativa</label><input type="date" required style={{...css.input, colorScheme: "dark"}} value={metricForm.fecha || ""} onChange={e => setMetricForm({...metricForm, fecha: e.target.value})} /></div>
+                            <div><label style={css.label}>Fecha Operativa</label><input type="date" required style={{...css.input, colorScheme: "light"}} value={metricForm.fecha || ""} onChange={e => setMetricForm({...metricForm, fecha: e.target.value})} /></div>
                             
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                                 <div><label style={css.label}>Alcance Total</label><input type="number" style={css.input} value={metricForm.alcance !== undefined ? metricForm.alcance : ""} onChange={e => setMetricForm({...metricForm, alcance: e.target.value})} /></div>
@@ -650,7 +650,7 @@ export default function AdsTrackerTab({ brokerId, toast, currentUser, isViewer }
                                 <div><label style={css.label}>Ingresos ($)</label><input type="number" step="0.01" style={css.input} value={metricForm.ingresos !== undefined ? metricForm.ingresos : ""} onChange={e => setMetricForm({...metricForm, ingresos: e.target.value})} /></div>
                             </div>
 
-                            <div style={{ marginTop: 15, background: "rgba(0,0,0,0.3)", padding: 15, borderRadius: 12, border: `1px solid ${G.border}` }}>
+                            <div style={{ marginTop: 15, background: "#F9FAFB", padding: 15, borderRadius: 12, border: `1px solid ${G.border}` }}>
                                 <label style={{ ...css.label, color: G.magenta }}>Inyección Dinámica Adicional</label>
                                 <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
                                     <input style={{...css.input, flex:2}} placeholder="Métrica (Ej. visualizaciones)" id="customKeyMet" />

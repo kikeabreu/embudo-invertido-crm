@@ -97,7 +97,7 @@ export default function AdminTab({ brokerId, toast }) {
                         <div>
                             <label style={css.label}>Fecha de Corte</label>
                             {editModo ?
-                                <input type="date" value={configForm.fecha_corte} onChange={e => setConfigForm({ ...configForm, fecha_corte: e.target.value })} style={{ ...css.input, colorScheme: "dark" }} />
+                                <input type="date" value={configForm.fecha_corte} onChange={e => setConfigForm({ ...configForm, fecha_corte: e.target.value })} style={{ ...css.input, colorScheme: "light" }} />
                                 : <div style={{ fontSize: 13, color: G.white, fontFamily: "sans-serif" }}>{broker?.fecha_corte || "No definida"}</div>
                             }
                         </div>
@@ -128,7 +128,7 @@ export default function AdminTab({ brokerId, toast }) {
                         <div style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${G.border}`, borderRadius: 8, padding: 12, marginBottom: 16, display: "flex", flexDirection: "column", gap: 10 }}>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                                 <div><label style={css.label}>Monto</label><input type="number" placeholder="0.00" value={pagoForm.monto} onChange={e => setPagoForm({ ...pagoForm, monto: e.target.value })} style={css.input} /></div>
-                                <div><label style={css.label}>Fecha Pago</label><input type="date" value={pagoForm.fecha_pago} onChange={e => setPagoForm({ ...pagoForm, fecha_pago: e.target.value })} style={{ ...css.input, colorScheme: "dark" }} /></div>
+                                <div><label style={css.label}>Fecha Pago</label><input type="date" value={pagoForm.fecha_pago} onChange={e => setPagoForm({ ...pagoForm, fecha_pago: e.target.value })} style={{ ...css.input, colorScheme: "light" }} /></div>
                             </div>
                             <div><label style={css.label}>Notas / Folio</label><input placeholder="Referencia de transferencia..." value={pagoForm.notas} onChange={e => setPagoForm({ ...pagoForm, notas: e.target.value })} style={css.input} /></div>
                             <button onClick={registrarPago} style={css.btn(G.gCyan)}>Registrar Recibo</button>

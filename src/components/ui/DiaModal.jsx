@@ -39,8 +39,8 @@ export default function DiaModal({ diaData, diaNum, seqType, cicloLabel, savedDa
     const handleSave = () => onSave({ copy, completado, nota, formato, fase, fechaProg, linkEvidencia, historias });
 
     return (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
-            <div style={{ background: "#0E0E24", border: `1px solid ${diaData.color}44`, borderRadius: 20, width: 700, maxWidth: "100%", maxHeight: "94vh", overflowY: "auto", boxShadow: `0 0 60px ${diaData.color}22`, display: "flex", flexDirection: "column" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
+            <div style={{ background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 20, width: 700, maxWidth: "100%", maxHeight: "94vh", overflowY: "auto", boxShadow: "0 24px 60px rgba(15,23,42,0.16)", display: "flex", flexDirection: "column" }}>
 
                 {/* Header */}
                 <div style={{ padding: "18px 24px", borderBottom: `1px solid ${G.border}`, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexShrink: 0 }}>
@@ -122,7 +122,7 @@ export default function DiaModal({ diaData, diaNum, seqType, cicloLabel, savedDa
                                 <div>
                                     <label style={css.label}>Fecha programada</label>
                                     <input type="date" value={fechaProg} onChange={e => setFechaProg(e.target.value)} readOnly={isViewer}
-                                        style={{ ...css.input, colorScheme: "dark" }} />
+                                        style={{ ...css.input, colorScheme: "light" }} />
                                 </div>
                             </div>
 

@@ -224,7 +224,7 @@ function FileUploadInput({ value, onChange, label, placeholder, readOnly, toast 
                     <textarea value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
                         style={{ ...css.input, marginTop: 4, minHeight: 60, resize: "vertical", fontSize: 11, fontFamily: "monospace", whiteSpace: "pre-wrap" }} />
                 ) : (
-                    <div style={{ ...css.input, marginTop: 4, minHeight: 60, fontSize: 11, fontFamily: "monospace", overflowY: "auto", maxHeight: 350, background: "rgba(0,0,0,0.2)", padding: value ? "12px 12px 0 12px" : 12 }}>
+                    <div style={{ ...css.input, marginTop: 4, minHeight: 60, fontSize: 11, fontFamily: "monospace", overflowY: "auto", maxHeight: 350, background: "#F9FAFB", padding: value ? "12px 12px 0 12px" : 12 }}>
                         {value ? renderPreviews(value, readOnly ? null : handleDeleteLine) : <span style={{ color: G.dimmed, fontStyle: "italic" }}>{placeholder || "Vacío..."}</span>}
                     </div>
                 )
@@ -337,8 +337,8 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
     const pLogs = (logs || []).filter(l => l.pieceId === piece.id).sort((a, b) => b.ts.localeCompare(a.ts));
 
     return (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
-            <div style={{ background: "#0E0E24", border: `1px solid ${G.borderHi}`, borderRadius: 20, width: 600, maxWidth: "100%", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 0 60px rgba(124,58,237,0.2)" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
+            <div style={{ background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 20, width: 600, maxWidth: "100%", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 24px 60px rgba(15,23,42,0.16)" }}>
                 <div style={{ padding: "20px 24px", borderBottom: `1px solid ${G.border}`, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div>
                         <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
@@ -388,7 +388,7 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
                     <div style={{ marginBottom: 18 }}>
                         <label style={css.label}>Fecha programada de publicación</label>
                         <input type="date" value={form.fechaProg || ""} onChange={e => f("fechaProg", e.target.value)} readOnly={isViewer}
-                            style={{ ...css.input, colorScheme: "dark", width: "auto", minWidth: 200 }} />
+                            style={{ ...css.input, colorScheme: "light", width: "auto", minWidth: 200 }} />
                         {form.fechaProg && <span style={{ fontSize: 10, color: G.muted, fontFamily: "sans-serif", marginLeft: 10 }}>
                             {new Date(form.fechaProg + "T12:00:00").toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                         </span>}
@@ -500,7 +500,7 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
                                 {tareas.filter(t => t.pieza_id === piece.id).map(t => (
                                     <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.05)" }}>
                                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                            <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: t.estado === "Completada" ? "rgba(16,185,129,0.2)" : "rgba(124,58,237,0.2)", color: t.estado === "Completada" ? G.green : G.purpleHi, fontFamily: "sans-serif" }}>
+                                            <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: t.estado === "Completada" ? "rgba(15,118,110,0.12)" : "#EEF2F7", color: t.estado === "Completada" ? G.green : G.purpleHi, fontFamily: "sans-serif" }}>
                                                 {t.estado}
                                             </span>
                                             <span style={{ fontSize: 13, color: G.white, fontFamily: "sans-serif" }}>{t.titulo}</span>
@@ -518,7 +518,7 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
                     )}
 
                     {/* ── ACCIONES WORKFLOW (BANCO ↔ PROYECTOS) ── */}
-                    <div style={{ marginTop: 20, padding: "16px", background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 12 }}>
+                    <div style={{ marginTop: 20, padding: "16px", background: "#F9FAFB", border: `1px solid ${G.border}`, borderRadius: 12 }}>
                         <div style={{ fontSize: 9, letterSpacing: 2, color: "rgba(167,139,250,1)", fontFamily: "sans-serif", textTransform: "uppercase", fontWeight: 700, marginBottom: 12 }}>
                             ⚡ Acciones rápidas → Proyectos
                         </div>
@@ -539,8 +539,8 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
                                     onClick={() => sendWorkflowTarea(k)}
                                     disabled={!!workflowLoading}
                                     style={{
-                                        background: workflowLoading === k ? "rgba(124,58,237,0.2)" : "rgba(124,58,237,0.08)",
-                                        border: "1px solid rgba(124,58,237,0.3)",
+                                        background: workflowLoading === k ? "#E5E7EB" : "#F9FAFB",
+                                        border: `1px solid ${G.border}`,
                                         borderRadius: 8,
                                         color: workflowLoading === k ? G.dimmed : "rgba(167,139,250,1)",
                                         padding: "7px 12px",
@@ -577,7 +577,7 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
                             </div>
                         )}
                         <button onClick={onClose} style={{ background: "transparent", border: `1px solid ${G.border}`, borderRadius: 8, color: G.muted, padding: "9px 20px", cursor: "pointer", fontSize: 12, fontFamily: "sans-serif" }}>Cerrar</button>
-                        {!isViewer && <button onClick={() => { onSave(form); if (toast) toast("Cambios guardados"); }} style={{ ...css.btn(), boxShadow: "0 4px 20px rgba(124,58,237,0.3)" }}>Guardar cambios</button>}
+                        {!isViewer && <button onClick={() => { onSave(form); if (toast) toast("Cambios guardados"); }} style={{ ...css.btn(), boxShadow: "0 8px 24px rgba(15,23,42,0.08)" }}>Guardar cambios</button>}
                         {isViewer && <button onClick={() => { onSave(form); if (toast) toast("Anotación guardada 💬", "info"); }} style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.35)", borderRadius: 8, color: G.orange, padding: "9px 20px", cursor: "pointer", fontSize: 12, fontFamily: "sans-serif", fontWeight: 700 }}>Guardar anotación 💬</button>}
                     </div>
                 </div>
@@ -585,8 +585,8 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
 
             {/* Modal de Configuración de Workflow */}
             {workflowPrompt && (
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, borderRadius: 20 }}>
-                    <div style={{ background: G.bgCard, border: `1px solid ${G.border}`, borderRadius: 12, padding: 25, width: "90%", maxWidth: 400, boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}>
+                <div style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.28)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, borderRadius: 20 }}>
+                    <div style={{ background: G.bgCard, border: `1px solid ${G.border}`, borderRadius: 12, padding: 25, width: "90%", maxWidth: 400, boxShadow: "0 18px 48px rgba(15,23,42,0.14)" }}>
                         <div style={{ fontSize: 16, fontWeight: 700, color: G.white, marginBottom: 15 }}>{workflowPrompt.tpl.titulo}</div>
                         <div style={{ fontSize: 12, color: G.muted, marginBottom: 20, lineHeight: 1.5 }}>Selecciona un responsable y una fecha límite para enviar esta tarea al tablero de Proyectos.</div>
                         

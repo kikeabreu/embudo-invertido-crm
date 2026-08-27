@@ -22,7 +22,7 @@ export function Toasts({ toasts }) {
             {toasts.map(t => {
                 const c = TOAST_COLORS[t.type] || TOAST_COLORS.success;
                 return (
-                    <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: c.bg, border: `1px solid ${c.border}`, borderRadius: 12, backdropFilter: "blur(20px)", boxShadow: "0 8px 32px rgba(0,0,0,0.4)", animation: "slideIn 0.2s ease" }}>
+                    <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: c.bg, border: `1px solid ${c.border}`, borderRadius: 12, backdropFilter: "blur(20px)", boxShadow: "0 12px 32px rgba(15,23,42,0.12)", animation: "slideIn 0.2s ease" }}>
                         <span style={{ fontSize: 14, color: c.color, fontWeight: 800, flexShrink: 0 }}>{c.icon}</span>
                         <span style={{ fontSize: 12, color: "#F8F8FF", fontFamily: "sans-serif", lineHeight: 1.4 }}>{t.msg}</span>
                     </div>

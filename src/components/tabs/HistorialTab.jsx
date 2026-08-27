@@ -56,13 +56,13 @@ export default function HistorialTab({ logs, onUndo, isViewer }) {
                                 <button 
                                     onClick={() => onUndo(l)}
                                     style={{ 
-                                        alignSelf: "center", background: "rgba(124,58,237,0.1)", 
+                                        alignSelf: "center", background: "#EEF2F7", 
                                         border: `1px solid ${G.purple}33`, borderRadius: 6, 
                                         color: G.purpleHi, fontSize: 10, padding: "6px 12px", 
                                         cursor: "pointer", fontWeight: 600, transition: "0.2s" 
                                     }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(124,58,237,0.2)"; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(124,58,237,0.1)"; }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = "#E5E7EB"; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = "#EEF2F7"; }}
                                 >
                                     ↩ Deshacer
                                 </button>

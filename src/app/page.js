@@ -43,7 +43,7 @@ export default function LoginScreen() {
         <div style={{ minHeight: "100vh", background: G.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
             <div style={{ width: "100%", maxWidth: 380 }}>
                 <div style={{ textAlign: "center", marginBottom: 40 }}>
-                    <div style={{ width: 64, height: 64, background: G.gPurple, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 28, boxShadow: "0 0 40px rgba(124,58,237,0.4)" }}>▼</div>
+                    <div style={{ width: 64, height: 64, background: G.gPurple, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 28, boxShadow: "0 16px 40px rgba(15,23,42,0.08)" }}>▼</div>
                     <GText g={G.gMagenta} size={11} weight={600} style={{ letterSpacing: 4, textTransform: "uppercase", display: "block", marginBottom: 10 }}>Sistema de Embudo Invertido™</GText>
                     <div style={{ fontSize: 24, color: G.white, fontFamily: "Georgia,serif", marginBottom: 6 }}>Bienvenido</div>
                     <div style={{ fontSize: 12, color: G.muted, fontFamily: "sans-serif" }}>Inicia sesión para continuar</div>
@@ -74,7 +74,7 @@ export default function LoginScreen() {
                     <button
                         disabled={loading}
                         onClick={handleLogin}
-                        style={{ ...css.btn(), width: "100%", padding: "12px", fontSize: 13, boxShadow: "0 4px 20px rgba(124,58,237,0.3)", opacity: loading ? 0.7 : 1 }}
+                        style={{ ...css.btn(), width: "100%", padding: "12px", fontSize: 13, boxShadow: "0 8px 24px rgba(15,23,42,0.08)", opacity: loading ? 0.7 : 1 }}
                     >
                         {loading ? "Cargando..." : "Iniciar sesión →"}
                     </button>

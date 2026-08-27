@@ -19,7 +19,7 @@ export default function LoginScreen({ onLogin }) {
         <div style={{ minHeight: "100vh", background: G.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
             <div style={{ width: "100%", maxWidth: 380 }}>
                 <div style={{ textAlign: "center", marginBottom: 40 }}>
-                    <div style={{ width: 64, height: 64, background: G.gPurple, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 28, boxShadow: "0 0 40px rgba(124,58,237,0.4)" }}>▼</div>
+                    <div style={{ width: 64, height: 64, background: G.gPurple, borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 28, boxShadow: "0 16px 40px rgba(15,23,42,0.08)" }}>▼</div>
                     <GText g={G.gMagenta} size={11} weight={600} style={{ letterSpacing: 4, textTransform: "uppercase", display: "block", marginBottom: 10 }}>Sistema de Embudo Invertido™</GText>
                     <div style={{ fontSize: 24, color: G.white, fontFamily: "Georgia,serif", marginBottom: 6 }}>Bienvenido</div>
                     <div style={{ fontSize: 12, color: G.muted, fontFamily: "sans-serif" }}>Inicia sesión para continuar</div>
@@ -36,7 +36,7 @@ export default function LoginScreen({ onLogin }) {
                         <input type="password" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => e.key === "Enter" && handle()} placeholder="••••••••" style={{ ...css.input, borderColor: err ? G.red : G.border }} />
                         {err && <div style={{ fontSize: 10, color: G.red, fontFamily: "sans-serif", marginTop: 5 }}>{err}</div>}
                     </div>
-                    <button onClick={handle} style={{ ...css.btn(), width: "100%", padding: "12px", fontSize: 13, boxShadow: "0 4px 20px rgba(124,58,237,0.3)" }}>Iniciar sesión →</button>
+                    <button onClick={handle} style={{ ...css.btn(), width: "100%", padding: "12px", fontSize: 13, boxShadow: "0 8px 24px rgba(15,23,42,0.08)" }}>Iniciar sesión →</button>
                 </div>
                 <div style={{ ...css.card, padding: "12px 16px", marginTop: 12 }}>
                     <div style={{ fontSize: 8, color: G.dimmed, fontFamily: "sans-serif", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>Credenciales</div>
