@@ -1,0 +1,43 @@
+/* ============================================================
+   Top Seller — Spacing, radii, sizing
+   8-pt base grid with a 4-pt half-step.
+   ============================================================ */
+
+:root {
+  /* Spacing scale */
+  --space-0:   0;
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-20:  80px;
+  --space-24:  96px;
+  --space-32:  128px;
+
+  /* Radii — the brand is geometric/angular; radii stay modest.
+     pill is reserved for tags/avatars. */
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-pill: 999px;
+
+  /* Control heights */
+  --control-sm:  32px;
+  --control-md:  40px;
+  --control-lg:  48px;
+
+  /* Layout */
+  --container-sm:  640px;
+  --container-md:  960px;
+  --container-lg:  1200px;
+  --container-xl:  1440px;
+  --gutter:        var(--space-6);
+}

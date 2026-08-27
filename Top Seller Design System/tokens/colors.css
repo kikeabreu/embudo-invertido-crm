@@ -1,0 +1,98 @@
+/* ============================================================
+   Top Seller — Color tokens
+   Brand palette: Morado (purple) primary, Negro/blanco base,
+   Naranja (orange) as the single energetic accent.
+   Source of truth sampled from the official logo files.
+   ============================================================ */
+
+:root {
+  /* ---- Brand core ---- */
+  --ts-purple:        #7060D8;   /* Morado — primary brand color */
+  --ts-orange:        #F08048;   /* Naranja — accent / highlight */
+  --ts-black:         #081010;   /* Negro — near-black ink */
+  --ts-white:         #FFFFFF;   /* Blanco */
+
+  /* ---- Purple ramp (tints + shades of --ts-purple) ---- */
+  --ts-purple-50:     #F1EFFC;
+  --ts-purple-100:    #E2DEF8;
+  --ts-purple-200:    #C4BDF1;
+  --ts-purple-300:    #A498E9;
+  --ts-purple-400:    #8A7BE1;
+  --ts-purple-500:    #7060D8;   /* = --ts-purple */
+  --ts-purple-600:    #5A48C4;
+  --ts-purple-700:    #4738A0;
+  --ts-purple-800:    #352A78;
+  --ts-purple-900:    #241D50;
+
+  /* ---- Orange ramp ---- */
+  --ts-orange-50:     #FEF2EB;
+  --ts-orange-100:    #FBDFCF;
+  --ts-orange-200:    #F8C3A4;
+  --ts-orange-300:    #F4A276;
+  --ts-orange-400:    #F08048;   /* = --ts-orange */
+  --ts-orange-500:    #E96A2C;
+  --ts-orange-600:    #CC551B;
+  --ts-orange-700:    #A24214;
+
+  /* ---- Neutral ramp (warm-cool balanced grays toward the ink) ---- */
+  --ts-ink-900:       #081010;   /* = --ts-black */
+  --ts-ink-800:       #161E1F;
+  --ts-ink-700:       #2A3233;
+  --ts-ink-600:       #4A5253;
+  --ts-ink-500:       #6B7374;
+  --ts-ink-400:       #939B9C;
+  --ts-ink-300:       #BFC5C6;
+  --ts-ink-200:       #DFE3E3;
+  --ts-ink-100:       #EEF1F1;
+  --ts-ink-50:        #F7F9F9;
+
+  /* ---- Semantic status ---- */
+  --ts-success:       #1F9D6B;
+  --ts-success-bg:    #E5F4ED;
+  --ts-warning:       #E9A23B;
+  --ts-warning-bg:    #FBF0DC;
+  --ts-danger:        #E0473C;
+  --ts-danger-bg:     #FBE6E4;
+  --ts-info:          #7060D8;
+  --ts-info-bg:       #E2DEF8;
+
+  /* ============================================================
+     Semantic aliases — reference these in components.
+     ============================================================ */
+
+  /* Surfaces */
+  --surface-page:     var(--ts-white);
+  --surface-card:     var(--ts-white);
+  --surface-sunken:   var(--ts-ink-50);
+  --surface-inverse:  var(--ts-black);
+  --surface-brand:    var(--ts-purple);
+  --surface-brand-soft: var(--ts-purple-50);
+  --surface-accent:   var(--ts-orange);
+
+  /* Text */
+  --text-strong:      var(--ts-ink-900);
+  --text-body:        var(--ts-ink-700);
+  --text-muted:       var(--ts-ink-500);
+  --text-faint:       var(--ts-ink-400);
+  --text-on-brand:    var(--ts-white);
+  --text-on-accent:   var(--ts-white);
+  --text-brand:       var(--ts-purple-600);
+  --text-accent:      var(--ts-orange-600);
+
+  /* Borders */
+  --border-subtle:    var(--ts-ink-200);
+  --border-default:   var(--ts-ink-300);
+  --border-strong:    var(--ts-ink-900);
+  --border-brand:     var(--ts-purple);
+
+  /* Interactive */
+  --action-primary:        var(--ts-purple);
+  --action-primary-hover:  var(--ts-purple-600);
+  --action-primary-press:  var(--ts-purple-700);
+  --action-accent:         var(--ts-orange);
+  --action-accent-hover:   var(--ts-orange-500);
+  --action-accent-press:   var(--ts-orange-600);
+
+  /* Focus ring */
+  --focus-ring:       var(--ts-purple-300);
+}

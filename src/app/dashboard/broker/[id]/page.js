@@ -123,20 +123,20 @@ export default function BrokerDashboard() {
     const canDelete = isAdmin || isEquipo;
 
     const TABS = [
-        { k: "banco", l: "📋 Banco" },
-        { k: "instalacion", l: "⚡ Instalación" },
-        { k: "onboarding", l: "🚀 Onboarding" },
-        { k: "oferta", l: "💎 Oferta" },
-        { k: "ads", l: "📈 Ads Tracker" },
-        { k: "analitica", l: "📊 Analítica" },
-        { k: "proyectos", l: "🚀 Proyectos" },
-        { k: "editor", l: "✂️ Editor Analytics" },
-        { k: "historial", l: "🕐 Historial" },
+        { k: "banco", l: "BANCO" },
+        { k: "instalacion", l: "INSTALACIÓN" },
+        { k: "onboarding", l: "ONBOARDING" },
+        { k: "oferta", l: "OFERTA" },
+        { k: "ads", l: "ADS TRACKER" },
+        { k: "analitica", l: "ANALÍTICA" },
+        { k: "proyectos", l: "PROYECTOS" },
+        { k: "editor", l: "EDITOR ANALYTICS" },
+        { k: "historial", l: "HISTORIAL" },
     ].filter(t => {
         if (t.k === "oferta" && isEquipo) return false;
         return true;
     });
-    if (isAdmin) TABS.push({ k: "admin", l: "⚙️ Admin" });
+    if (isAdmin) TABS.push({ k: "admin", l: "ADMIN" });
 
     useEffect(() => {
         if (!TABS.find(t => t.k === tab)) {
@@ -517,15 +517,15 @@ export default function BrokerDashboard() {
         <div style={{ height: "100%", background: G.bg, fontFamily: "Georgia,serif", color: G.white, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <Toasts toasts={toasts} />
             {ConfirmUI}
-            <div style={{ borderBottom: `1px solid ${G.border}`, padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.01)", flexShrink: 0, flexWrap: "wrap" }}>
-                <button onClick={() => router.push("/dashboard")} style={{ background: "transparent", border: `1px solid ${G.border}`, borderRadius: 6, color: G.muted, fontSize: 9, padding: "5px 10px", cursor: "pointer", fontFamily: "sans-serif" }}>← BROKERS</button>
+            <div style={{ borderBottom: `1px solid ${G.border}`, padding: "12px 24px", display: "flex", alignItems: "center", gap: 16, background: "#FFFFFF", flexShrink: 0, flexWrap: "wrap", boxShadow: "0 2px 6px rgba(8,16,16,0.05)" }}>
+                <button onClick={() => router.push("/dashboard")} style={{ background: "transparent", border: `1px solid ${G.border}`, borderRadius: 8, color: G.muted, fontSize: 10, padding: "6px 12px", cursor: "pointer", fontFamily: "Gilroy, sans-serif", fontWeight: 700, letterSpacing: "0.05em" }}>← BROKERS</button>
                 <div style={{ flex: 1, minWidth: 200 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: G.white }}>{broker?.nombre || broker?.email}</div>
-                    <div style={{ fontSize: 10, color: G.muted, fontFamily: "sans-serif" }}>Embudo Activo</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: G.purple, fontFamily: "Gilroy, sans-serif", textTransform: "uppercase", letterSpacing: "-0.01em" }}>{broker?.nombre || broker?.email}</div>
+                    <div style={{ fontSize: 11, color: G.naranja, fontFamily: "Gilroy, sans-serif", fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase" }}>SISTEMA REFERENTE INMOBILIARIO™</div>
                 </div>
-                <div style={{ display: "flex", gap: 3, flexWrap: "wrap", flex: 2, justifyContent: "center" }}>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", flex: 2, justifyContent: "flex-end" }}>
                     {TABS.map(t => (
-                        <button key={t.k} onClick={() => setTab(t.k)} style={{ background: tab === t.k ? G.purpleDim : "transparent", border: `1px solid ${tab === t.k ? G.borderHi : G.border}`, borderRadius: 8, color: tab === t.k ? G.purpleHi : G.muted, fontSize: 10, padding: "6px 12px", cursor: "pointer", fontFamily: "sans-serif", transition: "all 0.15s" }}>{t.l}</button>
+                        <button key={t.k} onClick={() => setTab(t.k)} style={{ background: "transparent", border: "none", borderBottom: tab === t.k ? `3px solid ${G.naranja}` : "3px solid transparent", color: tab === t.k ? G.purple : G.muted, fontSize: 11, padding: "8px 12px", cursor: "pointer", fontFamily: "Gilroy, sans-serif", fontWeight: tab === t.k ? 800 : 600, letterSpacing: "0.05em", transition: "all 0.15s" }}>{t.l}</button>
                     ))}
                 </div>
             </div>

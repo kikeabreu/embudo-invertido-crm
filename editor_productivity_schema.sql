@@ -4,7 +4,11 @@ ADD COLUMN IF NOT EXISTS fecha_inicio TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS fecha_fin TIMESTAMPTZ,
 ADD COLUMN IF NOT EXISTS puntos_esfuerzo INTEGER DEFAULT 1;
 
--- 2. Función para registrar automáticamente los tiempos según el estado
+-- 2. Asegurar columna de sueldo/precio_pactado en la tabla 'usuarios'
+ALTER TABLE public.usuarios 
+ADD COLUMN IF NOT EXISTS precio_pactado NUMERIC DEFAULT 300;
+
+-- 3. Función para registrar automáticamente los tiempos según el estado
 CREATE OR REPLACE FUNCTION update_task_tracking_dates()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -28,12 +32,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 3. Crear el Trigger
+-- 4. Crear el Trigger
 DROP TRIGGER IF EXISTS task_tracking_trigger ON public.tareas;
 CREATE TRIGGER task_tracking_trigger
 BEFORE UPDATE ON public.tareas
 FOR EACH ROW
 EXECUTE FUNCTION update_task_tracking_dates();
 
--- 4. Notificar a PostgREST para que refresque el esquema y la API reconozca las nuevas columnas
+-- 5. Notificar a PostgREST para que refresque el esquema y la API reconozca las nuevas columnas
 NOTIFY pgrst, 'reload schema';

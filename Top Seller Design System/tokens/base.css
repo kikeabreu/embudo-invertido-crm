@@ -1,0 +1,43 @@
+/* ============================================================
+   Top Seller — Base element defaults.
+   Light, opt-in resets so specimen cards + kits inherit the
+   brand type and color without per-file boilerplate.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--weight-light);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-body);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  color: var(--text-strong);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+
+p { margin: 0; }
+
+a { color: var(--text-brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Utility: uppercase eyebrow/overline used throughout the brand */
+.ts-eyebrow {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-accent);
+}

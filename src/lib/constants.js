@@ -1,36 +1,38 @@
 export const G = {
-    bg: "#F6F7F9",
+    bg: "#F7F9F9",
     bgCard: "#FFFFFF",
-    bgCardHover: "#F9FAFB",
-    bgGlass: "#F3F4F6",
-    border: "#E5E7EB",
-    borderHi: "#B8C0CC",
-    gPurple: "linear-gradient(135deg,#6D28D9,#7C3AED)",
-    gViolet: "linear-gradient(135deg,#5B21B6,#7C3AED)",
-    gMagenta: "linear-gradient(135deg,#9D174D,#BE185D)",
-    gGreen: "linear-gradient(135deg,#047857,#059669)",
-    gOrange: "linear-gradient(135deg,#B45309,#D97706)",
-    gBlue: "linear-gradient(135deg,#1E40AF,#2563EB)",
+    bgCardHover: "#F1EFFC",
+    bgGlass: "#F7F9F9",
+    border: "#DFE3E3",
+    borderHi: "#7060D8",
+    morado: "#7060D8",
+    naranja: "#F08048",
+    gPurple: "linear-gradient(135deg,#7060D8,#5A48C4)",
+    gViolet: "linear-gradient(135deg,#7060D8,#4738A0)",
+    gMagenta: "linear-gradient(135deg,#7060D8,#F08048)",
+    gGreen: "linear-gradient(135deg,#1F9D6B,#10B981)",
+    gOrange: "linear-gradient(135deg,#F08048,#E96A2C)",
+    gBlue: "linear-gradient(135deg,#7060D8,#38BDF8)",
     gCyan: "linear-gradient(135deg,#0E7490,#0891B2)",
-    purple: "#7C3AED", purpleHi: "#111827", purpleDim: "#F3E8FF",
-    magenta: "#BE185D", green: "#047857", orange: "#B45309", blue: "#1E40AF", red: "#DC2626", cyan: "#0E7490",
-    white: "#111827", muted: "#4B5563", dimmed: "#6B7280",
+    purple: "#7060D8", purpleHi: "#081010", purpleDim: "#E2DEF8",
+    magenta: "#F08048", green: "#1F9D6B", orange: "#F08048", blue: "#7060D8", red: "#E0473C", cyan: "#0891B2",
+    white: "#081010", muted: "#6B7374", dimmed: "#939B9C",
 };
 
 export const css = {
-    card: { background: G.bgCard, border: `1px solid ${G.border}`, borderRadius: 12, boxShadow: "0 1px 2px rgba(15,23,42,0.04)" },
-    cardGlow: { background: G.bgCard, border: `1px solid ${G.border}`, borderRadius: 12, boxShadow: "0 16px 40px rgba(15,23,42,0.08)" },
-    input: { background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 8, color: G.white, fontSize: 13, padding: "9px 13px", fontFamily: "sans-serif", width: "100%", boxSizing: "border-box", outline: "none" },
-    label: { fontSize: 9, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", marginBottom: 6, display: "block" },
-    btn: (g = G.gPurple) => ({ background: g, border: "none", borderRadius: 8, color: "#FFFFFF", padding: "9px 20px", cursor: "pointer", fontSize: 12, fontFamily: "sans-serif", fontWeight: 700, letterSpacing: 0.5 }),
-    tag: (c) => ({ fontSize: 9, letterSpacing: 1.5, color: c, border: `1px solid ${c}`, borderRadius: 20, padding: "2px 9px", fontFamily: "sans-serif", textTransform: "uppercase", whiteSpace: "nowrap", display: "inline-block" }),
+    card: { background: G.bgCard, border: `1px solid ${G.border}`, borderRadius: 14, boxShadow: "0 2px 6px rgba(8,16,16,0.07)" },
+    cardGlow: { background: G.bgCard, border: `1px solid ${G.morado}`, borderRadius: 14, boxShadow: "0 10px 28px rgba(112,96,216,0.2)" },
+    input: { background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 10, color: G.white, fontSize: 13, padding: "9px 13px", fontFamily: "Gilroy, sans-serif", width: "100%", boxSizing: "border-box", outline: "none" },
+    label: { fontSize: 11, letterSpacing: "0.14em", color: G.naranja, fontFamily: "Gilroy, sans-serif", textTransform: "uppercase", fontWeight: 800, marginBottom: 6, display: "block" },
+    btn: (g = G.gPurple) => ({ background: g, border: "none", borderRadius: 10, color: "#FFFFFF", padding: "10px 20px", cursor: "pointer", fontSize: 12, fontFamily: "Gilroy, sans-serif", fontWeight: 800, letterSpacing: 0.5, boxShadow: "0 4px 12px rgba(112,96,216,0.28)" }),
+    tag: (c) => ({ fontSize: 10, letterSpacing: 1.5, color: c, border: `1px solid ${c}`, borderRadius: 20, padding: "2px 9px", fontFamily: "Gilroy, sans-serif", textTransform: "uppercase", fontWeight: 700, whiteSpace: "nowrap", display: "inline-block" }),
 };
 
 export const TOAST_COLORS = {
-    success: { bg: "rgba(16,185,129,0.12)", border: "rgba(16,185,129,0.4)", color: "#10B981", icon: "✓" },
-    error: { bg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.4)", color: "#EF4444", icon: "✕" },
-    info: { bg: "rgba(6,182,212,0.12)", border: "rgba(6,182,212,0.4)", color: "#06B6D4", icon: "ℹ" },
-    warn: { bg: "rgba(245,158,11,0.12)", border: "rgba(245,158,11,0.4)", color: "#F59E0B", icon: "⚠" },
+    success: { bg: "#E5F4ED", border: "#1F9D6B", color: "#1F9D6B", icon: "✓" },
+    error: { bg: "#FBE6E4", border: "#E0473C", color: "#E0473C", icon: "✕" },
+    info: { bg: "#E2DEF8", border: "#7060D8", color: "#7060D8", icon: "ℹ" },
+    warn: { bg: "#FBF0DC", border: "#E9A23B", color: "#E9A23B", icon: "⚠" },
 };
 
 export const USERS = [
@@ -42,15 +44,15 @@ export const FASES = ["Atraer", "Retener", "Convertir"];
 export const ESTADOS_PIEZA = ["En cola", "Producción", "Aprobado", "Programado", "Publicado"];
 
 export const estadoColor = e => ({ "En cola": G.muted, "Producción": G.orange, "Aprobado": G.blue, "Programado": G.cyan, "Publicado": G.green }[e] || G.muted);
-export const faseColor = f => ({ "Atraer": G.magenta, "Retener": G.purple, "Convertir": G.green, "Atracción": G.magenta, "Valor": G.purple, "Conversión": G.green }[f] || G.muted);
-export const faseGrad = f => ({ "Atraer": G.gMagenta, "Retener": G.gViolet, "Convertir": G.gGreen, "Atracción": G.gMagenta, "Valor": G.gViolet, "Conversión": G.gGreen }[f] || G.gPurple);
+export const faseColor = f => ({ "Atraer": G.purple, "Retener": G.naranja, "Convertir": G.green, "Atracción": G.purple, "Valor": G.naranja, "Conversión": G.green }[f] || G.muted);
+export const faseGrad = f => ({ "Atraer": G.gPurple, "Retener": G.gOrange, "Convertir": G.gGreen, "Atracción": G.gPurple, "Valor": G.gOrange, "Conversión": G.gGreen }[f] || G.gPurple);
 
 export const uid = () => Math.random().toString(36).slice(2, 9);
 export const pct = (d, t) => t ? Math.round(d / t * 100) : 0;
 export const fmtDate = iso => { const d = new Date(iso); return `${d.toLocaleDateString("es-MX")} ${d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}`; };
 
 export const FORMATOS = ["Reel", "Carrusel", "Foto estática", "Historia", "Video largo (YouTube/IGTV)"];
-export const FORMATO_ICON = { "Reel": "🎬", "Carrusel": "🖼️", "Foto estática": "📷", "Historia": "⭕", "Video largo (YouTube/IGTV)": "▶️" };
+export const FORMATO_ICON = { "Reel": "REEL", "Carrusel": "CARRUSEL", "Foto estática": "FOTO", "Historia": "STORY", "Video largo (YouTube/IGTV)": "VIDEO" };
 
 export const stor = async (op, key, val) => {
     if (typeof window === "undefined") return null;

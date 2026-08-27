@@ -1,0 +1,56 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Display" subtitle="Badge, Tag, Avatar, Card, Stat, Progress" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  body { margin: 0; padding: 22px; background: var(--surface-page); }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+  const { Badge, Tag, Avatar, Card, Stat, Progress } = window.TopSellerDesignSystem_57ba3c;
+  const Bolt = () => (<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M9 1L3 9h4l-1 6 6-8H8l1-6z"/></svg>);
+  function Demo() {
+    return (
+      <div>
+        <div className="row">
+          <Badge tone="purple">Qualified</Badge>
+          <Badge tone="orange" variant="solid">Hot</Badge>
+          <Badge tone="success" dot>Won</Badge>
+          <Badge tone="warning">Pending</Badge>
+          <Badge tone="danger" variant="outline">Lost</Badge>
+          <Badge tone="neutral">Draft</Badge>
+        </div>
+        <div className="row">
+          <Tag tone="purple" onRemove={()=>{}}>enterprise</Tag>
+          <Tag tone="orange" onRemove={()=>{}}>priority</Tag>
+          <Tag onRemove={()=>{}}>follow-up</Tag>
+          <Avatar name="Ana Rios" tone="purple" />
+          <Avatar name="Beto Luna" tone="orange" />
+          <Avatar name="Carmen Diaz" tone="ink" size="lg" />
+        </div>
+        <div className="cards">
+          <Card padding="md"><Stat label="Revenue" value="$48.2k" delta="12.4%" trend="up" icon={<Bolt/>} /></Card>
+          <Card variant="brand" padding="md">
+            <div style={{fontFamily:"var(--font-display)",fontWeight:800,fontSize:18,marginBottom:6}}>Quota</div>
+            <div style={{fontSize:13,opacity:.85,marginBottom:12}}>82% to target</div>
+            <Progress value={82} tone="orange" showLabel />
+          </Card>
+          <Card variant="accent-edge" padding="md"><Stat label="Win rate" value="34%" delta="2.1%" trend="down" /></Card>
+        </div>
+      </div>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+</script>
+</body>
+</html>

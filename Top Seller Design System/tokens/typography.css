@@ -1,0 +1,49 @@
+/* ============================================================
+   Top Seller — Typography tokens
+   One family (Gilroy). Display is set in ExtraBold, tight and
+   uppercase-friendly like the wordmark; body in Light/Regular.
+   ============================================================ */
+
+:root {
+  /* Families */
+  --font-display: "Gilroy", "Helvetica Neue", Arial, sans-serif;
+  --font-body:    "Gilroy", "Helvetica Neue", Arial, sans-serif;
+  --font-mono:    "SFMono-Regular", ui-monospace, Menlo, monospace;
+
+  /* Weights — only 300 (Light) and 800 (ExtraBold) are real files */
+  --weight-light:     300;
+  --weight-regular:   400;   /* maps to Light file */
+  --weight-medium:    500;   /* maps to Light file */
+  --weight-bold:      700;   /* maps to ExtraBold file */
+  --weight-black:     800;
+
+  /* Fluid display sizes (clamped) */
+  --text-display-xl:  clamp(3.25rem, 6vw, 5rem);     /* 52 → 80 */
+  --text-display-lg:  clamp(2.5rem, 4.5vw, 3.75rem); /* 40 → 60 */
+  --text-display-md:  clamp(2rem, 3.5vw, 2.75rem);   /* 32 → 44 */
+
+  /* Headings */
+  --text-h1:          2rem;      /* 32 */
+  --text-h2:          1.5rem;    /* 24 */
+  --text-h3:          1.25rem;   /* 20 */
+  --text-h4:          1.0625rem; /* 17 */
+
+  /* Body + UI */
+  --text-lg:          1.125rem;  /* 18 */
+  --text-base:        1rem;      /* 16 */
+  --text-sm:          0.875rem;  /* 14 */
+  --text-xs:          0.75rem;   /* 12 */
+  --text-2xs:         0.6875rem; /* 11 — eyebrow / overline only */
+
+  /* Line heights */
+  --leading-tight:    1.04;
+  --leading-snug:     1.2;
+  --leading-normal:   1.5;
+  --leading-relaxed:  1.65;
+
+  /* Letter spacing */
+  --tracking-tight:   -0.02em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.04em;
+  --tracking-eyebrow: 0.14em;   /* uppercase overlines */
+}

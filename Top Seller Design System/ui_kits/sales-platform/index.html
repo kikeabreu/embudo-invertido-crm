@@ -1,0 +1,78 @@
+<!-- @dsCard group="Sales Platform" viewport="1280x720" name="Sales Platform — Dashboard" subtitle="Interactive CRM recreation built from DS primitives" -->
+<!-- @startingPoint section="Sales Platform" subtitle="Full sales dashboard app shell" viewport="1280x800" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Top Seller — Sales Platform</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html, body { margin: 0; height: 100%; background: var(--surface-sunken); }
+  #root { height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<!-- DS bundle (compiled at project root) -->
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel" src="Icons.jsx"></script>
+<script type="text/babel" src="AppShell.jsx"></script>
+<script type="text/babel" src="DashboardScreen.jsx"></script>
+<script type="text/babel" src="PipelineScreen.jsx"></script>
+<script type="text/babel" src="LoginScreen.jsx"></script>
+<script type="text/babel">
+  const DS = window.TopSellerDesignSystem_57ba3c;
+  const { Button } = DS;
+
+  function App() {
+    const [authed, setAuthed] = React.useState(false);
+    const [route, setRoute] = React.useState("dashboard");
+
+    if (!authed) return <window.TSLogin onLogin={() => setAuthed(true)} />;
+
+    const { Sidebar, Topbar } = window.TSShell;
+    const I = window.TSIcons;
+
+    const titles = {
+      dashboard: ["Dashboard", "Your numbers this month"],
+      pipeline: ["Pipeline", "24 open deals · $312k weighted"],
+      leads: ["Leads", "8 new leads need a first touch"],
+      reports: ["Reports", "Performance & forecasting"],
+      inbox: ["Inbox", "Conversations across channels"],
+      settings: ["Settings", "Workspace & preferences"],
+    };
+    const [title, subtitle] = titles[route] || titles.dashboard;
+
+    let screen;
+    if (route === "dashboard") screen = <window.TSDashboard />;
+    else if (route === "pipeline") screen = <window.TSPipeline />;
+    else screen = (
+      <div style={{ padding: 48, color: "var(--text-muted)" }}>
+        <div style={{ maxWidth: 460 }}>
+          <div className="ts-eyebrow">Recreation</div>
+          <h2 style={{ fontSize: 24, margin: "8px 0 10px", color: "var(--text-strong)" }}>{title}</h2>
+          <p style={{ fontSize: 15, lineHeight: 1.6 }}>This surface is intentionally stubbed in the UI kit. The shell, navigation, and brand system are fully wired — drop real content here.</p>
+        </div>
+      </div>
+    );
+
+    return (
+      <div style={{ display: "flex", height: "100vh" }}>
+        <Sidebar active={route} onNavigate={setRoute} />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
+          <Topbar title={title} subtitle={subtitle}
+            actions={<Button size="sm" iconLeft={<I.Plus size={16} />}>New lead</Button>} />
+          <div style={{ flex: 1, overflow: "auto" }}>{screen}</div>
+        </div>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

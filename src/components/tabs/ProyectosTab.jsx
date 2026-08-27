@@ -149,14 +149,14 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
     };
 
     const STATUS_COLS = [
-        { k: "Inbox", l: "📥 Inbox", c: G.muted },
-        { k: "Edición", l: "⚡ Edición", c: G.orange },
-        { k: "Bloqueado", l: "🛑 Bloqueado", c: G.red },
-        { k: "Revisión Cliente", l: "👀 Revisión", c: G.cyan },
-        { k: "Aprobado", l: "✅ Aprobado", c: G.green }
+        { k: "Inbox", l: "INBOX", c: G.muted },
+        { k: "Edición", l: "EDICIÓN", c: G.purple },
+        { k: "Bloqueado", l: "BLOQUEADO", c: G.red },
+        { k: "Revisión Cliente", l: "REVISIÓN CLIENTE", c: G.naranja },
+        { k: "Aprobado", l: "APROBADO", c: G.green }
     ];
 
-    const PRIORITY_ICON = { Baja: "🟢", Media: "🟡", Alta: "🟠", Crítica: "🔴" };
+    const PRIORITY_ICON = { Baja: "LOW", Media: "MED", Alta: "HIGH", Crítica: "URGENT" };
 
     return (
         <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
@@ -277,16 +277,13 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
                                                 <div style={{ fontSize: 11, color: G.muted, lineBreak: "anywhere", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{task.descripcion}</div>
                                                 
                                                 <div style={{ marginTop: 15, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                                    <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-                                                        {task.creador_id && (
-                                                            <div title={`Creado por: ${team.find(u => u.id === task.creador_id)?.nombre || "Autor"}`} style={{ fontSize: 9, color: G.muted, border: `1px dashed rgba(255,255,255,0.2)`, borderRadius: 10, padding: "2px 6px", display: "flex", gap: 3, alignItems: "center", background: "rgba(255,255,255,0.02)" }}>
-                                                                <span style={{color: G.green}}>+</span>
-                                                                {team.find(u => u.id === task.creador_id)?.nombre?.slice(0, 2).toUpperCase() || "?"}
-                                                            </div>
-                                                        )}
-                                                        {task.comentarios_tareas?.length > 0 && <span style={{ fontSize: 10, color: G.dimmed, marginLeft: task.creador_id ? 5 : 0 }}>💬 {task.comentarios_tareas.length}</span>}
+                                                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                                        <span style={{ background: "#FEF2EB", color: G.naranja, border: `1px solid ${G.naranja}`, borderRadius: 10, padding: "2px 8px", fontSize: 10, fontWeight: 800 }}>
+                                                            {task.puntos_esfuerzo || 1} PTS
+                                                        </span>
+                                                        {task.comentarios_tareas?.length > 0 && <span style={{ fontSize: 10, color: G.muted }}>💬 {task.comentarios_tareas.length}</span>}
                                                     </div>
-                                                    <div title={`Asignado a: ${team.find(u => u.id === task.asignado_a)?.nombre || "Sin asignar"}`} style={{ width: 24, height: 24, borderRadius: "50%", background: G.purple, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: G.white, border: `1px solid ${G.borderHi}` }}>
+                                                    <div title={`Asignado a: ${team.find(u => u.id === task.asignado_a)?.nombre || "Sin asignar"}`} style={{ width: 24, height: 24, borderRadius: "50%", background: G.purple, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#FFFFFF", fontWeight: 800, border: `1px solid ${G.border}` }}>
                                                         {team.find(u => u.id === task.asignado_a)?.nombre?.slice(0, 2).toUpperCase() || "?"}
                                                     </div>
                                                 </div>

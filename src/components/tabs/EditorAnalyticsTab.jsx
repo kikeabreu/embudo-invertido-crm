@@ -7,6 +7,9 @@ export default function EditorAnalyticsTab({ tareas, broker }) {
     const [selectedEditor, setSelectedEditor] = useState("Todos");
     const [team, setTeam] = useState([]);
     const [loadingTeam, setLoadingTeam] = useState(true);
+    const [weeklySalary, setWeeklySalary] = useState(broker?.precio_pactado || 300);
+    const [isEditingSalary, setIsEditingSalary] = useState(false);
+    const [tempSalary, setTempSalary] = useState(broker?.precio_pactado || 300);
 
     useEffect(() => {
         const fetchTeam = async () => {
@@ -17,11 +20,24 @@ export default function EditorAnalyticsTab({ tareas, broker }) {
         fetchTeam();
     }, []);
 
+    useEffect(() => {
+        if (broker?.precio_pactado) {
+            setWeeklySalary(broker.precio_pactado);
+            setTempSalary(broker.precio_pactado);
+        }
+    }, [broker]);
+
+    const handleSaveSalary = async () => {
+        const salaryNum = parseFloat(tempSalary) || 0;
+        setWeeklySalary(salaryNum);
+        setIsEditingSalary(false);
+        if (broker?.id) {
+            await supabase.from('usuarios').update({ precio_pactado: salaryNum }).eq('id', broker.id);
+        }
+    };
+
     // Filter completed tasks (Aprobado / Hecho)
     const completedTasks = tareas.filter(t => t.estado === "Aprobado" || t.estado === "Hecho");
-    
-    // Get editors
-    const editors = team;
     
     const displayTasks = selectedEditor === "Todos" 
         ? completedTasks 
@@ -46,35 +62,65 @@ export default function EditorAnalyticsTab({ tareas, broker }) {
     
     const avgCycleHours = cycleCount > 0 ? (totalCycleMs / (1000 * 60 * 60 * cycleCount)).toFixed(1) : 0;
     
-    // Cost calculation (assuming broker.precio_pactado is weekly salary)
-    const weeklySalary = broker?.precio_pactado || 300; // default 300 if not set
     const costPerVideo = totalVideos > 0 ? (weeklySalary / totalVideos).toFixed(2) : 0;
     const costPerPoint = totalPoints > 0 ? (weeklySalary / totalPoints).toFixed(2) : 0;
 
     return (
-        <div style={{ padding: "28px 32px", overflowY: "auto", height: "100%", boxSizing: "border-box" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <GText g={G.gViolet} size={10} weight={600} style={{ letterSpacing: 3, textTransform: "uppercase" }}>Rendimiento del Editor</GText>
-                <select value={selectedEditor} onChange={e => setSelectedEditor(e.target.value)} style={{ ...css.input, padding: "6px 10px", fontSize: 11, width: "auto" }}>
-                    <option value="Todos">👥 Todos los Editores</option>
-                    {editors.map(e => <option key={e.id} value={e.id}>{e.nombre}</option>)}
-                </select>
+        <div style={{ padding: "28px 32px", overflowY: "auto", height: "100%", boxSizing: "border-box", background: G.bg }}>
+            {/* Header / Eyebrow */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                <div>
+                    <span style={{ fontSize: 11, letterSpacing: "0.14em", color: G.naranja, fontFamily: "Gilroy, sans-serif", textTransform: "uppercase", fontWeight: 800, display: "block", marginBottom: 4 }}>
+                        DESEMPEÑO Y PRODUCTIVIDAD
+                    </span>
+                    <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: G.purple, fontFamily: "Gilroy, sans-serif", textTransform: "uppercase", letterSpacing: "-0.02em" }}>
+                        ANALÍTICA DEL EDITOR
+                    </h1>
+                </div>
+
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    {/* Select Editor */}
+                    <select value={selectedEditor} onChange={e => setSelectedEditor(e.target.value)} style={{ ...css.input, padding: "8px 14px", fontSize: 12, fontWeight: 700, width: "auto" }}>
+                        <option value="Todos">TODOS LOS EDITORES</option>
+                        {team.map(e => <option key={e.id} value={e.id}>{e.nombre.toUpperCase()}</option>)}
+                    </select>
+
+                    {/* Salary Configuration Control */}
+                    <div style={{ background: "#FFFFFF", border: `1px solid ${G.border}`, borderRadius: 10, padding: "6px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 10, color: G.muted, fontWeight: 800, letterSpacing: "0.08em" }}>SUELDO SEMANAL:</span>
+                        {isEditingSalary ? (
+                            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                <input type="number" value={tempSalary} onChange={e => setTempSalary(e.target.value)} style={{ ...css.input, width: 80, padding: "4px 8px", fontSize: 12 }} />
+                                <button onClick={handleSaveSalary} style={{ ...css.btn(G.gPurple), padding: "4px 10px", fontSize: 10 }}>GUARDAR</button>
+                            </div>
+                        ) : (
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <span style={{ fontSize: 13, fontWeight: 800, color: G.purple }}>${weeklySalary}</span>
+                                <button onClick={() => setIsEditingSalary(true)} style={{ background: "transparent", border: "none", color: G.naranja, cursor: "pointer", fontSize: 11, fontWeight: 800 }}>[EDITAR]</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
-            <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-                <StatCard label="Videos Completados" value={totalVideos} g={G.gGreen} sub="Total histórico" />
-                <StatCard label="Puntos Entregados" value={totalPoints} g={G.gOrange} sub="Suma de esfuerzo" />
-                <StatCard label="Tiempo Promedio (Ciclo)" value={`${avgCycleHours} hrs`} g={G.gCyan} sub="De Edición a Aprobado" />
-                <StatCard label="Costo por Video" value={`$${costPerVideo}`} g={G.gViolet} sub={`Sueldo Semanal: $${weeklySalary}`} />
-                <StatCard label="Costo por Punto" value={`$${costPerPoint}`} g={G.gMagenta} sub="Eficiencia real" />
+            {/* Stat Cards */}
+            <div style={{ display: "flex", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
+                <StatCard label="Videos Completados" value={totalVideos} g={G.gPurple} sub="Total histórico entregado" />
+                <StatCard label="Puntos Entregados" value={`${totalPoints} pts`} g={G.gOrange} sub="Suma de complejidad" />
+                <StatCard label="Tiempo Promedio de Entrega" value={`${avgCycleHours} hrs`} g={G.gCyan} sub="De Edición a Aprobación" />
+                <StatCard label="Costo por Video" value={`$${costPerVideo}`} g={G.gViolet} sub={`Basado en $${weeklySalary}/sem`} />
+                <StatCard label="Costo por Punto" value={`$${costPerPoint}`} g={G.gMagenta} sub="Costo unitario por complejidad" />
             </div>
 
-            <div style={{ ...css.card, padding: "20px", display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ fontSize: 10, letterSpacing: 2, color: G.muted, fontFamily: "sans-serif", textTransform: "uppercase", marginBottom: 8 }}>Desglose de Tareas Completadas</div>
-                <div style={{ display: "flex", borderBottom: `1px solid ${G.border}`, paddingBottom: 8, fontSize: 9, color: G.muted, textTransform: "uppercase", letterSpacing: 1 }}>
-                    <div style={{ flex: 1 }}>Video</div>
-                    <div style={{ width: 80, textAlign: "center" }}>Puntos</div>
-                    <div style={{ width: 120, textAlign: "center" }}>Tiempo Invertido</div>
+            {/* Table / Breakdown */}
+            <div style={{ ...css.card, padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.14em", color: G.naranja, fontFamily: "Gilroy, sans-serif", textTransform: "uppercase", fontWeight: 800, marginBottom: 4 }}>
+                    DESGLOSE DE TAREAS ENTREGADAS
+                </div>
+                <div style={{ display: "flex", borderBottom: `2px solid ${G.border}`, paddingBottom: 10, fontSize: 10, color: G.muted, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 }}>
+                    <div style={{ flex: 2 }}>TITULO DE LA PIEZA / VIDEO</div>
+                    <div style={{ width: 140, textAlign: "center" }}>PUNTOS DE ESFUERZO</div>
+                    <div style={{ width: 160, textAlign: "center" }}>TIEMPO DE EDICIÓN</div>
                 </div>
                 {displayTasks.map(t => {
                     let hrs = "N/A";
@@ -82,14 +128,18 @@ export default function EditorAnalyticsTab({ tareas, broker }) {
                         hrs = ((new Date(t.fecha_fin) - new Date(t.fecha_inicio)) / (1000 * 60 * 60)).toFixed(1) + " hrs";
                     }
                     return (
-                        <div key={t.id} style={{ display: "flex", alignItems: "center", padding: "8px 0", borderBottom: `1px dashed ${G.borderHi}` }}>
-                            <div style={{ flex: 1, fontSize: 12, color: G.white }}>{t.titulo}</div>
-                            <div style={{ width: 80, textAlign: "center", fontSize: 11, color: G.orange }}>{t.puntos_esfuerzo || 1} pts</div>
-                            <div style={{ width: 120, textAlign: "center", fontSize: 11, color: hrs === "N/A" ? G.dimmed : G.cyan }}>{hrs}</div>
+                        <div key={t.id} style={{ display: "flex", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${G.border}` }}>
+                            <div style={{ flex: 2, fontSize: 13, fontWeight: 700, color: G.purple }}>{t.titulo.toUpperCase()}</div>
+                            <div style={{ width: 140, textAlign: "center" }}>
+                                <span style={{ background: "#FEF2EB", color: G.naranja, border: `1px solid ${G.naranja}`, borderRadius: 12, padding: "3px 10px", fontSize: 11, fontWeight: 800 }}>
+                                    {t.puntos_esfuerzo || 1} PTS
+                                </span>
+                            </div>
+                            <div style={{ width: 160, textAlign: "center", fontSize: 12, fontWeight: 700, color: hrs === "N/A" ? G.muted : G.purple }}>{hrs}</div>
                         </div>
                     );
                 })}
-                {displayTasks.length === 0 && <div style={{ textAlign: "center", color: G.dimmed, fontSize: 11, padding: 20 }}>No hay tareas completadas aún.</div>}
+                {displayTasks.length === 0 && <div style={{ textAlign: "center", color: G.muted, fontSize: 12, padding: 30, fontWeight: 600 }}>No hay tareas completadas registradas.</div>}
             </div>
         </div>
     );

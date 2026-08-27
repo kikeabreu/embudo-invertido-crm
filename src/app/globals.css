@@ -2,32 +2,93 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Gilroy";
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/Gilroy-Light.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Gilroy";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/Gilroy-Light.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Gilroy";
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/Gilroy-Light.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Gilroy";
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/Gilroy-ExtraBold.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Gilroy";
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/Gilroy-ExtraBold.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Gilroy";
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/Gilroy-ExtraBold.otf") format("opentype");
+}
+
 :root {
-  --background: #F6F7F9;
-  --foreground: #111827;
+  --ts-purple: #7060D8;
+  --ts-orange: #F08048;
+  --ts-black: #081010;
+  --ts-white: #FFFFFF;
+  --ts-ink-200: #DFE3E3;
+  --ts-ink-500: #6B7374;
+  --ts-ink-700: #2A3233;
+  --ts-ink-900: #081010;
+
+  --background: #F7F9F9;
+  --foreground: #081010;
+}
+
+* {
+  font-family: "Gilroy", "Helvetica Neue", Arial, sans-serif;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Gilroy", "Helvetica Neue", Arial, sans-serif;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* App takes full screen like CRM.jsx */
+  overflow: hidden;
 }
 
-/* Scrollbar styles to match the clean light theme */
+/* Scrollbar styles to match Top Seller theme */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F3F4F6;
+  background: #EEF1F1;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #C4BDF1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #7060D8;
 }

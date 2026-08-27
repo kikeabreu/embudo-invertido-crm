@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Propuesta UNITUS" description="Propuesta comercial de desarrollo web + marketing mensual" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<style>
+  @media print { .noprint{ display:none !important; } body{ background:#fff !important; } }
+  ::selection{ background: var(--ts-purple-200); }
+</style>
+</helmet>
+
+<div style="background:var(--surface-page); color:var(--text-body); font-family:var(--font-body); min-height:100vh;">
+
+  <!-- ============ PORTADA ============ -->
+  <section data-screen-label="Portada" style="position:relative; background:var(--ts-black); color:#fff; overflow:hidden; padding:96px var(--gutter) 88px; display:flex; flex-direction:column; gap:56px;">
+    <img src="../../assets/logos/topseller-mark-purple.png" style="position:absolute; right:-60px; top:-40px; width:520px; opacity:0.10; pointer-events:none;" alt="">
+    <img src="../../assets/logos/topseller-wordmark-white.png" style="height:26px; position:relative; z-index:1;" alt="Top Seller">
+    <div style="position:relative; z-index:1; max-width:var(--container-lg); margin:0 auto; width:100%; display:flex; flex-direction:column; gap:20px;">
+      <span style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--ts-orange);">Propuesta comercial</span>
+      <h1 style="font-family:var(--font-display); font-weight:800; font-size:var(--text-display-xl); letter-spacing:var(--tracking-tight); line-height:var(--leading-tight); margin:0; text-transform:uppercase; color:#fff;">UNITUS</h1>
+      <p style="font-family:var(--font-body); font-weight:300; font-size:var(--text-lg); color:var(--ts-ink-200); max-width:640px; margin:0;">Sitio web premium + sistema de marketing mensual para el lanzamiento de villas y esquemas de propiedad fraccional.</p>
+      <div style="display:flex; gap:32px; margin-top:16px; flex-wrap:wrap;">
+        <div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--ts-ink-400); white-space:nowrap;">Preparado para</div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h3); color:#fff;">UNITUS</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--ts-ink-400); white-space:nowrap;">Preparado por</div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h3); color:#fff;">Top Seller</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--ts-ink-400); white-space:nowrap;">Fecha</div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h3); color:#fff;">Julio 2026</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ALCANCE ============ -->
+  <section data-screen-label="Alcance del proyecto" style="max-width:var(--container-lg); margin:0 auto; width:100%; padding:80px var(--gutter) 40px; box-sizing:border-box;">
+    <span style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-accent);">Lo que vamos a construir</span>
+    <h2 style="font-family:var(--font-display); font-weight:800; font-size:var(--text-display-md); letter-spacing:var(--tracking-tight); margin:8px 0 16px; color:var(--text-strong); text-transform:uppercase;">Un sitio a la altura de UNITUS</h2>
+    <p style="font-family:var(--font-body); font-weight:300; font-size:var(--text-lg); color:var(--text-muted); max-width:680px; margin:0 0 40px; line-height:var(--leading-relaxed);">Una web elegante que presente el desarrollo, explique los esquemas de propiedad con claridad y convierta visitas en prospectos por formulario y WhatsApp.</p>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
+      <sc-for list="{{ scopePages }}" as="page" hint-placeholder-count="8">
+        <div style="display:flex; align-items:center; gap:10px; padding:16px 18px; background:var(--surface-sunken); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+          <span style="width:6px; height:6px; border-radius:50%; background:var(--ts-purple); flex-shrink:0;"></span>
+          <span style="font-family:var(--font-display); font-weight:800; font-size:var(--text-sm); color:var(--text-strong);">{{ page }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- ============ RECOMENDACIÓN UNITUS ============ -->
+  <section data-screen-label="Recomendacion" style="max-width:var(--container-lg); margin:0 auto; width:100%; padding:24px var(--gutter) 56px; box-sizing:border-box;">
+    <div style="border-radius:var(--radius-lg); border:1px solid var(--border-subtle); border-top:3px solid var(--ts-orange); background:var(--surface-card); box-shadow:var(--shadow-md); padding:40px; display:grid; grid-template-columns:1.4fr 1fr; gap:40px;">
+      <div>
+        <x-import component-from-global-scope="TopSellerDesignSystem_57ba3c.Badge" tone="orange" variant="solid" hint-size="120px,26px">Recomendación para UNITUS</x-import>
+        <h3 style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h1); letter-spacing:var(--tracking-tight); margin:16px 0 12px; text-transform:uppercase; color:var(--text-strong);">Web Premium para Desarrollador</h3>
+        <p style="font-family:var(--font-body); font-weight:300; font-size:var(--text-base); color:var(--text-muted); line-height:var(--leading-relaxed); margin:0 0 20px;">Con 8 secciones y formularios integrados, este proyecto entra en el nivel premium de nuestra escalera de precios.</p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <sc-for list="{{ scopePages }}" as="page" hint-placeholder-count="8">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="color:var(--ts-purple); font-family:var(--font-display); font-weight:800;">✓</span>
+              <span style="font-family:var(--font-body); font-weight:300; font-size:var(--text-sm); color:var(--text-body);">{{ page }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; justify-content:center; align-items:flex-start; gap:6px; background:var(--surface-sunken); border-radius:var(--radius-md); padding:32px;">
+        <span style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-muted);">Inversión</span>
+        <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-display-lg); color:var(--text-brand); letter-spacing:var(--tracking-tight);">$30,000</div>
+        <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-sm); color:var(--text-muted); text-transform:uppercase; letter-spacing:var(--tracking-wide);">MXN &middot; pago único</div>
+        <div style="height:1px; background:var(--border-subtle); width:100%; margin:16px 0;"></div>
+        <span style="font-family:var(--font-body); font-weight:300; font-size:var(--text-sm); color:var(--text-muted); line-height:var(--leading-relaxed);">Con presupuesto más limitado, ajustamos hasta <strong style="color:var(--text-strong); font-weight:700;">$25,000 MXN</strong> — piso de este alcance.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ESCALERA DE PRECIOS WEB ============ -->
+  <section data-screen-label="Opciones web" style="max-width:var(--container-lg); margin:0 auto; width:100%; padding:56px var(--gutter); box-sizing:border-box;">
+    <span style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-accent);">Partida 1 &middot; Desarrollo</span>
+    <h2 style="font-family:var(--font-display); font-weight:800; font-size:var(--text-display-md); letter-spacing:var(--tracking-tight); margin:8px 0 8px; color:var(--text-strong); text-transform:uppercase;">Desarrollo web — pago único</h2>
+    <p style="font-family:var(--font-body); font-weight:300; font-size:var(--text-base); color:var(--text-muted); max-width:680px; margin:0 0 32px;">Diseño y desarrollo del sitio, entrega final y capacitación básica. Se cotiza aparte del marketing mensual.</p>
+
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;">
+      <div style="position:relative; border-radius:var(--radius-lg); padding:32px 28px; display:flex; flex-direction:column; gap:20px; box-sizing:border-box; background:var(--surface-card); color:var(--text-body); box-shadow:var(--shadow-sm); border:1px solid var(--border-subtle);">
+        <div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; opacity:0.7;">{{ webTiers.0.name }}</div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h1); letter-spacing:var(--tracking-tight); margin-top:6px;">{{ webTiers.0.price }}</div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-xs); text-transform:uppercase; letter-spacing:var(--tracking-wide); opacity:0.65;">{{ webTiers.0.unit }}</div>
+        </div>
+        <div style="height:1px; opacity:0.15; background:currentColor;"></div>
+        <div style="display:flex; flex-direction:column; gap:10px; flex:1;">
+          <sc-for list="{{ webTiers.0.features }}" as="feat" hint-placeholder-count="4">
+            <div style="display:flex; align-items:flex-start; gap:8px; font-family:var(--font-body); font-weight:300; font-size:var(--text-sm); line-height:var(--leading-snug);">
+              <span style="font-weight:800; flex-shrink:0;">✓</span><span>{{ feat }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="position:relative; border-radius:var(--radius-lg); padding:32px 28px; display:flex; flex-direction:column; gap:20px; box-sizing:border-box; background:var(--surface-brand); color:#fff; box-shadow:var(--shadow-brand-md); transform:scale(1.02);">
+        <div style="position:absolute; top:-13px; left:28px;">
+          <x-import component-from-global-scope="TopSellerDesignSystem_57ba3c.Badge" tone="orange" variant="solid" hint-size="90px,24px">Recomendada</x-import>
+        </div>
+        <div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; opacity:0.7;">{{ webTiers.1.name }}</div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h1); letter-spacing:var(--tracking-tight); margin-top:6px;">{{ webTiers.1.price }}</div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-xs); text-transform:uppercase; letter-spacing:var(--tracking-wide); opacity:0.65;">{{ webTiers.1.unit }}</div>
+        </div>
+        <div style="height:1px; opacity:0.15; background:currentColor;"></div>
+        <div style="display:flex; flex-direction:column; gap:10px; flex:1;">
+          <sc-for list="{{ webTiers.1.features }}" as="feat" hint-placeholder-count="6">
+            <div style="display:flex; align-items:flex-start; gap:8px; font-family:var(--font-body); font-weight:300; font-size:var(--text-sm); line-height:var(--leading-snug);">
+              <span style="font-weight:800; flex-shrink:0;">✓</span><span>{{ feat }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="position:relative; border-radius:var(--radius-lg); padding:32px 28px; display:flex; flex-direction:column; gap:20px; box-sizing:border-box; background:var(--ts-black); color:#fff; box-shadow:var(--shadow-sm);">
+        <div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; opacity:0.7;">{{ webTiers.2.name }}</div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h1); letter-spacing:var(--tracking-tight); margin-top:6px;">{{ webTiers.2.price }}</div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-xs); text-transform:uppercase; letter-spacing:var(--tracking-wide); opacity:0.65;">{{ webTiers.2.unit }}</div>
+        </div>
+        <div style="height:1px; opacity:0.15; background:currentColor;"></div>
+        <div style="display:flex; flex-direction:column; gap:10px; flex:1;">
+          <sc-for list="{{ webTiers.2.features }}" as="feat" hint-placeholder-count="5">
+            <div style="display:flex; align-items:flex-start; gap:8px; font-family:var(--font-body); font-weight:300; font-size:var(--text-sm); line-height:var(--leading-snug);">
+              <span style="font-weight:800; flex-shrink:0;">✓</span><span>{{ feat }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <p style="font-family:var(--font-body); font-weight:300; font-size:var(--text-sm); color:var(--text-faint); margin-top:16px;">La mayoría de los clientes eligen el plan Profesional.</p>
+  </section>
+
+  <!-- ============ MARKETING MENSUAL ============ -->
+  <section data-screen-label="Marketing mensual" style="background:var(--surface-sunken); padding:56px var(--gutter); box-sizing:border-box;">
+    <div style="max-width:var(--container-lg); margin:0 auto;">
+      <span style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-accent);">Partida 2 &middot; Recurrente</span>
+      <h2 style="font-family:var(--font-display); font-weight:800; font-size:var(--text-display-md); letter-spacing:var(--tracking-tight); margin:8px 0 8px; color:var(--text-strong); text-transform:uppercase;">Marketing mensual</h2>
+      <p style="font-family:var(--font-body); font-weight:300; font-size:var(--text-base); color:var(--text-muted); max-width:700px; margin:0 0 32px; line-height:var(--leading-relaxed);">No es solo manejo de redes: es un sistema completo — estrategia, grabación, edición, copywriting, pauta y reportes. Se cotiza como servicio independiente al desarrollo del sitio.</p>
+
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;">
+        <div style="position:relative; border-radius:var(--radius-lg); padding:32px 28px; display:flex; flex-direction:column; gap:20px; box-sizing:border-box; background:var(--surface-card); border:1px solid var(--border-subtle); box-shadow:var(--shadow-sm);">
+          <div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-muted);">{{ marketingTiers.0.name }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h1); letter-spacing:var(--tracking-tight); margin-top:6px; color:var(--text-strong);">{{ marketingTiers.0.price }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-xs); text-transform:uppercase; letter-spacing:var(--tracking-wide); color:var(--text-muted);">{{ marketingTiers.0.unit }}</div>
+          </div>
+          <div style="height:1px; background:var(--border-subtle);"></div>
+          <div style="display:flex; flex-direction:column; gap:10px; flex:1;">
+            <sc-for list="{{ marketingTiers.0.features }}" as="feat" hint-placeholder-count="4">
+              <div style="display:flex; align-items:flex-start; gap:8px; font-family:var(--font-body); font-weight:300; font-size:var(--text-sm); color:var(--text-body); line-height:var(--leading-snug);">
+                <span style="font-weight:800; color:var(--ts-purple); flex-shrink:0;">✓</span><span>{{ feat }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="position:relative; border-radius:var(--radius-lg); padding:32px 28px; display:flex; flex-direction:column; gap:20px; box-sizing:border-box; background:var(--surface-card); border:2px solid var(--ts-purple); box-shadow:var(--shadow-brand-sm);">
+          <div style="position:absolute; top:-13px; left:28px;">
+            <x-import component-from-global-scope="TopSellerDesignSystem_57ba3c.Badge" tone="orange" variant="solid" hint-size="90px,24px">Recomendado</x-import>
+          </div>
+          <div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-muted);">{{ marketingTiers.1.name }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h1); letter-spacing:var(--tracking-tight); margin-top:6px; color:var(--text-strong);">{{ marketingTiers.1.price }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-xs); text-transform:uppercase; letter-spacing:var(--tracking-wide); color:var(--text-muted);">{{ marketingTiers.1.unit }}</div>
+          </div>
+          <div style="height:1px; background:var(--border-subtle);"></div>
+          <div style="display:flex; flex-direction:column; gap:10px; flex:1;">
+            <sc-for list="{{ marketingTiers.1.features }}" as="feat" hint-placeholder-count="4">
+              <div style="display:flex; align-items:flex-start; gap:8px; font-family:var(--font-body); font-weight:300; font-size:var(--text-sm); color:var(--text-body); line-height:var(--leading-snug);">
+                <span style="font-weight:800; color:var(--ts-purple); flex-shrink:0;">✓</span><span>{{ feat }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="position:relative; border-radius:var(--radius-lg); padding:32px 28px; display:flex; flex-direction:column; gap:20px; box-sizing:border-box; background:var(--surface-card); border:1px solid var(--border-subtle); box-shadow:var(--shadow-sm);">
+          <div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-muted);">{{ marketingTiers.2.name }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h1); letter-spacing:var(--tracking-tight); margin-top:6px; color:var(--text-strong);">{{ marketingTiers.2.price }}</div>
+            <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-xs); text-transform:uppercase; letter-spacing:var(--tracking-wide); color:var(--text-muted);">{{ marketingTiers.2.unit }}</div>
+          </div>
+          <div style="height:1px; background:var(--border-subtle);"></div>
+          <div style="display:flex; flex-direction:column; gap:10px; flex:1;">
+            <sc-for list="{{ marketingTiers.2.features }}" as="feat" hint-placeholder-count="5">
+              <div style="display:flex; align-items:flex-start; gap:8px; font-family:var(--font-body); font-weight:300; font-size:var(--text-sm); color:var(--text-body); line-height:var(--leading-snug);">
+                <span style="font-weight:800; color:var(--ts-purple); flex-shrink:0;">✓</span><span>{{ feat }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESUMEN DE INVERSIÓN ============ -->
+  <section data-screen-label="Resumen de inversion" style="max-width:var(--container-lg); margin:0 auto; width:100%; padding:64px var(--gutter); box-sizing:border-box;">
+    <span style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-accent);">Resumen</span>
+    <h2 style="font-family:var(--font-display); font-weight:800; font-size:var(--text-display-md); letter-spacing:var(--tracking-tight); margin:8px 0 32px; color:var(--text-strong); text-transform:uppercase;">Inversión total propuesta</h2>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+      <div style="border-radius:var(--radius-lg); border:1px solid var(--border-subtle); padding:28px 32px; background:var(--surface-card);">
+        <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; color:var(--text-muted);">Desarrollo web (único pago)</div>
+        <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-display-md); color:var(--text-strong); margin-top:8px;">$25,000–30,000</div>
+        <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-xs); text-transform:uppercase; color:var(--text-muted); letter-spacing:var(--tracking-wide);">MXN</div>
+      </div>
+      <div style="border-radius:var(--radius-lg); border:1px solid transparent; padding:28px 32px; background:var(--surface-brand); color:#fff;">
+        <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-2xs); letter-spacing:var(--tracking-eyebrow); text-transform:uppercase; opacity:0.75;">Marketing mensual (Profesional)</div>
+        <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-display-md); margin-top:8px;">$15,000</div>
+        <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-xs); text-transform:uppercase; opacity:0.75; letter-spacing:var(--tracking-wide);">MXN / mes &middot; recurrente</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px; border-radius:var(--radius-lg); border:1px solid var(--border-subtle); border-top:3px solid var(--ts-orange); background:var(--surface-sunken); padding:24px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+      <div>
+        <div style="font-family:var(--font-display); font-weight:800; font-size:var(--text-h3); text-transform:uppercase; color:var(--text-strong);">Oferta de lanzamiento</div>
+        <div style="font-family:var(--font-body); font-weight:300; font-size:var(--text-sm); color:var(--text-muted); max-width:520px; margin-top:4px;">Al cerrar esta semana: primer mes de marketing sin costo de configuración.</div>
+      </div>
+      <x-import component-from-global-scope="TopSellerDesignSystem_57ba3c.Badge" tone="purple" variant="soft" hint-size="120px,26px">Válida 7 días</x-import>
+    </div>
+  </section>
+
+  <!-- ============ CTA / CONTACTO ============ -->
+  <section data-screen-label="Siguientes pasos" style="background:var(--ts-black); color:#fff; padding:72px var(--gutter); box-sizing:border-box;">
+    <div style="max-width:var(--container-md); margin:0 auto; text-align:center; display:flex; flex-direction:column; align-items:center; gap:20px;">
+      <img src="../../assets/logos/topseller-mark-orange.png" style="height:44px; opacity:0.9;" alt="">
+      <h2 style="font-family:var(--font-display); font-weight:800; font-size:var(--text-display-md); letter-spacing:var(--tracking-tight); margin:0; text-transform:uppercase; color:#fff;">Vamos a construirlo</h2>
+      <p style="font-family:var(--font-body); font-weight:300; font-size:var(--text-lg); color:var(--ts-ink-200); max-width:520px; margin:0;">Confirmemos el alcance y arrancamos con el diseño de UNITUS esta semana.</p>
+      <div style="display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; justify-content:center;">
+        <x-import component-from-global-scope="TopSellerDesignSystem_57ba3c.Button" variant="accent" size="lg" hint-size="180px,48px">Confirmar por WhatsApp</x-import>
+        <x-import component-from-global-scope="TopSellerDesignSystem_57ba3c.Button" variant="secondary" size="lg" style="background:transparent; color:#fff; border-color:rgba(255,255,255,.3);" hint-size="180px,48px">Agendar llamada</x-import>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const scopePages = [
+      "Inicio", "Villas", "Fractional Ownership", "Full Ownership",
+      "Acerca de", "Contacto", "Galería", "Formularios y WhatsApp"
+    ];
+
+    const webTiersRaw = [
+      {
+        name: "Esencial", price: "$18,000", unit: "MXN", highlight: false,
+        features: ["Hasta 5 páginas", "Diseño personalizado", "Responsive", "Formularios y WhatsApp"]
+      },
+      {
+        name: "Profesional", price: "$28,000", unit: "MXN", highlight: true,
+        features: ["Todo lo de Esencial", "Más páginas", "SEO básico", "Blog / CMS", "CRM o Meta Pixel", "Optimización de velocidad"]
+      },
+      {
+        name: "Premium", price: "$38,000", unit: "MXN", highlight: false,
+        features: ["Todo lo de Profesional", "Calculadora de inversión", "Animaciones premium", "Automatizaciones", "Soporte 30 días"]
+      }
+    ];
+
+    const webTiers = webTiersRaw.map((t, i) => ({
+      ...t,
+      bg: i === 1 ? "var(--surface-brand)" : (i === 2 ? "var(--ts-black)" : "var(--surface-card)"),
+      fg: i === 0 ? "var(--text-body)" : "#fff",
+      shadow: i === 1 ? "var(--shadow-brand-md)" : "var(--shadow-sm)",
+      scale: i === 1 ? "scale(1.02)" : "none",
+    }));
+
+    const marketingTiersRaw = [
+      {
+        name: "Esencial", price: "$10,000", unit: "MXN / mes", highlight: false,
+        features: ["8–10 reels", "Copies", "Programación", "Asesoría"]
+      },
+      {
+        name: "Profesional", price: "$15,000", unit: "MXN / mes", highlight: true,
+        features: ["12–16 reels y carruseles", "Pauta", "Reportes", "Estrategia"]
+      },
+      {
+        name: "Premium", price: "$30,000", unit: "MXN / mes", highlight: false,
+        features: ["Todo lo de Profesional", "Cobertura de proyectos", "Campañas de lanzamiento", "Automatizaciones", "Reuniones estratégicas"]
+      }
+    ];
+
+    const marketingTiers = marketingTiersRaw.map(t => ({
+      ...t,
+      border: t.highlight ? "2px solid var(--ts-purple)" : "1px solid var(--border-subtle)",
+      shadow: t.highlight ? "var(--shadow-brand-sm)" : "var(--shadow-sm)",
+    }));
+
+    return { scopePages, webTiers, marketingTiers };
+  }
+}
+
+</script>
+</body>
+</html>
