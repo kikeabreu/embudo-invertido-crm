@@ -264,8 +264,12 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
     useEffect(() => {
         const loadTeam = async () => {
             if (!brokerId) return;
+            const { data: assigned } = await supabase.from('editor_clientes').select('editor_id').eq('broker_id', brokerId);
+            const editorIds = (assigned || []).map(item => item.editor_id);
+            const filters = [`rol.eq.Admin`, `id.eq.${brokerId}`, `parent_id.eq.${brokerId}`];
+            if (editorIds.length > 0) filters.push(`id.in.(${editorIds.join(',')})`);
             const { data } = await supabase.from('usuarios').select('id, nombre, rol')
-                .or(`rol.in.(Admin,Equipo),id.eq.${brokerId},parent_id.eq.${brokerId}`);
+                .or(filters.join(','));
             if (data) setTeam(data);
         };
         loadTeam();
@@ -378,7 +382,7 @@ export default function PieceModal({ piece, tareas = [], isViewer, canEdit, canD
                                 background: "transparent",
                             }}
                         />
-                        <div style={{ fontSize: 11, color: G.muted, fontFamily: "sans-serif", marginTop: 7, fontStyle: "italic" }}>"{form.hook}"</div>
+                        <div style={{ fontSize: 11, color: G.muted, fontFamily: "sans-serif", marginTop: 7, fontStyle: "italic" }}>&ldquo;{form.hook}&rdquo;</div>
                         {resumen && <div style={{ marginTop: 10, maxWidth: 720, color: G.muted, fontFamily: "sans-serif", fontSize: 12, lineHeight: 1.45 }}>{resumen}</div>}
                     </div>
                     <button onClick={onClose} style={{ background: "transparent", border: "none", color: G.muted, fontSize: 18, cursor: "pointer", flexShrink: 0 }}>✕</button>

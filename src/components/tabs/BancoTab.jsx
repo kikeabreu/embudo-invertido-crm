@@ -5,6 +5,17 @@ import { G, css, FASES, ESTADOS_PIEZA, FORMATOS, FORMATO_ICON, FORMATO_META, fas
 import { PBar, GText } from "@/components/ui/UIUtils";
 import PieceModal from "@/components/ui/PieceModal";
 
+const EMPTY_PIECE_FORM = {
+    fase: "Atraer",
+    avatar: "",
+    dolor: "",
+    titulo: "",
+    hook: "",
+    ctaDm: "",
+    formato: "",
+    fechaProg: "",
+};
+
 const textPreview = (value = "", length = 110) => {
     const clean = String(value || "").replace(/\s+/g, " ").trim();
     if (!clean) return "";
@@ -67,7 +78,37 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
     const [showImportModal, setShowImportModal] = useState(false);
     const [importText, setImportText] = useState("");
     const [calMes, setCalMes] = useState(() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; });
-    const [form, setForm] = useState({ fase: "Atraer", avatar: "", dolor: "", titulo: "", hook: "", ctaDm: "", formato: "", fechaProg: "" });
+    const [form, setForm] = useState(EMPTY_PIECE_FORM);
+
+    const updateNewPiece = (field, value) => {
+        setForm(current => ({ ...current, [field]: value }));
+    };
+
+    const addNewPiece = (event) => {
+        event.preventDefault();
+        const titulo = form.titulo.trim();
+        if (!titulo) return;
+
+        onAdd({
+            ...form,
+            titulo,
+            id: uid(),
+            num: piezas.length + 1,
+            estado: "En cola",
+            copy: "",
+            guion: "",
+            instrucciones: "",
+            notasInternas: "",
+            linkRecursos: "",
+            linkFinal: "",
+            linkEvidencia: "",
+            origen: "manual",
+            origenRef: null,
+            anotaciones: [],
+        });
+        setShowForm(false);
+        setForm(EMPTY_PIECE_FORM);
+    };
 
     useEffect(() => {
         const handleOpenPiece = (e) => {
@@ -160,7 +201,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                                 <span style={{ fontSize: 12, color: G.white, fontFamily: "sans-serif", fontWeight: 600 }}>{p.titulo}</span>
                                 {isFromSeq && <span style={{ fontSize: 7, color: G.cyan, border: `1px solid ${G.cyan}33`, borderRadius: 3, padding: "1px 4px" }}>📅 Seq</span>}
                             </div>
-                            <div style={{ fontSize: 10, color: G.muted, fontFamily: "sans-serif", fontStyle: "italic" }}>"{p.hook?.slice(0, 60)}{(p.hook?.length ?? 0) > 60 ? "…" : ""}"</div>
+                            <div style={{ fontSize: 10, color: G.muted, fontFamily: "sans-serif", fontStyle: "italic" }}>&ldquo;{p.hook?.slice(0, 60)}{(p.hook?.length ?? 0) > 60 ? "…" : ""}&rdquo;</div>
                             {brief && <div style={{ fontSize: 9, color: G.dimmed, fontFamily: "sans-serif", marginTop: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{brief}</div>}
                             <div style={{ display: "flex", gap: 8, marginTop: 3 }}>
                                 {hasDetails && <span style={{ fontSize: 7, color: G.purple }}>● contenido</span>}
@@ -209,7 +250,7 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                         </div>
                         <div>
                             <div style={{ fontSize: 13, color: G.white, fontFamily: "sans-serif", fontWeight: 700, marginBottom: 5, lineHeight: 1.3 }}>{p.titulo}</div>
-                            <div style={{ fontSize: 10, color: G.muted, fontFamily: "sans-serif", fontStyle: "italic", lineHeight: 1.5 }}>"{p.hook?.slice(0, 80)}{(p.hook?.length ?? 0) > 80 ? "…" : ""}"</div>
+                            <div style={{ fontSize: 10, color: G.muted, fontFamily: "sans-serif", fontStyle: "italic", lineHeight: 1.5 }}>&ldquo;{p.hook?.slice(0, 80)}{(p.hook?.length ?? 0) > 80 ? "…" : ""}&rdquo;</div>
                         </div>
                         <div style={{ fontSize: 10, color: brief ? G.muted : G.dimmed, fontFamily: "sans-serif", lineHeight: 1.55, padding: "10px 11px", background: "#F7F9F9", borderRadius: 8, borderLeft: `3px solid ${faseColor(p.fase)}66`, minHeight: 58, display: "flex", alignItems: "center" }}>
                             {brief || "Sin resumen todavía. Agrega hook, copy o guion para ubicar esta pieza rápido."}
@@ -447,36 +488,47 @@ export default function BancoTab({ piezas = [], tareas = [], onSave, onAdd, onIm
                                 />
                             </>
                         )}
-                        <button onClick={() => setShowForm(v => !v)} style={{ ...css.btn(showForm ? undefined : G.gMagenta), fontSize: 11 }}>{showForm ? "Cancelar" : "+ Nueva pieza"}</button>
+                        <button type="button" onClick={() => setShowForm(v => !v)} style={{ ...css.btn(showForm ? undefined : G.gMagenta), fontSize: 11 }}>{showForm ? "Cancelar" : "+ Nueva pieza"}</button>
                     </div>
                 )}
             </div>
 
             {showForm && (
-                <div style={{ ...css.cardGlow, padding: 16, marginBottom: 16 }}>
+                <form onSubmit={addNewPiece} style={{ ...css.cardGlow, padding: 16, marginBottom: 16 }}>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
                         {[{ k: "titulo", l: "Título" }, { k: "hook", l: "Hook" }, { k: "avatar", l: "Avatar" }, { k: "ctaDm", l: "CTA DM" }].map(({ k, l }) => (
-                            <div key={k}><label style={css.label}>{l}</label><input value={form[k] || ""} onChange={e => setForm({ ...form, [k]: e.target.value })} placeholder={l + "..."} style={css.input} /></div>
+                            <div key={k}>
+                                <label htmlFor={`new-piece-${k}`} style={css.label}>{l}</label>
+                                <input
+                                    id={`new-piece-${k}`}
+                                    type="text"
+                                    value={form[k] || ""}
+                                    onChange={e => updateNewPiece(k, e.target.value)}
+                                    placeholder={l + "..."}
+                                    autoFocus={k === "titulo"}
+                                    style={css.input}
+                                />
+                            </div>
                         ))}
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 10, alignItems: "end" }}>
                         <div><label style={css.label}>Fase</label>
-                            <select value={form.fase} onChange={e => setForm({ ...form, fase: e.target.value })} style={{ ...css.input, color: faseColor(form.fase) }}>
+                            <select value={form.fase} onChange={e => updateNewPiece("fase", e.target.value)} style={{ ...css.input, color: faseColor(form.fase) }}>
                                 {FASES.map(f => <option key={f} value={f}>{f}</option>)}
                             </select>
                         </div>
                         <div><label style={css.label}>Formato</label>
-                            <select value={form.formato || ""} onChange={e => setForm({ ...form, formato: e.target.value })} style={{ ...css.input, color: G.purpleHi }}>
+                            <select value={form.formato || ""} onChange={e => updateNewPiece("formato", e.target.value)} style={{ ...css.input, color: G.purpleHi }}>
                                 <option value="">Sin definir</option>
                                 {FORMATOS.map(f => <option key={f} value={f}>{FORMATO_ICON[f]} {f}</option>)}
                             </select>
                         </div>
                         <div><label style={css.label}>Fecha programada</label>
-                            <input type="date" value={form.fechaProg || ""} onChange={e => setForm({ ...form, fechaProg: e.target.value })} style={{ ...css.input, colorScheme: "light" }} />
+                            <input type="date" value={form.fechaProg || ""} onChange={e => updateNewPiece("fechaProg", e.target.value)} style={{ ...css.input, colorScheme: "light" }} />
                         </div>
-                        <button onClick={() => { if (form.titulo.trim()) { onAdd({ ...form, id: uid(), num: piezas.length + 1, estado: "En cola", copy: "", guion: "", instrucciones: "", notasInternas: "", linkRecursos: "", linkFinal: "", linkEvidencia: "", origen: "manual", origenRef: null, anotaciones: [] }); setShowForm(false); setForm({ fase: "Atraer", avatar: "", dolor: "", titulo: "", hook: "", ctaDm: "", formato: "", fechaProg: "" }); } }} style={{ ...css.btn(G.gGreen) }}>+ Agregar</button>
+                        <button type="submit" disabled={!form.titulo.trim()} style={{ ...css.btn(G.gGreen), opacity: form.titulo.trim() ? 1 : 0.5 }}>+ Agregar</button>
                     </div>
-                </div>
+                </form>
             )}
 
             {vista === "lista" && vistaListaJSX}

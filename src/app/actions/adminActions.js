@@ -9,6 +9,9 @@ export async function createBrokerAction(formData) {
     const password = formData.get('password');
     const precio = formData.get('precio_pactado');
     const corte = formData.get('fecha_corte');
+    const fechaContratacion = formData.get('fecha_contratacion');
+    const piezasComprometidas = formData.get('piezas_comprometidas');
+    const piezasMeta = Number.parseInt(piezasComprometidas, 10);
     const rol = formData.get('rol') || 'Broker';
     const parentId = formData.get('parent_id') || null;
 
@@ -43,6 +46,8 @@ export async function createBrokerAction(formData) {
             parent_id: parentId,
             precio_pactado: parseFloat(precio) || 0.00,
             fecha_corte: corte || null,
+            fecha_contratacion: fechaContratacion || null,
+            piezas_comprometidas: Number.isFinite(piezasMeta) ? Math.max(0, piezasMeta) : 12,
             estado_pago: 'Pendiente'
         });
 

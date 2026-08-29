@@ -98,8 +98,12 @@ export default function ProyectosTab({ proyectos, tareas, onSaveProyecto, onDele
     }, [tareas]);
 
     const fetchTeam = async () => {
+        const { data: assigned } = await supabase.from('editor_clientes').select('editor_id').eq('broker_id', brokerId);
+        const editorIds = (assigned || []).map(item => item.editor_id);
+        const filters = [`rol.eq.Admin`, `id.eq.${brokerId}`, `parent_id.eq.${brokerId}`];
+        if (editorIds.length > 0) filters.push(`id.in.(${editorIds.join(',')})`);
         const { data } = await supabase.from('usuarios').select('id, nombre, rol')
-            .or(`rol.in.(Admin,Equipo),id.eq.${brokerId},parent_id.eq.${brokerId}`);
+            .or(filters.join(','));
         if (data) setTeam(data);
     };
 

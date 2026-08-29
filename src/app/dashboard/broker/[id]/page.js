@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { G, css, pct } from "@/lib/constants";
@@ -8,6 +8,7 @@ import { INSTALACION_SECTIONS, ONBOARDING_STEPS } from "@/lib/data";
 import { GText, PBar } from "@/components/ui/UIUtils";
 import { useToast, Toasts } from "@/components/ui/Toast";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { formatOperationalDate, getClientOperation } from "@/lib/operations";
 
 // Tabs
 import BancoTab from "@/components/tabs/BancoTab";
@@ -31,6 +32,7 @@ export default function BrokerDashboard() {
     const [broker, setBroker] = useState(null);
     const [tab, setTab] = useState("banco");
     const [loading, setLoading] = useState(true);
+    const [editorAssigned, setEditorAssigned] = useState(false);
 
     // Estados de datos
     const [piezas, setPiezas] = useState([]);
@@ -66,6 +68,22 @@ export default function BrokerDashboard() {
         }
         const { data: profile } = await supabase.from('usuarios').select('*').eq('id', session.user.id).single();
         setCurrentUser(profile);
+
+        if (profile?.rol === 'Equipo') {
+            const { data: assignment, error: assignmentError } = await supabase
+                .from('editor_clientes')
+                .select('broker_id')
+                .eq('editor_id', session.user.id)
+                .eq('broker_id', brokerId)
+                .maybeSingle();
+            if (assignmentError || !assignment) {
+                toast("Este cliente no está asignado a tu cartera", "error");
+                router.push("/dashboard");
+                setLoading(false);
+                return;
+            }
+            setEditorAssigned(true);
+        }
 
         const { data: brokerData } = await supabase.from('usuarios').select('*').eq('id', brokerId).single();
         if (!brokerData) {
@@ -117,28 +135,30 @@ export default function BrokerDashboard() {
     const isBroker = currentUser?.rol === 'Broker';
     const isCoordinador = currentUser?.rol === 'Coordinador';
     
-    const isOwnerOrTeam = currentUser?.id === brokerId || (isCoordinador && currentUser?.parent_id === brokerId) || isAdmin || isEquipo;
+    const isOwnerOrTeam = currentUser?.id === brokerId || (isCoordinador && currentUser?.parent_id === brokerId) || isAdmin || (isEquipo && editorAssigned);
     const isViewer = !isOwnerOrTeam;
     const isBancoViewer = isBroker || isCoordinador || isViewer;
 
     const canEdit = isOwnerOrTeam;
     const canDelete = isAdmin || isEquipo;
 
-    const TABS = [
-        { k: "banco", l: "BANCO" },
-        { k: "instalacion", l: "INSTALACIÓN" },
-        { k: "onboarding", l: "ONBOARDING" },
-        { k: "oferta", l: "OFERTA" },
-        { k: "ads", l: "ADS TRACKER" },
-        { k: "analitica", l: "ANALÍTICA" },
-        { k: "proyectos", l: "PROYECTOS" },
-        { k: "editor", l: "EDITOR ANALYTICS" },
-        { k: "historial", l: "HISTORIAL" },
-    ].filter(t => {
-        if (t.k === "oferta" && isEquipo) return false;
-        return true;
-    });
-    if (isAdmin) TABS.push({ k: "admin", l: "ADMIN" });
+    const TABS = useMemo(() => {
+        const tabs = [
+            { k: "banco", l: "BANCO" },
+            { k: "instalacion", l: "INSTALACIÓN" },
+            { k: "onboarding", l: "ONBOARDING" },
+            { k: "oferta", l: "OFERTA" },
+            { k: "ads", l: "ADS TRACKER" },
+            { k: "analitica", l: "ANALÍTICA" },
+            { k: "proyectos", l: "PROYECTOS" },
+            { k: "historial", l: "HISTORIAL" },
+        ].filter(item => !(item.k === "oferta" && isEquipo));
+        if (isAdmin) {
+            tabs.push({ k: "editor", l: "EDITOR ANALYTICS" });
+            tabs.push({ k: "admin", l: "ADMIN" });
+        }
+        return tabs;
+    }, [isAdmin, isEquipo]);
 
     useEffect(() => {
         if (!TABS.find(t => t.k === tab)) {
@@ -189,7 +209,13 @@ export default function BrokerDashboard() {
     };
 
     const fetchTareas = async () => {
-        const { data } = await supabase.from('tareas').select('*, comentarios_tareas(*)').order('created_at', { ascending: false });
+        const { data: clientProjects } = await supabase.from('proyectos').select('id').eq('broker_id', brokerId);
+        const projectIds = (clientProjects || []).map(project => project.id);
+        let query = supabase.from('tareas').select('*, comentarios_tareas(*)');
+        query = projectIds.length > 0
+            ? query.or(`broker_id.eq.${brokerId},proyecto_id.in.(${projectIds.join(',')})`)
+            : query.eq('broker_id', brokerId);
+        const { data } = await query.order('created_at', { ascending: false });
         if (data) setTareas(data);
     };
 
@@ -524,10 +550,12 @@ export default function BrokerDashboard() {
             case "historial": return <HistorialTab logs={logs} onUndo={undoAction} isViewer={isViewer} />;
             case "proyectos": return <ProyectosTab proyectos={proyectos} tareas={tareas} onSaveProyecto={saveProyecto} onDeleteProyecto={deleteProyecto} onSaveTarea={saveTarea} onDeleteTarea={deleteTarea} onAddComentario={addComentario} isViewer={isViewer} currentUser={currentUser} brokerId={brokerId} toast={toast} />;
             case "editor": return <EditorAnalyticsTab tareas={tareas} broker={broker} />;
-            case "admin": return isAdmin ? <AdminTab brokerId={brokerId} toast={toast} /> : null;
+            case "admin": return isAdmin ? <AdminTab brokerId={brokerId} toast={toast} piezas={piezas} onBrokerUpdate={updates => setBroker(prev => ({ ...prev, ...updates }))} /> : null;
             default: return null;
         }
     };
+
+    const operation = getClientOperation(broker, piezas);
 
     return (
         <div style={{ height: "100%", background: G.bg, fontFamily: "Georgia,serif", color: G.white, display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -544,6 +572,14 @@ export default function BrokerDashboard() {
                         <button key={t.k} onClick={() => setTab(t.k)} style={{ background: "transparent", border: "none", borderBottom: tab === t.k ? `3px solid ${G.naranja}` : "3px solid transparent", color: tab === t.k ? G.purple : G.muted, fontSize: 11, padding: "8px 12px", cursor: "pointer", fontFamily: "Gilroy, sans-serif", fontWeight: tab === t.k ? 800 : 600, letterSpacing: "0.05em", transition: "all 0.15s" }}>{t.l}</button>
                     ))}
                 </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "8px 24px", background: "#F7F9F9", borderBottom: `1px solid ${G.border}`, flexShrink: 0, overflowX: "auto" }}>
+                <span style={{ color: G.muted, fontFamily: "Gilroy, sans-serif", fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.08em", whiteSpace: "nowrap" }}>Ciclo vigente</span>
+                <span style={{ color: G.white, fontFamily: "monospace", fontSize: 10, whiteSpace: "nowrap" }}>{formatOperationalDate(operation.cycle.start, { year: false })} - {formatOperationalDate(operation.cycle.end)}</span>
+                <span style={{ color: G.muted, fontFamily: "sans-serif", fontSize: 10, whiteSpace: "nowrap" }}>{operation.published}/{operation.committed} publicadas</span>
+                <div style={{ width: 110, height: 5, background: "#DFE3E3", borderRadius: 5, overflow: "hidden", flexShrink: 0 }}><div style={{ width: `${operation.progress}%`, height: "100%", background: operation.riskTone }} /></div>
+                <span style={{ color: operation.riskTone, fontFamily: "Gilroy, sans-serif", fontSize: 9, fontWeight: 900, textTransform: "uppercase", whiteSpace: "nowrap" }}>{operation.risk}</span>
+                <span style={{ marginLeft: "auto", color: G.muted, fontFamily: "sans-serif", fontSize: 10, whiteSpace: "nowrap" }}>{operation.cycle.daysRemaining} días para el cierre</span>
             </div>
             <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
                 {renderTabContent()}
