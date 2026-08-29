@@ -1,7 +1,7 @@
 "use client";
 
 import { G, css, pct, FASES, ESTADOS_PIEZA, faseColor, faseGrad, estadoColor } from "@/lib/constants";
-import { SECUENCIA_VALOR, SECUENCIA_VENTA, INSTALACION_SECTIONS, ONBOARDING_STEPS } from "@/lib/data";
+import { INSTALACION_SECTIONS, ONBOARDING_STEPS } from "@/lib/data";
 import { GText, PBar, StatCard } from "@/components/ui/UIUtils";
 
 export default function AnalyticsTab({ piezas, instalChecked, onbChecked, broker, seqData }) {
@@ -25,11 +25,6 @@ export default function AnalyticsTab({ piezas, instalChecked, onbChecked, broker
         return d >= hoyAn && d <= en7 && p.estado !== "Publicado";
     }).length;
 
-    const valorDone = valorCiclos.reduce((acc, c) => acc + SECUENCIA_VALOR.filter(d => c.dias?.[d.dia]?.completado).length, 0);
-    const valorTotal = valorCiclos.length * SECUENCIA_VALOR.length || SECUENCIA_VALOR.length;
-    const ventaDone = ventaCiclos.reduce((acc, c) => acc + SECUENCIA_VENTA.filter(d => c.dias?.[d.dia]?.completado).length, 0);
-    const ventaTotal = ventaCiclos.length * SECUENCIA_VENTA.length || SECUENCIA_VENTA.length;
-
     return (
         <div style={{ padding: "28px 32px", overflowY: "auto", height: "100%", boxSizing: "border-box" }}>
             <GText g={G.gViolet} size={10} weight={600} style={{ letterSpacing: 3, textTransform: "uppercase", display: "block", marginBottom: 20 }}>Panel de Analítica</GText>
@@ -43,13 +38,11 @@ export default function AnalyticsTab({ piezas, instalChecked, onbChecked, broker
                 <StatCard label="Ciclos" value={ciclos.length} g={G.gViolet} sub={`${valorCiclos.length}V · ${ventaCiclos.length}S`} />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 16, marginBottom: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 20 }}>
                 {[
                     { label: "Instalación del perfil", val: instPct, g: G.gViolet },
                     { label: "Onboarding 15 días", val: onbPct, g: G.gGreen },
                     { label: "Banco publicado", val: pubPct, g: G.gMagenta },
-                    { label: "Seq. de Valor", val: pct(valorDone, valorTotal), g: G.gCyan },
-                    { label: "Seq. de Venta", val: pct(ventaDone, ventaTotal), g: G.gOrange },
                 ].map(({ label, val, g }) => (
                     <div key={label} style={{ ...css.card, padding: "20px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
